@@ -586,6 +586,13 @@ async function main() {
   // Step 11: shell regen with ?v=
   await step("shell", async () => {
     const v = globalThis.__contentVersion || "dev";
+    // UI assets bust cache on every UI change, even when content is
+    // unchanged (content keeps the content-only version).
+    const appSrc = await fs.readFile(path.join(ROOT, "assets", "app.js"),
+      "utf8").catch(() => "");
+    const cssSrc = await fs.readFile(path.join(ROOT, "assets", "site.css"),
+      "utf8").catch(() => "");
+    const av = `${v}-${sha8(appSrc + cssSrc).slice(0, 8)}`;
     let sprite = "";
     try {
       sprite = await fs.readFile(path.join(ROOT, "assets", "icons.svg"),
@@ -598,7 +605,7 @@ async function main() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DevOps By Nabawy</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="assets/site.css?v=${v}">
+<link rel="stylesheet" href="assets/site.css?v=${av}">
 <script>
 try {
   var s = JSON.parse(localStorage.getItem("nti.v1.settings") || "{}");
@@ -620,7 +627,7 @@ try {
 <script defer src="assets/vendor/minisearch.umd.js?v=${v}"><\/script>
 <script defer src="content/catalog.js?v=${v}"><\/script>
 <script defer src="content/search-index.js?v=${v}"><\/script>
-<script defer src="assets/app.js?v=${v}"><\/script>
+<script defer src="assets/app.js?v=${av}"><\/script>
 </body>
 </html>
 `;
