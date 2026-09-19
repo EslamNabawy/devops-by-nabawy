@@ -39,10 +39,15 @@ NTI.define("views/pdf", function () {
       window.matchMedia("(pointer: coarse)").matches &&
       window.innerWidth < 500;
     if (blocked || coarse) {
+      const chapters = (w.chapters || []).filter((c) => c.page);
       return html`<div class="view"><h1>${copy.pdfBlocked}</h1>
         <p>${copy.pdfBlockedBody}</p>
         <a class="btn btn-primary" href="${readyPdf.path}" target="_blank" rel="noopener noreferrer">${copy.openPdf}</a>
-        <a class="btn" href="${readyPdf.path}" download>${copy.download}</a></div>`;
+        <a class="btn" href="${readyPdf.path}" download>${copy.download}</a>
+        ${chapters.length ? html`<details class="outline" open>
+          <summary>Chapters</summary><ol>
+          ${chapters.map((c) => html`<li>${c.title} <span class="muted">p.${c.page}</span></li>`)}
+          </ol></details>` : null}</div>`;
     }
     return html`<div class="view pdfview">
       <h1 dir="auto">${w.title}</h1>

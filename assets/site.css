@@ -116,17 +116,22 @@ code, pre { font-family: var(--t-mono); font-size: 0.9em; }
 .segbar { display: block; height: 6px; background: var(--t-line);
   border-radius: 3px; overflow: hidden; }
 .segbar-f { display: block; height: 100%; background: var(--t-ink); }
-.topbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 12px;
-  align-items: center; padding: 10px 16px; background: var(--t-paper);
-  border-bottom: 1px solid var(--t-line); }
-.brand { font-weight: 700; text-decoration: none; color: var(--t-ink); }
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px;
+  align-items: center; padding: 8px 12px; background: var(--t-paper);
+  border-bottom: 1px solid var(--t-line); min-height: 56px; }
+.brand { font-weight: 700; text-decoration: none; color: var(--t-ink);
+  white-space: nowrap; flex: none; }
 .topnav { display: flex; gap: 12px; }
 .topnav a { text-decoration: none; color: var(--t-ink); padding: 10px 4px; }
 .topnav a[aria-current="page"] { text-decoration: underline; }
-.search-trigger { flex: 1; display: flex; gap: 8px; align-items: center;
-  border: 1px solid var(--t-line); border-radius: var(--t-radius);
-  padding: 10px 12px; background: var(--t-paper); color: var(--t-muted);
-  cursor: pointer; min-height: 44px; text-align: left; }
+.search-trigger { flex: 1 1 auto; min-width: 0; display: flex; gap: 8px;
+  align-items: center; border: 1px solid var(--t-line);
+  border-radius: var(--t-radius); padding: 10px 12px;
+  background: var(--t-paper); color: var(--t-muted); cursor: pointer;
+  min-height: 44px; text-align: left; }
+.search-trigger span { overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.search-trigger .icon { flex: none; }
 .strip { position: sticky; top: 57px; z-index: 15; display: flex; gap: 6px;
   overflow-x: auto; padding: 8px 16px; background: var(--t-paper);
   border-bottom: 1px solid var(--t-line); }
@@ -187,9 +192,14 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 @media (max-width: 640px) {
   .bottomnav { display: flex; position: fixed; bottom: 0; left: 0; right: 0;
     z-index: 20; background: var(--t-paper);
-    border-top: 1px solid var(--t-line); justify-content: space-around; }
-  .bottomnav a { padding: 14px; color: var(--t-ink); text-decoration: none; }
+    border-top: 1px solid var(--t-line); justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom); }
+  .bottomnav a { flex: 1 1 0; text-align: center; padding: 14px 4px;
+    min-height: 56px; color: var(--t-ink); text-decoration: none;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .topnav { display: none; }
+  .strip { top: 56px; }
+  .view { padding-bottom: 120px; }
 }
 
 /* views.css */
@@ -230,7 +240,16 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 .drawer { width: min(560px, 94vw); }
 .drawer ol { padding-left: 20px; }
 .drawer li { padding: 6px 0; }
-.reader .article { max-width: 68ch; }
+.reader .article { max-width: 68ch; overflow-wrap: break-word; }
+.reader h1 { overflow-wrap: break-word; hyphens: auto; }
+@media (max-width: 640px) {
+  .pdfbar .btn, .pdfbar .btn-primary { flex: 1 1 100%; text-align: center; }
+  .pdfframe { min-height: 60dvh; }
+  .jobs { grid-template-columns: 1fr; }
+  .readbar { font-size: 0.95rem; }
+  .drawer { width: 94vw; }
+  .modal { width: 94vw; }
+}
 .reader .article img { max-width: 100%; height: auto; cursor: zoom-in; }
 .reader .article pre { position: relative; overflow-x: auto;
   border: 1px solid var(--t-line); border-radius: var(--t-radius);
@@ -238,7 +257,8 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 .copybtn { position: absolute; top: 6px; right: 6px; }
 .readbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .readnav { display: flex; justify-content: space-between; gap: 8px;
-  margin-top: 32px; }
+  margin-top: 32px; flex-wrap: wrap; }
+.readnav .btn { flex: 1 1 200px; text-align: center; }
 .readnav2 { display: flex; gap: 16px; margin-top: 8px; }
 .reader.focus .topbar, .reader.focus .strip, .reader.focus .bottomnav {
   display: none; }
@@ -246,9 +266,11 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
   border-left-width: 4px; border-radius: 8px; padding: 8px 12px;
   margin: 12px 0; }
 .outline { margin: 12px 0; }
-.pdfframe { width: 100%; height: 75vh; border: 1px solid var(--t-line);
+.pdfframe { width: 100%; height: 75vh; height: 75dvh;
+  min-height: 420px; border: 1px solid var(--t-line);
   border-radius: var(--t-radius); }
-.pdfbar { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.pdfbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 8px; }
 .shots { display: grid; grid-template-columns: repeat(auto-fill,
   minmax(160px, 1fr)); gap: 8px; }
 .shots img { width: 100%; height: auto; border: 1px solid var(--t-line);
