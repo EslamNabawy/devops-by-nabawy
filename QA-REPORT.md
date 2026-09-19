@@ -140,3 +140,4 @@ Fixed hash-router current-state getter so direct file:// loads and hash navigati
 ## P12 + P05 (2026-09-19)
 
 Archive reader gains Archive/track/work breadcrumb, Back to Archive, cached-local + bundle size, attached lab-guide card, lab step checklist with Alt+J next-step, and from=archive preserved across outline/prev/next. External courses gain #/course/<id> view (sandbox state, blocked-embed note, HTTPS check, real track syllabus, cached snapshots, finish toggle), linked from track pages. qa/qa-reader.mjs extended; all checks green.
+Course view (#/course/ext-terraform) passes axe serious/critical; live root URL serves.

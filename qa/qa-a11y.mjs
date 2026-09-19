@@ -10,7 +10,8 @@ const axeSource = require('fs').readFileSync(
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const index = 'file:///' + path.join(root, 'index.html').replace(/\\/g, '/');
-const views = ['#/', '#/roadmap', '#/archive', '#/about', '#/track/docker'];
+const views = ['#/', '#/roadmap', '#/archive', '#/about', '#/track/docker',
+  '#/course/ext-terraform'];
 let fail = 0;
 
 const browser = await chromium.launch();
