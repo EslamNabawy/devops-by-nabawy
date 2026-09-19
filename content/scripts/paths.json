@@ -1,0 +1,46 @@
+{
+  "order": [
+    "start-here",
+    "build",
+    "deliver",
+    "observability",
+    "jenkins",
+    "platforms",
+    "labs",
+    "reference"
+  ],
+  "paths": {
+    "start-here": {
+      "label": "Start Here",
+      "desc": "Foundations first, then Git flow that feeds CI."
+    },
+    "build": {
+      "label": "Build, Test & Artifacts",
+      "desc": "Trigger to versioned artifact: pipelines, hermetic builds, pyramid tests, signed SBOM output."
+    },
+    "deliver": {
+      "label": "Deliver & Operate",
+      "desc": "Releasable always, deployed by decision, watched in production. Strategies, envs, SLOs, recovery."
+    },
+    "observability": {
+      "label": "Observability",
+      "desc": "See inside production: Loki logs, Prometheus metrics, Grafana dashboards."
+    },
+    "jenkins": {
+      "label": "Jenkins Complete",
+      "desc": "Controller schedules, agents execute — setup to hardening in one book."
+    },
+    "platforms": {
+      "label": "Platforms & Roadmaps",
+      "desc": "GitHub Actions, GitLab, ArgoCD GitOps — and the 2026 platform choice."
+    },
+    "labs": {
+      "label": "Hands-on Labs",
+      "desc": "Do it: pipeline to rollback to Jenkins live to DR. Thin end-to-end slice first, then depth."
+    },
+    "reference": {
+      "label": "Reference",
+      "desc": "Cheatsheet, quick lookups."
+    }
+  }
+}

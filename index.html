@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system" data-density="comfortable" data-reading="1" data-motion="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevOps By Nabawy</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/site.css?v=5c16fc4d">
+<script>
+try {
+  var s = JSON.parse(localStorage.getItem("nti.v1.settings") || "{}");
+  var h = document.documentElement;
+  if (s.theme) h.setAttribute("data-theme", s.theme);
+  if (s.density) h.setAttribute("data-density", s.density);
+  if (typeof s.readingSize !== "undefined") h.setAttribute("data-reading", String(s.readingSize));
+  if (s.reduceMotion) h.setAttribute("data-motion", s.reduceMotion);
+} catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div style="display:none" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" style="display:none"><!-- Lucide subset sprite inlined at build. --></svg>
+</div>
+<div id="app"></div>
+<main id="main"></main>
+<div id="live" class="sr-only" aria-live="polite"></div>
+<script defer src="assets/vendor/preact-htm.umd.js?v=5c16fc4d"></script>
+<script defer src="assets/vendor/minisearch.umd.js?v=5c16fc4d"></script>
+<script defer src="content/catalog.js?v=5c16fc4d"></script>
+<script defer src="content/search-index.js?v=5c16fc4d"></script>
+<script defer src="assets/app.js?v=5c16fc4d"></script>
+</body>
+</html>

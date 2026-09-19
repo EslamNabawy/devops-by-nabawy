@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["jenkins-069-pdf-22-build-systems"]={"html":"\r\n\r\n\r\n\r\n\r\nCI/CD Engineering — PDF 22: Build Systems\r\n","toc":[],"words":292,"assets":[]};

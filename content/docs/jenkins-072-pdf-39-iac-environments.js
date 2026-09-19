@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["jenkins-072-pdf-39-iac-environments"]={"html":"\r\n\r\n\r\n\r\n\r\nCI/CD Engineering — PDF 39: IaC for Environments\r\n","toc":[],"words":280,"assets":[]};

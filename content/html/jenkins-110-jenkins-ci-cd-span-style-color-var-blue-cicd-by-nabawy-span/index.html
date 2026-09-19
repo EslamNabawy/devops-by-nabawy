@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jenkins CI/CD Evidence — cicd-by-nabawy #9 SUCCESS</title>
+<style>
+:root { color-scheme: dark; --bg:#0b1220; --card:#132034; --border:#24364f; --muted:#8ea3c0; --green:#22c55e; --blue:#38bdf8; }
+* { box-sizing:border-box; }
+body { margin:0; font:14px/1.5 'Segoe UI',system-ui,Arial; background:var(--bg); color:#e2ecf7; }
+.wrap { max-width:1100px; margin:0 auto; padding:28px 20px 40px; }
+h1 { margin:0; font-size:26px; letter-spacing:-0.02em; }
+.sub { color:var(--muted); margin-top:4px; }
+.banner { margin:18px 0; padding:16px 18px; border:1px solid #1b8a4a; background:#0f2a1c; border-radius:12px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+.badge { background:var(--green); color:#052e16; font-weight:800; padding:6px 10px; border-radius:999px; font-size:13px; }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:16px 0; }
+@media(max-width:900px){ .grid{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:520px){ .grid{grid-template-columns:1fr;} }
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+.value { margin-top:6px; font-weight:700; font-size:15px; word-break:break-word; }
+.value small { font-weight:400; color:var(--muted); }
+.stages { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin:14px 0; }
+@media(max-width:800px){ .stages{grid-template-columns:repeat(3,1fr);} }
+.stage { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.stage.ok { border-color:#1b8a4a; }
+.stage .dot { width:10px; height:10px; border-radius:50%; background:var(--green); display:inline-block; margin-right:6px; }
+pre { background:#08101c; border:1px solid var(--border); border-radius:10px; padding:14px; overflow:auto; font:13px/1.5 Consolas,monospace; color:#cfe0f7; }
+.kv { display:grid; grid-template-columns:180px 1fr; gap:8px; font-size:13px; }
+.kv b { color:var(--muted); font-weight:600; }
+a { color:var(--blue); text-decoration:none; }
+a:hover{ text-decoration:underline; }
+.hr { height:1px; background:var(--border); margin:18px 0; }
+.tip { background:#1a2a44; border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Jenkins CI/CD — <span style="color:var(--blue)">cicd-by-nabawy</span></h1>
+  <div class="sub">GitHub push → Jenkins → Docker build → health → Docker Hub push &nbsp;•&nbsp; Build <b>#9 SUCCESS</b> &nbsp;•&nbsp; 2026-09-13 23:48 UTC</div>
+
+  <div class="banner">
+    <span class="badge">✓ SUCCESS #9</span>
+    <div>
+      <div style="font-weight:700;">Triggered by GitHub push by EslamNabawy</div>
+      <div style="color:#9edbb8; font-size:13px;">Commit 034f4d2 “Verify dockerhub-credentials push” — refs/remotes/origin/main</div>
+    </div>
+    <span style="margin-left:auto; color:var(--muted); font-size:13px;">Duration 24.2s</span>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="label">Branch</div><div class="value">main <small>→ production</small></div></div>
+    <div class="card"><div class="label">Image</div><div class="value">eslamnabawy/node-multi-branch:main</div></div>
+    <div class="card"><div class="label">Health</div><div class="value" style="color:var(--green)">healthy ✓</div><div style="color:var(--muted); font-size:12px;">host.docker.internal:3000/health</div></div>
+    <div class="card"><div class="label">Docker Hub</div><div class="value" style="color:var(--green)">Pushed ✓</div><div style="color:var(--muted); font-size:12px;">sha256:833c98… 23:49 UTC</div></div>
+  </div>
+
+  <h3 style="margin:18px 0 8px;">Stages</h3>
+  <div class="stages">
+    <div class="stage ok"><span class="dot"></span>Checkout SCM<br><small style="color:var(--muted)">success</small></div>
+    <div class="stage ok"><span class="dot"></span>Checkout<br><small style="color:var(--muted)">success</small></div>
+    <div class="stage ok"><span class="dot"></span>Setup Env<br><small style="color:var(--muted)">success</small></div>
+    <div class="stage ok"><span class="dot"></span>Build Image<br><small style="color:var(--muted)">1.4s</small></div>
+    <div class="stage ok"><span class="dot"></span>Test Image<br><small style="color:var(--muted)">7.2s ✓ host.docker.internal</small></div>
+    <div class="stage ok"><span class="dot"></span>Push Image<br><small style="color:var(--muted)">11.7s ✓ docker.io</small></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="card"><div class="label">Jenkins URL</div><div class="value"><a href="http://localhost:8080/job/cicd-by-nabawy/9/">localhost:8080/job/cicd-by-nabawy/9/</a></div></div>
+    <div class="card"><div class="label">GitHub repo</div><div class="value"><a href="https://github.com/EslamNabawy/cicd-by-nabawy-source">EslamNabawy/cicd-by-nabawy-source</a></div></div>
+    <div class="card"><div class="label">Docker Hub</div><div class="value"><a href="https://hub.docker.com/r/eslamnabawy/node-multi-branch/tags">eslamnabawy/node-multi-branch:main</a></div></div>
+  </div>
+
+  <div class="kv" style="margin-top:14px;">
+    <b>Webhook URL</b><span>https://jaybird-rare-mastiff.ngrok-free.dev/github-webhook/ → 200 OK (ngrok 3.39.11, :4041)</span>
+    <b>Docker CLI</b><span>/usr/local/bin/docker 29.8.0 (also /usr/bin/docker) — Jenkins user in root group</span>
+    <b>Git remote</b><span>https://github.com/EslamNabawy/cicd-by-nabawy-source.git (token removed ✓)</span>
+    <b>Credentials</b><span>dockerhub-credentials (UsernamePassword, eslamnabawy) ✓</span>
+  </div>
+
+  <div class="hr"></div>
+  <h3>Console excerpt (build #9)</h3>
+  <pre>Started by GitHub push by EslamNabawy
+Obtained Jenkinsfile from git https://github.com/EslamNabawy/cicd-by-nabawy-source.git
+Checking out Revision 034f4d25dedd28b3c9bc89bce26b927c56828113 (refs/remotes/origin/main)
+Branch=main → Image=eslamnabawy/node-multi-branch:main → Env=production
++ /usr/local/bin/docker build -t eslamnabawy/node-multi-branch:main .
+#10 naming to docker.io/eslamnabawy/node-multi-branch:main done
++ curl -sf http://host.docker.internal:3000/health
+{"status":"healthy","branch":"main"}
+Health check PASSED (attempt 1)
++ /usr/local/bin/docker push eslamnabawy/node-multi-branch:main
+4ed641374f15: Pushed
+9ec66aa769ef: Pushed
+Pushed: eslamnabawy/node-multi-branch:main (eslamnabawy/node-multi-branch:main)
+Finished: SUCCESS</pre>
+
+  <div class="tip">💡 Screenshot tip: Right-click this preview → “Take screenshot” / “Save as image”. For mobile, open on phone: <code>http://&lt;your-ip&gt;:8080/job/cicd-by-nabawy/9/</code>. All stages green — ready for presentation.</div>
+</div>
+</body>
+</html>

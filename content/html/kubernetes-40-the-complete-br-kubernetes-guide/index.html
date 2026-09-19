@@ -1,0 +1,1323 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>The Complete Kubernetes Guide — Architecture · Namespaces · Workloads · Networking · Labs</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+/* FIX: fixed height (not min-height) → a .page div can NEVER spill onto a ghost printed page */
+.page{width:210mm; height:297mm; background:#fff; margin:9mm auto; padding:13mm 14mm 17mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 14px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:14px 0 8px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.55; margin:0 0 10px;}
+p.small,li{font-size:12.5px; line-height:1.5; margin:4px 0;}
+.callout{border-radius:12px; padding:10px 13px; margin:11px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.6px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.co-ok{background:#ecfdf5; border:1.5px solid #6ee7b7;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:10px 13px; margin:11px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:10px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:12px; margin:12px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:8px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:11px 14px; font:12px/1.65 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:12px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.55;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:12px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.7 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:14px 17px; border-radius:14px; white-space:pre; margin:12px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.1px; border:1px solid var(--line); margin:12px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:7px 10px; text-align:left; font-size:11.8px;}
+.tb td{padding:6.5px 10px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:12px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:5px 0;}
+ul.tick li{padding:3px 0 3px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.lgd{display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:8px;}
+.lgd div{display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600; color:#334155;}
+.dot8{width:12px; height:12px; border-radius:4px; display:inline-block;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-crea{background:#dbeafe; color:#1e40af; border:1.5px solid #93c5fd;}
+.st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:8px 11px; margin:8px 0; background:#fff; font-size:11.6px; line-height:1.48;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:5px 9px; font-size:11.1px; line-height:1.4; margin:5px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.7 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:11px 13px; margin:10px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.bar-gauge{height:16px; border-radius:8px; overflow:hidden; display:flex; background:#e2e8f0; font-size:9.5px; color:#fff; font-weight:800;}
+.bar-gauge div{display:flex; align-items:center; justify-content:center;}
+.road{position:relative; margin:12px 0 4px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 9px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:8px 12px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+/* unified hook link — replaces all hand-typed inline styles */
+a.hook{color:#326CE5; font-weight:700; text-decoration:none; border-bottom:2px dotted #326CE5;}
+a.hook:hover{background:#eff6ff;}
+/* inline code — was MISSING before (the "different style" on the intro page) */
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#toc h3.sec{margin:10px 0 6px}
+#toc .callout,#toc .cka{margin:7px 0;padding:8px 11px}
+#toc .term,#toc .mtree,#toc table.tb{margin:8px 0}
+#toc .term,#toc .mtree{padding:9px 12px}
+#toc p.lead{margin:0 0 7px}
+#toc .grid2,#toc .grid3{margin:8px 0;gap:10px}
+#toc .card,#toc .zone,#toc .labstep{padding:9px 11px}
+#toc .qz{margin:6px 0;padding:6px 9px}
+#toc .gl{margin:3px 0;padding:4px 8px}
+#toc .rowc{margin:7px 0}
+#ch00 h3.sec{margin:10px 0 6px}
+#ch00 .callout,#ch00 .cka{margin:7px 0;padding:8px 11px}
+#ch00 .term,#ch00 .mtree,#ch00 table.tb{margin:8px 0}
+#ch00 .term,#ch00 .mtree{padding:9px 12px}
+#ch00 p.lead{margin:0 0 7px}
+#ch00 .grid2,#ch00 .grid3{margin:8px 0;gap:10px}
+#ch00 .card,#ch00 .zone,#ch00 .labstep{padding:9px 11px}
+#ch00 .qz{margin:6px 0;padding:6px 9px}
+#ch00 .gl{margin:3px 0;padding:4px 8px}
+#ch00 .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#toc p.small,#toc li{font-size:12.2px;line-height:1.42}
+#toc .callout,#toc .cka{font-size:12.2px;line-height:1.44}
+#toc .qz{font-size:11.3px;line-height:1.42}
+#toc .gl{font-size:10.8px;line-height:1.36}
+#toc .term{font-size:11.6px;line-height:1.55}
+#toc .mtree{font-size:11.8px;line-height:1.6}
+#toc table.tb{font-size:11.7px} #toc .tb td{padding:5px 8px}
+#ch00 p.small,#ch00 li{font-size:12.2px;line-height:1.42}
+#ch00 .callout,#ch00 .cka{font-size:12.2px;line-height:1.44}
+#ch00 .qz{font-size:11.3px;line-height:1.42}
+#ch00 .gl{font-size:10.8px;line-height:1.36}
+#ch00 .term{font-size:11.6px;line-height:1.55}
+#ch00 .mtree{font-size:11.8px;line-height:1.6}
+#ch00 table.tb{font-size:11.7px} #ch00 .tb td{padding:5px 8px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">☸️</div>
+<h1>THE COMPLETE<br>KUBERNETES GUIDE</h1>
+<div class="sub">Architecture · Namespaces · Workloads · Networking · Labs — one coherent volume, deduplicated and rebuilt from MASTER + k8s 2/k8a. The brain, the muscle, the apartments, the traffic — and the hands-on labs that prove it.</div>
+<div class="row">
+<div class="glass">🚪 API Server<small>the front door</small></div>
+<div class="glass">💾 etcd<small>cluster memory</small></div>
+<div class="glass">🎯 Scheduler<small>placement</small></div>
+<div class="glass">🔄 Controllers<small>reconcile</small></div>
+</div>
+<div class="row">
+<div class="glass">👷 kubelet<small>node agent</small></div>
+<div class="glass">⚙️ Runtime<small>runs containers</small></div>
+<div class="glass">🌐 kube-proxy<small>service networking</small></div>
+<div class="glass">🫛 Pods<small>your apps</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 01 · DEDUPED &amp; COMPLETE · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">8 parts · 39 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part 0 · Orientation</div>
+<a class="tocrow" href="#ch00"><span class="cb"></span><span class="tnum">CH 00</span>What is Kubernetes?<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch00b"><span class="cb"></span><span class="tnum">CH 00·b</span>What is Kubernetes? (cont.)<span class="dots"></span><span class="tp">p.4</span></a>
+<div class="tocpart">Part I · The Cluster</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>What is a Kubernetes Cluster?<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>The Control Plane (Master)<span class="dots"></span><span class="tp">p.5</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>The Worker Node<span class="dots"></span><span class="tp">p.6</span></a>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>How Master &amp; Worker Communicate<span class="dots"></span><span class="tp">p.7</span></a>
+<div class="tocpart">Part II · See It Work</div>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Walkthrough — Deploying nginx<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Self-Healing — When a Worker Dies<span class="dots"></span><span class="tp">p.9</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Can the Control Plane also be a Worker?<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>Master : Worker Ratio &amp; etcd Quorum<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>The Diagram Map + Learning Roadmap<span class="dots"></span><span class="tp">p.12</span></a>
+<div class="tocpart">Part III · Namespaces</div>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>Namespaces — The Big Idea<span class="dots"></span><span class="tp">p.13</span></a>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>Names Are Scoped + The Three Superpowers<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#ch12"><span class="cb"></span><span class="tnum">CH 12</span>Service DNS + Default Namespaces<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#ch13"><span class="cb"></span><span class="tnum">CH 13</span>The Complete Namespace Picture<span class="dots"></span><span class="tp">p.16</span></a>
+<div class="tocpart">Part IV · Workloads</div>
+<a class="tocrow" href="#ch14"><span class="cb"></span><span class="tnum">CH 14</span>ReplicaSet — What Is It?<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#ch15"><span class="cb"></span><span class="tnum">CH 15</span>Labels, Death &amp; Why Deployment<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#ch16"><span class="cb"></span><span class="tnum">CH 16</span>The Pod Lifecycle — Owned vs Standalone<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#ch17"><span class="cb"></span><span class="tnum">CH 17</span>kubectl — The Command Map<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#ch18"><span class="cb"></span><span class="tnum">CH 18</span>Pod Deep Dive<span class="dots"></span><span class="tp">p.21</span></a>
+<a class="tocrow" href="#ch19"><span class="cb"></span><span class="tnum">CH 19</span>Multi-Container Pods<span class="dots"></span><span class="tp">p.22</span></a>
+<a class="tocrow" href="#ch20"><span class="cb"></span><span class="tnum">CH 20</span>Deployment — Rolling Updates<span class="dots"></span><span class="tp">p.23</span></a>
+<a class="tocrow" href="#ch21"><span class="cb"></span><span class="tnum">CH 21</span>Rollout Commands<span class="dots"></span><span class="tp">p.24</span></a>
+<div class="tocpart">Part V · YAML &amp; Debugging</div>
+<a class="tocrow" href="#ch22"><span class="cb"></span><span class="tnum">CH 22</span>YAML Anatomy — The Two Specs<span class="dots"></span><span class="tp">p.25</span></a>
+<a class="tocrow" href="#ch23"><span class="cb"></span><span class="tnum">CH 23</span>Debugging 1 — Reading Pod States<span class="dots"></span><span class="tp">p.26</span></a>
+<a class="tocrow" href="#ch24"><span class="cb"></span><span class="tnum">CH 24</span>Debugging 2 — The Toolbox<span class="dots"></span><span class="tp">p.27</span></a>
+
+</div>
+<div class="lgd">
+<div><span class="dot8" style="background:#326CE5"></span>API Server</div><div><span class="dot8" style="background:#6366f1"></span>etcd</div>
+<div><span class="dot8" style="background:#8b5cf6"></span>Scheduler</div><div><span class="dot8" style="background:#10b981"></span>Controllers</div>
+<div><span class="dot8" style="background:#f59e0b"></span>kubelet</div><div><span class="dot8" style="background:#06b6d4"></span>Runtime</div>
+<div><span class="dot8" style="background:#0ea5e9"></span>kube-proxy</div><div><span class="dot8" style="background:#3b82f6"></span>Namespace</div>
+<div><span class="dot8" style="background:#f43f5e"></span>Secret</div><div><span class="dot8" style="background:#ec4899"></span>Pod</div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>How to read this book:</b> one spine — <b>User → kubectl → API Server → Admission → Scheduler → Node → kubelet → Runtime</b>. Part 0 orients you, I–II build the picture, III–VI add the depth, VII proves it with your hands, VIII makes it stick.</div></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span>◀ cover · start · <a href="#tocb">contents ▶</a></span><span>Page 2</span></div>
+</div>
+
+<!-- TOC continued -->
+<div class="page" id="tocb"><div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — continued</h2><span class="dbadge">Parts VI–VIII</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part VI · Services &amp; Networking</div>
+<a class="tocrow" href="#ch25"><span class="cb"></span><span class="tnum">CH 25</span>NodePort — The Side Entrance<span class="dots"></span><span class="tp">p.28</span></a>
+<a class="tocrow" href="#ch26"><span class="cb"></span><span class="tnum">CH 26</span>Service Networking — The Virtual IP<span class="dots"></span><span class="tp">p.29</span></a>
+<a class="tocrow" href="#ch27"><span class="cb"></span><span class="tnum">CH 27</span>kube-proxy's Real Job<span class="dots"></span><span class="tp">p.30</span></a>
+<a class="tocrow" href="#ch28"><span class="cb"></span><span class="tnum">CH 28</span>Following ONE Packet — 6 Steps<span class="dots"></span><span class="tp">p.31</span></a>
+<div class="tocpart">Part VII · Labs</div>
+<a class="tocrow" href="#ch29"><span class="cb"></span><span class="tnum">LAB 1</span>Observe vs Control<span class="dots"></span><span class="tp">p.32</span></a>
+<a class="tocrow" href="#ch30"><span class="cb"></span><span class="tnum">LAB 2</span>Scale &amp; Self-Healing<span class="dots"></span><span class="tp">p.33</span></a>
+<a class="tocrow" href="#ch31"><span class="cb"></span><span class="tnum">LAB 3</span>Namespaces<span class="dots"></span><span class="tp">p.34</span></a>
+<a class="tocrow" href="#ch32"><span class="cb"></span><span class="tnum">LAB 4</span>Rollout &amp; Rollback<span class="dots"></span><span class="tp">p.35</span></a>
+<a class="tocrow" href="#ch33"><span class="cb"></span><span class="tnum">LAB 5</span>Taints &amp; Tolerations<span class="dots"></span><span class="tp">p.36</span></a>
+<div class="tocpart">Part VIII · Prove It</div>
+<a class="tocrow" href="#ch34"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.37</span></a>
+<a class="tocrow" href="#ch35"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.38</span></a>
+<a class="tocrow" href="#ch36"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.39</span></a>
+<a class="tocrow" href="#ch37"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.40</span></a>
+<a class="tocrow" href="#ch38"><span class="cb"></span><span class="tnum">FINALE</span>The Map You Can Draw From Memory<span class="dots"></span><span class="tp">p.41</span></a>
+</div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#toc">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch00">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH00 INTRO ═══ -->
+<div class="page" id="ch00"><div class="pghead"><span class="chip">CH 00</span><h2 class="t">☸️ What is Kubernetes?</h2><span class="dbadge">🟢 5 MIN · START HERE</span></div>
+<p class="lead"><b>Kubernetes</b> is an open-source <b>container orchestrator</b>: it takes the containers you define and — across a fleet of machines — <b>deploys them, scales them, heals them, connects them, and updates them without downtime</b>. You describe what you want. It makes reality match. Forever.</p>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #326CE5;"><div style="font-size:24px;">📜</div><p class="small"><b>The Name</b><br>Greek <i>κυβερνήτης</i> (kybernetes) = <b>helmsman</b> — the one who steers the ship. Hence the wheel logo ☸️ (and the word <i>cybernetics</i>).</p></div>
+<div class="card center" style="border-top:3.5px solid #6366f1;"><div style="font-size:24px;">🔢</div><p class="small"><b>k8s</b><br>Programmer shorthand: <b>K</b> + the 8 letters in between + <b>s</b>. Pronounced "K-eights" — you'll read it a hundred times a day.</p></div>
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:24px;">🧬</div><p class="small"><b>Lineage</b><br>Born at Google from <b>Borg</b> (its internal cluster manager, ~2003) → open-sourced <b>2014</b> → donated to the <b>CNCF</b> with v1.0 in <b>2015</b>. Written in Go.</p></div>
+</div>
+<h3 class="sec">🤔 The problem it solves — running ONE container is easy; running a fleet is not</h3>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;">
+<div class="zlabel" style="text-align:left;">😩 Without an orchestrator</div>
+<ul class="tick" style="margin:0;">
+<li>💀 A container crashes at 3am → <b>you</b> restart it</li>
+<li>🗺️ Ten machines free — which one takes the new app? <b>you</b> decide</li>
+<li>🕸️ 40 containers need to find each other → hand-written configs</li>
+<li>🎞️ Upgrade from v1 to v2 → downtime, or a hand-rolled script</li>
+<li>📈 Black Friday? Log in and start containers <b>manually</b></li>
+</ul>
+</div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">☸️ With Kubernetes</div>
+<ul class="tick" style="margin:0;">
+<li>🔄 Crash → <b>replaced automatically</b> (reconciliation — CH 06)</li>
+<li>🎯 New app → the <b>Scheduler</b> picks the best node (CH 02)</li>
+<li>🧭 Containers find each other via <b>DNS + Services</b> (CH 12, 26)</li>
+<li>🎬 Upgrades roll out with <b>zero downtime</b> + one-command undo (CH 20–21)</li>
+<li>📈 Scaling = <b>change one number</b> (Lab 2)</li>
+</ul>
+</div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The core idea — declarative, not imperative:</b> you don't write steps ("<i>start container, then check, then restart…</i>"). You declare a <b>wish</b> ("<i>3 replicas of nginx</i>") and Kubernetes runs a permanent <b>reconciliation loop</b>: watch actual → compare to desired → act. This one idea is the engine behind self-healing, scaling, and rollouts — and it returns on almost every page of this book.</div></div>
+<h3 class="sec">🎁 What's in the box</h3>
+<div class="rowc">
+<div class="kchip">🔄 Self-healing<small>&nbsp;restarts · replaces</small></div>
+<div class="kchip">📏 Scaling<small>&nbsp;one command</small></div>
+<div class="kchip">🎬 Rollouts + rollback<small>&nbsp;zero downtime</small></div>
+<div class="kchip">🧭 Service discovery + LB<small>&nbsp;built-in DNS</small></div>
+<div class="kchip">🔐 Config &amp; Secrets<small>&nbsp;injected, not baked</small></div>
+<div class="kchip">🗄️ Storage orchestration<small>&nbsp;PVC/PV</small></div>
+</div>
+<p class="small" style="color:#64748b;">Industry gravity: every major cloud runs it as a service — <b>GKE</b> (Google) · <b>EKS</b> (AWS) · <b>AKS</b> (Azure) — and it's the CNCF's first graduated project. Learning Kubernetes is learning the <i>operating system of the cloud</i>.</p>
+
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#toc">▤ TOC</a> · <a href="#ch01">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- CH00 continued -->
+<div class="page" id="ch00b"><div class="pghead"><span class="chip">CH 00</span><h2 class="t">☸️ What is Kubernetes? — continued</h2><span class="dbadge">🟢 5 MIN · START HERE</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>What Kubernetes is NOT:</b> not a programming language · not a PaaS (it ships <i>building blocks</i>, not opinions) · not a container <b>builder</b> (Docker/CI build images — k8s <i>runs</i> them) · not a runtime itself (it drives one — containerd, CRI-O, CH 03) · not a monitoring system (Prometheus &amp; friends watch it). It's the <b>orchestra conductor</b> 🎻 — it doesn't play a single instrument, but nothing plays without it.</div></div>
+<div class="callout co-fun"><span class="ico">🏺</span><div><b>Heritage flex:</b> Kubernetes didn't invent containers or orchestration — Google had been running <b>billions of containers a week</b> on Borg for a decade. Kubernetes is what happened when they distilled that war story into an open-source project the rest of the world could use. You're learning fifteen years of production scars, organized into an API.</div></div>
+<div class="cka"><span class="ico">🎓</span><div><b>Exam / interview tip:</b> "What is Kubernetes?" has a canonical two-beat answer — <b>(1) an open-source container orchestrator, (2) declarative</b>: you declare desired state, it continuously reconciles reality toward it. Add "descended from Google's Borg" for bonus credibility.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ So what does it physically <i>look like</i>? Machines split into a brain and muscle — <a class="hook" href="#ch01">Chapter 1: What is a Kubernetes Cluster?</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch00">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch01">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">☸️ What is a Kubernetes Cluster?</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">A <b>cluster</b> is a collection of machines working together to run your applications. It has exactly two halves:</p>
+<div class="rowc" style="margin-top:6px;"><div class="nb c-navy" style="min-width:240px;">☸️ KUBERNETES CLUSTER<small>the whole herd</small></div></div>
+<div class="stem"></div><div class="barwrap"><div class="hbar bar2"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="zone zone-cp" style="width:100%;"><div class="zlabel">🧠 Control Plane <span style="opacity:.6">(Master)</span></div><div class="nb c-indigo">CONTROL PLANE<small>Makes decisions</small></div></div></div>
+<div class="col"><div class="stub"></div><div class="zone zone-wk" style="width:100%;"><div class="zlabel">💪 Worker Nodes</div><div class="nb c-emerald">WORKER NODES<small>Run applications</small></div></div></div>
+</div>
+<h3 class="sec">🧠 + 💪 Think of it as:</h3>
+<div class="grid3">
+<div class="think center"><div style="font-size:26px;">🧠</div><b>Master = Brain</b><br><span class="small" style="color:#64748b;">Thinks, decides, remembers</span></div>
+<div class="think center"><div style="font-size:26px;">💪</div><b>Worker = Muscle</b><br><span class="small" style="color:#64748b;">Lifts, runs, executes</span></div>
+<div class="think center"><div style="font-size:26px;">☸️</div><b>Cluster = Both</b><br><span class="small" style="color:#64748b;">Brain + muscle together</span></div>
+</div>
+<div class="callout co-fun"><span class="ico">🏺</span><div>The modern terminology is <b>Control Plane</b>, not "Master". You'll still see <i>master</i> everywhere — because computer science terminology apparently enjoys <b>archaeological preservation</b>. 🏺</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence to remember:</b> Cluster = Control Plane + Worker Nodes. The Control Plane <b>manages</b>. The Workers <b>execute</b>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">🧠 The Control Plane (Master)</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The Control Plane <b>controls the cluster</b>. It does <b>not</b> normally run your application workloads. Its job:</p>
+<div class="rowc">
+<div class="kchip">📥 Receive requests</div><div class="kchip">💾 Store cluster information</div><div class="kchip">🎯 Decide where Pods should run</div><div class="kchip">👀 Monitor the cluster</div><div class="kchip">✅ Maintain the desired state</div>
+</div>
+<h3 class="sec">🧩 Inside the Control Plane</h3>
+<div class="zone zone-cp">
+<div class="zlabel">🧠 Control Plane</div>
+<div class="rowc"><div class="nb c-blue" style="min-width:190px;">API Server 🚪</div></div>
+<div class="stem"></div><div class="barwrap"><div class="hbar" style="width:66.7%"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="nb c-amber" style="width:100%;">Scheduler 🎯</div></div>
+<div class="col"><div class="stub"></div><div class="nb c-teal" style="width:100%;">Controllers 🔄</div></div>
+</div>
+<div class="stem" style="margin-top:4px;"></div>
+<div class="rowc"><div class="nb c-violet" style="min-width:150px;">etcd 💾</div></div>
+</div>
+<h3 class="sec">🧪 Example — you tell Kubernetes:</h3>
+<div class="term" style="margin-top:0;"><span class="c">replicas</span>: <span class="y">3</span></div>
+<p class="small" style="margin:8px 0 4px;">The Control Plane then figures out:</p>
+<ul class="tick">
+<li>🧮 <span>"I need <b>3 Pods</b>."</span></li>
+<li>🗺️ <span>"<b>Where</b> should they run?"</span></li>
+<li>👀 <span>"Are they <b>actually</b> running?"</span></li>
+<li>💀 <span>"Did one <b>die</b>?"</span></li>
+<li>🔁 <span>"Do I need to <b>create another</b>?"</span></li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The four components, one line each:</b> <b>API Server</b> = the only door 🚪 · <b>etcd</b> = the memory 💾 · <b>Scheduler</b> = the placement officer 🎯 · <b>Controllers</b> = the watchdogs 🔄. Everything else in the cluster talks <i>through</i> the door.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">💪 The Worker Node</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A Worker Node is a machine that <b>actually runs your application workloads</b>.</p>
+<h3 class="sec">🫛 Pods on a Worker</h3>
+<div class="zone zone-wk" style="max-width:150mm;margin:0 auto;">
+<div class="zlabel">💪 Worker Node</div>
+<div class="stem"></div><div class="barwrap"><div class="hbar bar3"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="pod">🫛 Pod 1</div><div class="stem"></div><div class="nb c-slate" style="min-width:100px;">📦 Container</div></div>
+<div class="col"><div class="stub"></div><div class="pod">🫛 Pod 2</div><div class="stem"></div><div class="nb c-slate" style="min-width:100px;">📦 Container</div></div>
+<div class="col"><div class="stub"></div><div class="pod">🫛 Pod 3</div><div class="stem"></div><div class="nb c-slate" style="min-width:100px;">📦 Container</div></div>
+</div>
+</div>
+<h3 class="sec">🧰 What's inside a typical Worker Node</h3>
+<div class="mtree" style="font-size:12px;">WORKER NODE 💪
+├── <u>kubelet</u> 👷 the node agent
+├── <u>container runtime</u> ⚙️ runs containers
+├── <u>kube-proxy</u> 🌐 service networking
+└── <u>Pods</u> 🫛 your applications</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The important idea:</b> the Worker is <b>where your application actually executes</b>. The brain thinks — the muscle lifts.</div></div>
+<table class="tb">
+<tr><th>Component</th><th>Job</th><th>Vibe</th></tr>
+<tr><td><b>kubelet</b></td><td>Manages Pods on this node, reports to the API Server</td><td>👷 Node agent</td></tr>
+<tr><td><b>Container Runtime</b></td><td>Pulls images &amp; runs containers (containerd, CRI-O)</td><td>⚙️ Engine</td></tr>
+<tr><td><b>kube-proxy</b></td><td>Programs Service networking rules on this node</td><td>🌐 Network helper</td></tr>
+<tr><td><b>Pods</b></td><td>Host your containers</td><td>🫛 Application unit</td></tr>
+</table>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">📡 How Master &amp; Worker Communicate</h2><span class="dbadge">🟡 5 MIN · CORE</span></div>
+<p class="lead">This is important. The main communication path is the <b>API Server</b> — one door, everything walks through it.</p>
+<div class="rowc">
+<div class="nb c-indigo" style="min-width:170px;">🧠 Control Plane<small>API Server 🚪</small></div>
+<span class="harr">──►</span>
+<div class="nb c-emerald">Worker 1<small>kubelet</small></div>
+<div class="nb c-emerald">Worker 2<small>kubelet</small></div>
+<div class="nb c-emerald">Worker 3<small>kubelet</small></div>
+</div>
+<div class="dn">▼ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼</div>
+<div class="rowc" style="margin-top:-2px;"><div class="pod">🫛 Pods</div><div class="pod">🫛 Pods</div><div class="pod">🫛 Pods</div></div>
+<div class="callout co-key"><span class="ico">📞</span><div>The <b>kubelet</b> on each worker talks only to the <b>API Server</b>. No worker ever talks to etcd, the Scheduler, or the Controllers directly — everything goes through the front door. 🚪</div></div>
+<table class="tb">
+<tr><th>Who</th><th>Talks to</th><th>Why</th></tr>
+<tr><td><b>kubectl (you)</b></td><td>API Server</td><td>Submit/read everything</td></tr>
+<tr><td><b>kubelet</b></td><td>API Server</td><td>Get assigned Pods · report status</td></tr>
+<tr><td><b>Scheduler</b></td><td>API Server</td><td>Watch unscheduled Pods · write its decisions</td></tr>
+<tr><td><b>Controllers</b></td><td>API Server</td><td>Watch actual state · drive it toward desired</td></tr>
+<tr><td><b>API Server</b></td><td><b>etcd</b></td><td>The <i>only</i> component that touches the memory 💾</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why this design wins:</b> one door = one place for authentication, authorization, and audit. Watch anything, change anything — always through the API.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🚀 Walkthrough — Deploying nginx</h2><span class="dbadge">🟢 5 MIN</span></div>
+<p class="lead">Imagine a cluster with <b>1 Control Plane</b> and <b>3 Workers</b>:</p>
+<div class="rowc" style="margin-bottom:10px;">
+<div class="nb c-indigo" style="min-width:150px;">🧠 Control Plane<small>192.168.1.10</small></div>
+<span class="harr">──►</span>
+<div class="nb c-emerald">Worker 1<small>.11</small></div>
+<div class="nb c-emerald">Worker 2<small>.12</small></div>
+<div class="nb c-emerald">Worker 3<small>.13</small></div>
+</div>
+<p class="small" style="margin:0 0 6px;">You run:</p>
+<div class="termbar"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#34d399"></span></div>
+<div class="term tbr"><span class="p">$</span> kubectl create deployment nginx <span class="y">--image</span>=nginx <span class="y">--replicas</span>=3
+<span class="g">deployment.apps/nginx created</span></div>
+<h3 class="sec">🌊 The flow</h3>
+<div class="zone zone-cp" style="max-width:130mm;margin:0 auto;">
+<div class="rowc"><div class="kchip">👤 kubectl</div><span class="harr">──►</span><div class="nb c-blue" style="min-width:140px;">API Server 🚪</div></div>
+<div class="dn">▼</div>
+<div class="rowc"><div class="nb c-slate" style="min-width:170px;">🧠 Control Plane<small>records desired state</small></div></div>
+<div class="dn">▼</div>
+<div class="rowc"><div class="nb c-amber" style="min-width:150px;">Scheduler 🎯<small>picks Nodes</small></div></div>
+<div class="stem"></div><div class="barwrap"><div class="hbar" style="width:70%"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="nb c-emerald" style="width:100%;">Worker 1<small>kubelet runs it</small></div></div>
+<div class="col"><div class="stub"></div><div class="nb c-emerald" style="width:100%;">Worker 2<small>kubelet runs it</small></div></div>
+<div class="col"><div class="stub"></div><div class="nb c-emerald" style="width:100%;">Worker 3<small>kubelet runs it</small></div></div>
+</div>
+</div>
+<div class="rowc"><div class="pod">Worker 1 → nginx 🫛</div><div class="pod">Worker 2 → nginx 🫛</div><div class="pod">Worker 3 → nginx 🫛</div></div>
+<div class="think center" style="margin-top:10px;"><b style="font-size:14.5px;">🧠 The Control Plane decides. &nbsp;💪 The Workers execute.</b></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🔄 Self-Healing — When a Worker Dies</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">This is where Kubernetes starts <b>earning its paycheck</b>. 💰</p>
+<div class="rowc" style="margin-bottom:10px;">
+<div class="nb c-red" style="min-width:120px;">Worker 1 ❌</div>
+<div class="nb c-emerald" style="min-width:120px;">Worker 2 ✅</div>
+<div class="nb c-emerald" style="min-width:120px;">Worker 3 ✅</div>
+</div>
+<p class="small">One of your Pods disappeared. The Control Plane notices a mismatch:</p>
+<div class="grid2">
+<div class="card">
+<div class="zlabel" style="text-align:left;">🎯 Desired</div>
+<div class="bar-gauge" style="margin-bottom:8px;"><div style="width:33.3%;background:#326CE5;">1</div><div style="width:33.3%;background:#326CE5;">2</div><div style="width:33.3%;background:#326CE5;">3</div></div>
+<div class="zlabel" style="text-align:left;">👀 Actual</div>
+<div class="bar-gauge"><div style="width:33.3%;background:#ec4899;">1</div><div style="width:33.3%;background:#ec4899;">2</div><div style="width:33.3%;background:#f1f5f9;"></div></div>
+<div class="center" style="margin-top:8px;font-weight:800;color:#dc2626;">Desired 3 ≠ Actual 2 ❌</div>
+</div>
+<div class="card" style="display:flex;flex-direction:column;justify-content:center;">
+<div class="center" style="font-size:30px;">🔄</div>
+<div class="center" style="font-weight:800;color:#0d9488;margin-top:4px;">Controllers react</div>
+<p class="small center" style="margin:6px 0 0;">Kubernetes creates replacement Pods on healthy workers — assuming workload &amp; cluster resources allow it.</p>
+</div>
+</div>
+<h3 class="sec">✅ After reconciliation</h3>
+<div class="rowc">
+<div class="nb c-red" style="min-width:110px;">Worker 1 ❌</div>
+<div class="nb c-emerald" style="min-width:140px;">Worker 2 ✅<small>🫛 nginx · 🫛 nginx</small></div>
+<div class="nb c-emerald" style="min-width:140px;">Worker 3 ✅<small>🫛 nginx · 🫛 nginx</small></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The reconciliation loop is the heart of Kubernetes:</b> <i>watch actual → compare to desired → act → repeat, forever</i>. Nobody "restored" anything — the system simply cannot tolerate a mismatch.</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Honest limits:</b> if the cluster is out of CPU/memory, or all healthy nodes are full, replacements stay <b>Pending</b>. Self-healing repairs state — it doesn't conjure capacity.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🤔 Can the Control Plane also be a Worker?</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead"><b>Technically yes. In production: no.</b> The mechanism that separates them is a <b>taint</b>.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">🏠 Minikube — yes, by design</div>
+<p class="small">A single-node cluster where <b>one machine is both brain and muscle</b>. The Control-Plane taint is removed so workloads can land there. Perfect for learning.</p>
+<div class="term mini"><span class="p">$</span> kubectl get nodes
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; STATUS&nbsp;&nbsp; ROLES</span>
+minikube&nbsp;&nbsp; Ready&nbsp;&nbsp;&nbsp; control-plane,master</div>
+</div>
+<div class="card" style="border-top:3.5px solid #ef4444;">
+<div class="zlabel" style="text-align:left;">🏭 Production — never</div>
+<p class="small">Control-Plane nodes carry a taint like <code>node-role.kubernetes.io/control-plane:NoSchedule</code> — the Scheduler <b>refuses to place normal Pods there</b>. The brain is protected.</p>
+<div class="term mini"><span class="p">$</span> kubectl describe node cp1 | <span class="c">grep</span> Taints
+<span class="r">Taints: node-role.kubernetes.io/control-plane:NoSchedule</span></div>
+</div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Why the isolation matters:</b> a runaway workload on a Control-Plane node can starve the API Server or etcd — and then <b>the entire cluster's brain</b> slows or freezes. etcd is especially latency-sensitive.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Remember:</b> "Control Plane ≠ Worker" is not a law of nature — it's a <b>taint</b>. Remove the taint and the brain will do deadlifts. (Lab 5 covers taints hands-on.)</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">🗳️ Master : Worker Ratio &amp; etcd Quorum</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Why does everyone run <b>3 Control Planes</b>? Because etcd (the memory 💾) needs a <b>quorum</b> — a majority of members alive and agreeing — to accept any write.</p>
+<div class="zone zone-cp">
+<div class="zlabel">The quorum math</div>
+<div class="mtree">quorum = <b>floor((n-1)/2) + 1</b> members required
+<span class="g"># of Control Planes → failures tolerated before the cluster freezes:</span>
+1 CP → tolerate <span class="r">0</span> failures  (one crash = frozen)
+3 CP → tolerate <span class="u">1</span> failure   <i>← the production minimum</i>
+5 CP → tolerate <span class="u">2</span> failures
+7 CP → tolerate <span class="u">3</span> failures</div>
+</div>
+<table class="tb">
+<tr><th>Control Planes</th><th>Quorum needs</th><th>Tolerates</th><th>Verdict</th></tr>
+<tr><td>1</td><td>1 of 1</td><td><span class="bad">0</span></td><td>Dev only</td></tr>
+<tr><td>2</td><td>2 of 2</td><td><span class="bad">0</span></td><td><b>Worst choice</b> — same tolerance as 1, double the cost</td></tr>
+<tr><td>3</td><td>2 of 3</td><td><span class="ok">1</span></td><td>✅ Standard production</td></tr>
+<tr><td>5</td><td>3 of 5</td><td><span class="ok">2</span></td><td>Large/critical clusters</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The trap:</b> <b>2 is the worst number.</b> Two members need <i>both</i> alive for quorum — one failure freezes writes, exactly like having one. Even numbers add cost without adding tolerance.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Workers scale independently.</b> The ratio isn't "1 master per N workers" — it's <b>3–5 Control Planes</b> (for quorum) plus <i>as many Workers as your workload needs</i>. A lost quorum means the cluster keeps running what's deployed but accepts <b>no new state</b>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🗺️ The Diagram Map + Learning Roadmap</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<p class="lead">Everything from Part I–II on one canvas. If you can redraw this from memory, you own the architecture.</p>
+<div class="mtree" style="font-size:12px;"><b>☸️ CLUSTER</b>
+├── <b>🧠 CONTROL PLANE</b> <span class="g">×3 for quorum</span>
+│   ├── <u>API Server</u> 🚪 <span class="g">the only door</span>
+│   ├── <u>etcd</u> 💾 <span class="g">state — API Server's alone</span>
+│   ├── <u>Scheduler</u> 🎯 <span class="g">assigns Pods → Nodes</span>
+│   └── <u>Controllers</u> 🔄 <span class="g">reconcile desired ↔ actual</span>
+└── <b>💪 WORKERS</b>
+    ├── <u>kubelet</u> 👷 <span class="g">agent — talks to API Server</span>
+    ├── <u>Runtime</u> ⚙️ <span class="g">pulls + runs containers</span>
+    ├── <u>kube-proxy</u> 🌐 <span class="g">Service rules</span>
+    └── <u>Pods</u> 🫛</div>
+<h3 class="sec">🛤️ The learning order that works</h3>
+<div class="road">
+<div class="step"><span class="stepnum">1</span><span><b>Components</b> — who does what (Parts I–II) · you are here ✅</span></div>
+<div class="step"><span class="stepnum">2</span><span><b>Namespaces</b> — carve logical apartments (Part III)</span></div>
+<div class="step"><span class="stepnum">3</span><span><b>Workloads</b> — ReplicaSet → Deployment → updates (Part IV–V)</span></div>
+<div class="step"><span class="stepnum">4</span><span><b>Networking</b> — how traffic actually reaches a Pod (Part VI)</span></div>
+<div class="step"><span class="stepnum">5</span><span><b>Labs</b> — break things, watch them heal (Part VII)</span></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Study rule:</b> never learn a component without knowing <i>who it talks to</i>. Isolated component lists evaporate; <b>communication maps</b> stick.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🗂️ Namespaces — The Big Idea</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">Without namespaces, one cluster = one giant bucket. Frontend, AI and dev all collide — same names, no boundaries. A namespace is the cluster saying <b>"I can carve logical apartments inside one building."</b></p>
+<div class="grid2">
+<div class="card" style="border-left:4px solid #94a3b8;">
+<div class="zlabel" style="text-align:left;">Problem — one flat bucket</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">Cluster
+├── pod-a
+├── pod-b  <em>frontend?</em>
+├── pod-c  <em>ai?</em>
+└── svc-a  <span class="g"># who owns what?</span></div>
+</div>
+<div class="card" style="border-left:4px solid #10b981;">
+<div class="zlabel" style="text-align:left;">Solution — logical apartments</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">Cluster
+├── <b>frontend</b> <u>Pods + Services</u>
+├── <b>ai</b>       <u>Pods + Services</u>
+└── <b>dev</b>      <u>Pods + Services</u>
+<span class="g">same nodes, same control plane</span></div>
+</div>
+</div>
+<h3 class="sec">When namespaces shine</h3>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #3b82f6;"><div style="font-size:22px;">👥</div><p class="small"><b>Teams</b><br>frontend / backend / ai</p></div>
+<div class="card center" style="border-top:3.5px solid #8b5cf6;"><div style="font-size:22px;">🌿</div><p class="small"><b>Environments</b><br>dev / staging / prod <span style="color:#64748b;">via namespaces</span></p></div>
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🧩</div><p class="small"><b>Apps</b><br>app-a / app-b isolated, same infra</p></div>
+</div>
+<div class="grid2">
+<div class="callout co-key" style="margin:0;"><span class="ico">🔑</span><div><b>Namespace = logical isolation</b> — it affects names, RBAC, quotas. It does <b>not</b> carve hardware or network by itself.</div></div>
+<div class="callout co-tip" style="margin:0;"><span class="ico">💡</span><div><b>Environment ≠ Namespace.</b> Environment is the concept; namespace is one object you can implement it with (another: separate clusters).</div></div>
+</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">🏷️ Names Are Scoped + The Three Superpowers</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A Pod's full identity is <b>namespace + kind + name</b>. So <code>dev/nginx</code> and <code>prod/nginx</code> are two different objects — no collision.</p>
+<div class="mtree" style="font-size:12px;">Cluster
+├── <b>dev</b>
+│   └── <u>nginx</u> <em>Pod</em>   ← identity: dev / Pod / nginx
+└── <b>prod</b>
+    └── <u>nginx</u> <em>Pod</em>   ← identity: prod / Pod / nginx</div>
+<h3 class="sec">⚡ The three superpowers namespaces unlock</h3>
+<div class="grid3">
+<div class="card"><div class="zlabel" style="text-align:left;">🪪 RBAC — keys</div><p class="small">"This team may act <b>only inside frontend</b>." Permissions scoped per namespace.</p></div>
+<div class="card"><div class="zlabel" style="text-align:left;">📊 Quotas — budget</div><p class="small">"ai may use at most <b>4 CPU / 8Gi</b>, 10 Pods." A ResourceQuota caps each apartment's totals.</p></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🚧 NetworkPolicy — door rules</div><p class="small">"Pods in dev may <b>not</b> call prod." Traffic rules scoped per namespace.</p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Not everything lives in an apartment.</b> <b>Nodes</b>, <b>ClusterRoles</b>, <b>PersistentVolumes</b> and <b>Namespaces themselves</b> are <i>cluster-scoped</i> — <code>kubectl get nodes -n dev</code> silently ignores the <code>-n</code>. Nodes belong to the building, not an apartment.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The rule:</b> namespaced → identity includes the namespace · cluster-scoped → namespace flags do nothing. <b>Namespaces partition names, not hardware.</b></div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch12">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ CH12 ═══ -->
+<div class="page" id="ch12"><div class="pghead"><span class="chip">CH 12</span><h2 class="t">🧭 Service DNS + Default Namespaces</h2><span class="dbadge">🟡 5 MIN</span></div>
+<h3 class="sec">📫 How Pods find each other: DNS</h3>
+<p class="small">Every Service gets a DNS name built from its namespace — that's how cross-Pod traffic finds its way:</p>
+<div class="zone zone-net">
+<div class="rowc" style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+<div class="nb c-sky" style="min-width:150px;">nginx-service<small>Service</small></div><span class="harr">──►</span>
+<div class="kchip">nginx-service<b>.frontend</b>.svc.cluster.local</div>
+</div>
+<p class="dnote">same short name resolves <i>within</i> the same namespace — "nginx-service" from inside frontend just works</p>
+</div>
+<div class="rowc">
+<div class="nb c-blue" style="min-width:110px;">frontend<small>nginx-service</small></div>
+<span style="color:#94a3b8;font-weight:900;">|</span>
+<div class="nb c-violet" style="min-width:110px;">ai<small>nginx-service</small></div>
+<span style="font-size:12px;color:#64748b;">← same Service name, two namespaces, zero collision</span>
+</div>
+<h3 class="sec">📦 The namespaces you always have</h3>
+<div class="term"><span class="p">$</span> kubectl get namespaces
+<span class="y">NAME</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS
+default&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Active&nbsp;&nbsp;&nbsp;<span class="g"># you land here when you omit -n</span>
+kube-system&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Active&nbsp;&nbsp;&nbsp;<span class="g"># the cluster's own components</span>
+kube-public&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Active&nbsp;&nbsp;&nbsp;<span class="g"># public info</span>
+kube-node-lease&nbsp;&nbsp;&nbsp;Active&nbsp;&nbsp;&nbsp;<span class="g"># node heartbeats</span></div>
+<ul class="tick">
+<li>📌 <code>kubectl get pods</code> is secretly <code>kubectl get pods -n default</code></li>
+<li>📌 <code>kube-system</code> is where the Control Plane's own Pods live (on kubeadm clusters)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Mailbox rule:</b> "nginx-service, Apt frontend" vs "nginx-service, Apt ai" — same name, different mailbox, and the post office (DNS + API Server) always delivers correctly.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch13">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ CH13 ═══ -->
+<div class="page" id="ch13"><div class="pghead"><span class="chip">CH 13</span><h2 class="t">🏢 The Complete Namespace Picture</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="mtree"><b>☸️ CLUSTER</b>
+├── <b>Namespace: frontend</b>  <u>Pods · Services · Quotas</u>
+├── <b>Namespace: ai</b>        <u>Pods · Services · Quotas</u>
+├── <b>Namespace: dev</b>       <u>Pods · Services · Quotas</u>
+│
+└── <b>Nodes</b>  <span class="g"># OUTSIDE every namespace</span>
+    ├── node1  (4 CPU / 8Gi)
+    └── node2  (4 CPU / 8Gi)   <span class="g"># one shared pool</span></div>
+<table class="tb">
+<tr><th>Layer</th><th>Shared across namespaces?</th><th>Notes</th></tr>
+<tr><td><b>Control Plane</b> (API Server, etcd, Scheduler)</td><td>✅ Yes — one per cluster</td><td>A namespace is just a field on objects</td></tr>
+<tr><td><b>Nodes · CPU · Memory · Network</b></td><td>✅ Yes</td><td>Quotas <i>limit</i> usage, they don't carve hardware</td></tr>
+<tr><td><b>Pods · Services · ConfigMaps</b></td><td>❌ No — namespaced</td><td><code>dev/nginx</code> ≠ <code>prod/nginx</code></td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Namespace ≠ separate cluster.</b> Same control plane, same Nodes, same CPU/memory pool. If an exam asks "is a namespace its own cluster?" — the answer is a hard <b>NO</b>.</div></div>
+<div class="callout co-fun"><span class="ico">😄</span><div><b>Apartment summary:</b> cluster = building · namespace = apartment · quota = "max electricity for this apartment" · RBAC = who holds which keys · Ingress = the front desk routing visitors. One metaphor, whole book.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch12">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch14">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ CH14 ═══ -->
+<div class="page" id="ch14"><div class="pghead"><span class="chip">CH 14</span><h2 class="t">🛡️ ReplicaSet — What Is It?</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A ReplicaSet is <b>the guarantor</b>: it watches a set of Pods that carry specific <b>labels</b>, and keeps their count at the number you asked for. Not one more, not one fewer.</p>
+<div class="term"><span class="c">apiVersion</span>: apps/v1
+<span class="c">kind</span>: ReplicaSet
+<span class="c">metadata</span>:
+  <span class="c">name</span>: nginx-rs
+<span class="c">spec</span>:
+  <span class="c">replicas</span>: <span class="y">3</span>                <span class="g"># ← the promise</span>
+  <span class="c">selector</span>:
+    <span class="c">matchLabels</span>:
+      <span class="c">app</span>: nginx              <span class="g"># ← who it manages</span>
+  <span class="c">template</span>:                    <span class="g"># ← the pod stamp it uses</span>
+    <span class="c">metadata</span>:
+      <span class="c">labels</span>: { <span class="c">app</span>: nginx }  <span class="g"># must match the selector!</span>
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - <span class="c">name</span>: nginx
+        <span class="c">image</span>: nginx:1.25</div>
+<h3 class="sec">🔍 How it "counts"</h3>
+<ul class="tick">
+<li>🔎 <b>Selector</b> — the ReplicaSet claims every Pod whose labels match <code>app: nginx</code></li>
+<li>🧮 <b>Compare</b> — desired 3 vs actual (say) 2</li>
+<li>🔧 <b>Act</b> — create one more Pod from the template (or delete surplus)</li>
+<li>🔁 <b>Repeat</b> — this is just the reconciliation loop again, one level down</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Label match is everything.</b> If the template's labels don't satisfy the selector, the ReplicaSet refuses to start. And any <i>stray</i> Pod with matching labels gets adopted — willingly or not.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>ReplicaSet = labels + count + template.</b> You'll rarely write one by hand — a <b>Deployment</b> creates them for you (CH 15).</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch13">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch15">next ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ CH15 ═══ -->
+<div class="page" id="ch15"><div class="pghead"><span class="chip">CH 15</span><h2 class="t">💀 Labels, Death &amp; Why Deployment</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;">
+<div class="zlabel" style="text-align:left;">Standalone Pod dies</div>
+<div class="center" style="font-size:28px;">🕳️</div>
+<p class="small center"><b>Gone. Forever.</b> Nobody holds a copy of the wish — the Pod's spec died with it. This is why "just run a Pod" is a demo trick, not a deployment.</p>
+</div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">Owned Pod dies</div>
+<div class="center" style="font-size:28px;">🔄</div>
+<p class="small center"><b>Recreated automatically.</b> The ReplicaSet still holds the template — the mismatch triggers a replacement with a <b>new name</b> (e.g. <code>nginx-rs-x7k2p</code>).</p>
+</div>
+</div>
+<h3 class="sec">🪆 So why isn't ReplicaSet enough? The ownership chain</h3>
+<div class="mtree" style="font-size:12px;"><b>Deployment</b>  <span class="g">you talk to this one</span>
+└── <b>ReplicaSet v1</b>  <span class="g">manages Pods at image nginx:1.25</span>
+    ├── 🫛 pod
+    ├── 🫛 pod
+    └── 🫛 pod
+<span class="g">change the image →</span> Deployment creates <b>ReplicaSet v2</b>, rolls Pods over <span class="g">← CH 20</span></div>
+<ul class="tick">
+<li>🛡️ <b>ReplicaSet</b> answers: "<i>are the right number of Pods running?</i>"</li>
+<li>🚀 <b>Deployment</b> answers: "<i>are they running the <u>right version</u>? — and can we switch versions with zero downtime?</i>"</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Own vs run:</b> a standalone Pod is <i>run</i>; an owned Pod is <i>guaranteed</i>. The Deployment exists because the ReplicaSet can keep count — but it can't change what it's counting <i>without downtime</i>. The Deployment can.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch14">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch16">next ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ CH16 ═══ -->
+<div class="page" id="ch16"><div class="pghead"><span class="chip">CH 16</span><h2 class="t">👀 The Pod Lifecycle — Owned vs Standalone</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The five-second experiment that makes ownership real. Two terminals:</p>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TAB 1 · WATCH</div><div class="tabbody"><span class="p">$</span> kubectl get pods -w
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READY&nbsp;&nbsp;STATUS</span>
+web-7d9f&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">ContainerCreating</span>
+web-7d9f&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Running</span>
+web-7d9f&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="r">Terminating</span>
+web-x7k2p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">ContainerCreating</span>
+web-x7k2p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;<span class="g"># new name!</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">⚙️ TAB 2 · ACT</div><div class="tabbody"><span class="p">$</span> kubectl delete pod web-7d9f
+pod "web-7d9f" deleted
+<span class="g"># watch TAB 1: a replacement appears
+# same deployment, brand-new pod name</span></div></div>
+</div>
+<h3 class="sec">🧾 What we just proved</h3>
+<ul class="tick">
+<li>✅ The Pod's <b>name is disposable</b> — the ReplicaSet's <b>promise is not</b>.</li>
+<li>✅ Deletion is just another mismatch: desired 1, actual 0 → create.</li>
+<li>❌ A <b>standalone</b> Pod (no owner) deleted = silence. No replacement. No drama.</li>
+</ul>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Status decoding:</b> <span class="stbadge st-crea">ContainerCreating</span> = image pulling + CNI wiring · <span class="stbadge st-run">Running</span> = process up · <span class="stbadge st-term">Terminating</span> = shutting down gracefully · <span class="stbadge st-pend">Pending</span> = not yet placed (CH 23).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Owned vs standalone is the single most important workload concept.</b> Every "why did my Pod come back?!" mystery is answered by: <i>someone owns it</i> — find the ReplicaSet.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch15">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch17">next ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ CH17 ═══ -->
+<div class="page" id="ch17"><div class="pghead"><span class="chip">CH 17</span><h2 class="t">⌨️ kubectl — The Command Map</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<table class="tb">
+<tr><th style="width:20%;">Job</th><th>Command</th><th>What it does</th></tr>
+<tr><td rowspan="2"><b>Create</b></td><td><code>kubectl create deployment nginx --image=nginx</code></td><td>Imperative quick-start</td></tr>
+<tr><td><code>kubectl apply -f file.yaml</code></td><td>Declarative — the production way</td></tr>
+<tr><td rowspan="3"><b>Inspect</b></td><td><code>kubectl get pods/deploy/rs/svc -n ns</code></td><td>List · add <code>-w</code> to watch live · <code>-o wide</code> for Node/IP</td></tr>
+<tr><td><code>kubectl describe pod NAME</code></td><td>Full story — <b>events at the bottom</b></td></tr>
+<tr><td><code>kubectl logs NAME [-c container]</code></td><td>App output · <code>-f</code> follow · <code>--previous</code> for crashed</td></tr>
+<tr><td rowspan="2"><b>Debug</b></td><td><code>kubectl exec -it NAME -- sh</code></td><td>Shell inside the container</td></tr>
+<tr><td><code>kubectl get events --sort-by=.lastTimestamp</code></td><td>Cluster-wide recent history</td></tr>
+<tr><td rowspan="3"><b>Modify</b></td><td><code>kubectl scale deploy nginx --replicas=5</code></td><td>Change the count</td></tr>
+<tr><td><code>kubectl set image deploy/nginx nginx=nginx:1.26</code></td><td>Trigger a rolling update</td></tr>
+<tr><td><code>kubectl rollout status/undo/history deploy/nginx</code></td><td>Watch / revert / list revisions</td></tr>
+<tr><td><b>Delete</b></td><td><code>kubectl delete pod/dep/ns NAME</code></td><td>Deleting an <b>ns</b> deletes everything inside it ⚠️</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The mental model:</b> kubectl is just <b>a client of the API Server</b>. Every command above is an HTTP call to the front door — nothing magical, nothing direct.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch16">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch18">next ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ CH18 ═══ -->
+<div class="page" id="ch18"><div class="pghead"><span class="chip">CH 18</span><h2 class="t">🫛 Pod Deep Dive</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The Pod is the <b>smallest deployable unit</b> — not the container. A Pod is a <b>co-located family of containers</b> that share fate.</p>
+<div class="zone zone-wk" style="max-width:150mm;margin:0 auto;">
+<div class="zlabel">One Pod = one shared environment</div>
+<div class="rowc"><div class="kchip">🌐 ONE IP address<small>&nbsp;shared by all containers</small></div></div>
+<div class="stem"></div><div class="barwrap"><div class="hbar bar2"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="nb c-blue" style="width:100%;">📦 app container<small>listens :80</small></div></div>
+<div class="col"><div class="stub"></div><div class="nb c-teal" style="width:100%;">📦 sidecar<small>reaches app on localhost</small></div></div>
+</div>
+<div class="rowc" style="margin-top:6px;"><div class="kchip">💾 shared Volume<small>&nbsp;same files, both containers</small></div></div>
+</div>
+<ul class="tick">
+<li>🌐 <b>One IP per Pod</b> — containers inside talk via <code>localhost:port</code>, never "find the other container's IP"</li>
+<li>💾 <b>Shared volumes</b> — declared in the Pod spec, mounted by any of its containers</li>
+<li>⏳ <b>Shared lifecycle</b> — born together, scheduled together (same Node), die together</li>
+<li>🚫 <b>Never scale "a container"</b> — you scale Pods; want more copies → more Pods</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Port clashes are real:</b> two containers in one Pod cannot bind the same port — they literally share the network stack.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The test for Pod-membership:</b> <i>must these containers live and die together on the same machine?</i> Yes → one Pod. No → separate Pods (and let the Scheduler place them freely).</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch17">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch19">next ▶</a></span><span>Page 21</span></div></div>
+
+<!-- ═══ CH19 ═══ -->
+<div class="page" id="ch19"><div class="pghead"><span class="chip">CH 19</span><h2 class="t">👥 Multi-Container Pods</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">The classic pattern: the <b>sidecar</b> — a helper container riding along with the app container inside one Pod.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: app
+    <span class="c">image</span>: myapp:2.0
+    <span class="c">volumeMounts</span>:
+    - { <span class="c">name</span>: logs, <span class="c">mountPath</span>: <span class="m">/var/log/app</span> }
+  - <span class="c">name</span>: log-shipper          <span class="g"># the sidecar</span>
+    <span class="c">image</span>: busybox
+    <span class="c">command</span>: [<span class="m">"sh"</span>,<span class="m">"-c"</span>,<span class="m">"tail -F /logs/app.log"</span>]
+    <span class="c">volumeMounts</span>:
+    - { <span class="c">name</span>: logs, <span class="c">mountPath</span>: <span class="m">/logs</span> }   <span class="g"># same volume!</span>
+  <span class="c">volumes</span>:
+  - <span class="c">name</span>: logs
+    <span class="c">emptyDir</span>: {}</div>
+<h3 class="sec">⚖️ Good vs bad Pod-mates</h3>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Belong together</div><ul class="tick" style="margin:0;"><li>📜 app + log shipper (shared files)</li><li>🔐 app + auth proxy (shared localhost)</li><li>🔄 app + config reloader (shared lifecycle)</li></ul></div>
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">❌ Don't</div><ul class="tick" style="margin:0;"><li>frontend + database (scale &amp; fail independently)</li><li>two unrelated services (one crash restarts both... and they fight over ports)</li></ul></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Heuristic:</b> if the two containers <i>could run on different machines</i>, they belong in <b>different Pods</b>. Pod-mates are glued on purpose — glue is a cost.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch18">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch20">next ▶</a></span><span>Page 22</span></div></div>
+
+<!-- ═══ CH20 ═══ -->
+<div class="page" id="ch20"><div class="pghead"><span class="chip">CH 20</span><h2 class="t">🎞️ Deployment — Rolling Updates</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Change a Deployment's image and it doesn't rebuild Pods in place — it <b>creates a new ReplicaSet</b> and rolls traffic from old to new, keeping availability the whole time.</p>
+<div class="termbar"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#34d399"></span></div>
+<div class="term tbr"><span class="p">$</span> kubectl set image deploy/nginx nginx=<span class="y">nginx:1.26</span>
+deployment.apps/nginx image updated
+<span class="p">$</span> kubectl rollout status deploy/nginx
+<span class="g">Waiting for deployment "nginx" rollout to finish...</span>
+<span class="p">deployment "nginx" successfully rolled out</span></div>
+<h3 class="sec">🪆 What actually happened</h3>
+<div class="mtree" style="font-size:12px;"><b>Deployment nginx</b>
+├── <b>ReplicaSet v2</b> <em>nginx:1.26</em>   <span class="g">scales 0 → 3 👆</span>
+│   └── 🫛 🫛 🫛  <span class="g">new Pods replace old</span>
+└── <s>ReplicaSet v1</s> <em>nginx:1.25</em>   <span class="g">scales 3 → 0 👇 (kept for rollback)</span></div>
+<ul class="tick">
+<li>⚖️ The Controller walks the count: add a v2 Pod → remove a v1 Pod → repeat</li>
+<li>📉 Service selectors keep pointing at labels — traffic slides over automatically</li>
+<li>🗄️ v1's ReplicaSet is <i>retained</i> (scaled to 0) — that's your rollback insurance (CH 21)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Zero downtime is the point:</b> at every instant, enough healthy Pods serve traffic. The Deployment turned "risky big-bang upgrade" into "boring arithmetic."</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch19">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch21">next ▶</a></span><span>Page 23</span></div></div>
+
+<!-- ═══ CH21 ═══ -->
+<div class="page" id="ch21"><div class="pghead"><span class="chip">CH 21</span><h2 class="t">⏪ Rollout Commands</h2><span class="dbadge">🟢 4 MIN</span></div>
+<div class="termbar"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#34d399"></span></div>
+<div class="term tbr"><span class="p">$</span> kubectl rollout history deploy/nginx
+<span class="y">REVISION&nbsp;&nbsp;CHANGE-CAUSE</span>
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g">&lt;none&gt;</span>
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g">nginx:1.26</span>
+<span class="p">$</span> kubectl rollout undo deploy/nginx
+deployment.apps/nginx rolled back
+<span class="p">$</span> kubectl rollout status deploy/nginx
+<span class="p">successfully rolled out</span>&nbsp;&nbsp;<span class="g"># ← back on :1.25</span></div>
+<ul class="tick">
+<li>📊 <code>rollout status</code> — watch a rollout finish (script-friendly)</li>
+<li>🗂️ <code>rollout history</code> — every revision is just an old ReplicaSet with a number</li>
+<li>⏪ <code>rollout undo</code> — flip back to the previous template · <code>--to-revision=1</code> to pick</li>
+<li>🗄️ <code>revisionHistoryLimit: 3</code> — how many old ReplicaSets to keep (default 10)</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Undo doesn't rewind time</b> — it creates a <b>new revision</b> (v3) with v1's template. History only moves forward; the ReplicaSet list is the audit trail.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The rollout trilogy</b> — <code>status</code> / <code>history</code> / <code>undo</code> — is the exam's favorite Deployment command set. Learn it as one unit.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch20">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch22">next ▶</a></span><span>Page 24</span></div></div>
+
+<!-- ═══ CH22 ═══ -->
+<div class="page" id="ch22"><div class="pghead"><span class="chip">CH 22</span><h2 class="t">📜 YAML Anatomy — The Two Specs</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Every Kubernetes manifest is the same envelope: <b>apiVersion · kind · metadata · spec</b>. The "wish" lives in the spec.</p>
+<table class="tb">
+<tr><th style="width:18%;">Field</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><code>apiVersion</code></td><td>Which API group/version serves this kind</td><td><code>v1</code> (Pod) · <code>apps/v1</code> (Deployment)</td></tr>
+<tr><td><code>kind</code></td><td>What object you want</td><td><code>Pod</code>, <code>Service</code>, <code>Deployment</code></td></tr>
+<tr><td><code>metadata</code></td><td>Name · namespace · labels</td><td><code>name: nginx</code></td></tr>
+<tr><td><code>spec</code></td><td><b>The desired state</b></td><td>replicas, containers, ports…</td></tr>
+</table>
+<h3 class="sec">🪆 The Two-Specs Mystery (Deployment)</h3>
+<div class="mtree" style="font-size:12px;"><span class="c">spec</span>:                      <span class="g"># the DEPLOYMENT's wish</span>
+&nbsp;&nbsp;<span class="c">replicas</span>: <span class="y">3</span>
+&nbsp;&nbsp;<span class="c">selector</span>: …
+&nbsp;&nbsp;<span class="c">template</span>:               <span class="g"># a whole Pod hiding inside!</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">metadata</span>: <span class="c">labels</span>: …
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">spec</span>:                <span class="g"># ← the POD's wish (spec inside spec)</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">containers</span>: …</div>
+<ul class="tick">
+<li>🧠 <b>Outer spec</b> = what the Deployment manages: count, selector, template</li>
+<li>🫛 <b>Inner spec</b> (<code>spec.template.spec</code>) = the actual Pod: images, ports, env, resources</li>
+<li>🔁 <code>spec.template</code> is the <b>cookie cutter</b> — the ReplicaSet stamps Pods from it; change anything inside and you trigger a rollout (CH 20)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Indentation is structure in YAML.</b> The most common manifest bug is writing the Pod spec at the wrong nesting level — and the API Server answers with a confusing validation error. Count your two spaces.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch21">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch23">next ▶</a></span><span>Page 25</span></div></div>
+
+<!-- ═══ CH23 ═══ -->
+<div class="page" id="ch23"><div class="pghead"><span class="chip">CH 23</span><h2 class="t">🩺 Debugging 1 — Reading Pod States</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The STATUS column is a diagnosis. Each state tells you <i>which stage</i> failed — before you run a single command.</p>
+<table class="tb">
+<tr><th>Status</th><th>Meaning</th><th>Classic cause</th><th>First move</th></tr>
+<tr><td><span class="stbadge st-pend">Pending</span></td><td>Accepted, not placed</td><td>Not enough CPU/mem · taints · PVC pending</td><td><code>describe pod</code> → events</td></tr>
+<tr><td><span class="stbadge st-crea">ContainerCreating</span></td><td>Placed, pulling/wiring</td><td>Normal for seconds; stuck = image/CNI issue</td><td><code>describe pod</code> → events</td></tr>
+<tr><td><span class="stbadge st-term">ImagePullBackOff</span></td><td>Can't fetch image</td><td>Typo in tag · private registry, no secret</td><td>Check image name &amp; pull secret</td></tr>
+<tr><td><span class="stbadge st-term">CrashLoopBackOff</span></td><td>Starts, dies, repeats</td><td>App crashes on boot — bad config, missing env</td><td><code>logs --previous</code></td></tr>
+<tr><td><span class="stbadge st-run">Running</span></td><td>Process is up</td><td>— (not necessarily <i>healthy</i> — that's probes)</td><td>Test the endpoint</td></tr>
+<tr><td><span class="stbadge st-comp">Completed</span></td><td>Finished &amp; exited 0</td><td>Job finished — normal for Jobs, odd for servers</td><td>Expected? done ✅</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The backoff family:</b> <code>ImagePullBackOff</code> and <code>CrashLoopBackOff</code> are not errors <i>of</i> Kubernetes — they're Kubernetes <i>retrying</i> after your app/image failed. The real error is one layer deeper, in the events or logs.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Memory hook:</b> Pending = the <b>Scheduler</b> said no · ImagePull = the <b>Registry</b> said no · CrashLoop = the <b>App</b> said no. Three different culprits, three different rooms to search.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch22">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch24">next ▶</a></span><span>Page 26</span></div></div>
+
+<!-- ═══ CH24 ═══ -->
+<div class="page" id="ch24"><div class="pghead"><span class="chip">CH 24</span><h2 class="t">🧰 Debugging 2 — The Toolbox</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="term"><span class="p">$</span> kubectl describe pod web-x7k2p        <span class="g"># 1 · full biography…</span>
+&nbsp;&nbsp;<span class="y">Events:</span>                                   <span class="g"># …always read the BOTTOM</span>
+&nbsp;&nbsp;&nbsp;<span class="r">Failed to pull image "nginx:1.99"</span>
+<span class="p">$</span> kubectl logs web-x7k2p --previous       <span class="g"># 2 · crashed container's last words</span>
+<span class="r">panic: missing REQUIRED_DB_PASSWORD</span>
+<span class="p">$</span> kubectl exec -it web-x7k2p -- sh       <span class="g"># 3 · go inside</span>
+<span class="p">$</span> kubectl get events --sort-by=<span class="y">.lastTimestamp</span>  <span class="g"># 4 · cluster timeline</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #3b82f6;"><div class="zlabel" style="text-align:left;">describe — the biography</div><p class="small">Config as the cluster sees it, plus the <b>Events block at the bottom</b> — the single most information-dense place in debugging.</p></div>
+<div class="card" style="border-top:3.5px solid #14b8a6;"><div class="zlabel" style="text-align:left;">logs --previous — the autopsy</div><p class="small">CrashLoopBackOff kills the evidence — <code>--previous</code> reads the <b>last dead container's</b> output. Forgetting this flag = reading a fresh empty log and panicking.</p></div>
+</div>
+<h3 class="sec">🎯 The 4-step playbook (in order)</h3>
+<div class="road">
+<div class="step"><span class="stepnum">1</span><span><b>get pods</b> — read the STATUS column (CH 23 table)</span></div>
+<div class="step"><span class="stepnum">2</span><span><b>describe pod</b> — events at the bottom name the failing stage</span></div>
+<div class="step"><span class="stepnum">3</span><span><b>logs --previous</b> — the app's own error message</span></div>
+<div class="step"><span class="stepnum">4</span><span><b>exec -it -- sh</b> — poke around inside: DNS, env, files, curl</span></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>90% of debugging is reading.</b> The cluster narrates its own failures — through events and logs — if you ask in the right order.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch23">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch25">next ▶</a></span><span>Page 27</span></div></div>
+
+<!-- ═══ CH25 ═══ -->
+<div class="page" id="ch25"><div class="pghead"><span class="chip">CH 25</span><h2 class="t">🚪 NodePort — The Side Entrance</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">ClusterIPs are invisible from outside the cluster. <b>NodePort</b> punches a hole: every Node opens one high port and forwards it to your Service.</p>
+<div class="term"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Service
+<span class="c">metadata</span>:
+  <span class="c">name</span>: nginx-svc
+<span class="c">spec</span>:
+  <span class="c">type</span>: <span class="y">NodePort</span>          <span class="g"># default is ClusterIP</span>
+  <span class="c">selector</span>:
+    <span class="c">app</span>: nginx
+  <span class="c">ports</span>:
+  - <span class="c">port</span>: <span class="y">80</span>              <span class="g"># inside the cluster</span>
+    <span class="c">targetPort</span>: <span class="y">80</span>        <span class="g"># container's port</span>
+    <span class="c">nodePort</span>: <span class="y">30080</span>       <span class="g"># outside — or omit & let k8s pick</span></div>
+<div class="zone zone-net">
+<div class="zlabel">The path in</div>
+<div class="rowc">
+<div class="kchip">🌍 User</div><span class="harr">──►</span>
+<div class="nb c-emerald" style="min-width:150px;">ANY node<small>:30080</small></div><span class="harr">──►</span>
+<div class="nb c-sky" style="min-width:130px;">Service<small>ClusterIP rules</small></div><span class="harr">──►</span>
+<div class="pod">🫛 Pod :80</div>
+</div>
+<p class="dnote">"ANY node" is the superpower — even a Node with <b>no nginx Pod</b> opens the door and forwards across.</p>
+</div>
+<ul class="tick">
+<li>📏 Valid range: <b>30000–32767</b> (omit <code>nodePort</code> and one is auto-assigned)</li>
+<li>🔓 Every Node gets the same port — hit <code>192.168.1.11:30080</code> or <code>.13:30080</code>, same result</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>NodePort is for demos &amp; edge cases</b> — raw ports, no load balancing across nodes, no TLS story. Production rides <b>Ingress</b> (Book 03 😉).</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch24">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch26">next ▶</a></span><span>Page 28</span></div></div>
+
+<!-- ═══ CH26 ═══ -->
+<div class="page" id="ch26"><div class="pghead"><span class="chip">CH 26</span><h2 class="t">🎭 Service Networking — The Virtual IP</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Here's the trick nobody tells you: the ClusterIP your Service owns is a <b>lie</b>. Nothing is listening on it. No process holds it. It's a <b>virtual IP (VIP)</b> — and that's the elegance.</p>
+<div class="zone zone-net">
+<div class="zlabel">Russian dolls — where the VIP really goes</div>
+<div class="rowc">
+<div class="nb c-sky" style="min-width:140px;">10.96.0.50<small>the VIP — a fiction</small></div>
+<span class="harr">──► DNAT ──►</span>
+<div class="nb c-cyan" style="min-width:140px;">10.244.1.5<small>a real Pod IP</small></div>
+</div>
+<p class="dnote">packets "to the VIP" are rewritten <b>in transit</b> to a real Pod — the VIP never terminates anything</p>
+</div>
+<div class="mtree" style="font-size:12px;">Address ranges — separate drawers:
+Service CIDR   <b>10.96.0.0/12</b>  <span class="g"># VIPs live here (fake, routable only via rules)</span>
+Pod CIDR       <b>10.244.0.0/16</b> <span class="g"># real Pod IPs (per-node slices)</span></div>
+<ul class="tick">
+<li>🚫 You can't <code>ping</code> a ClusterIP — nothing answers; the rules only rewrite packets <i>passing through</i></li>
+<li>🎭 Pods died and got new IPs? Nobody notices — everyone still dials the VIP</li>
+<li>🧮 The ranges <b>must not overlap</b> — two drawers, zero confusion</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The Service is a stable illusion:</b> an eternal name + eternal IP in front of a set of mortals (Pods) that churn constantly. The illusion is maintained by <b>kube-proxy</b> — next chapter.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch25">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch27">next ▶</a></span><span>Page 29</span></div></div>
+
+<!-- ═══ CH27 ═══ -->
+<div class="page" id="ch27"><div class="pghead"><span class="chip">CH 27</span><h2 class="t">🕸️ kube-proxy's Real Job</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">kube-proxy does <b>not</b> forward a single packet. Its entire job is two verbs: <b>watch &amp; program</b>.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">❌ What it does NOT do</div><ul class="tick" style="margin:0;"><li>Sit in the traffic path</li><li>Proxy connections through itself</li><li>Touch Pod-to-Pod traffic</li></ul></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ What it DOES</div><ul class="tick" style="margin:0;"><li><b>Watch</b> the API Server: Services + Endpoints</li><li><b>Program</b> iptables/IPVS rules on <i>its</i> node</li><li>Re-program the instant Pods change</li></ul></div>
+</div>
+<h3 class="sec">🪄 The rules it writes (iptables + DNAT)</h3>
+<div class="term mini"><span class="g"># conceptually, on every node:</span>
+<span class="y">if</span> dst == 10.96.0.50:80 <span class="g"># the VIP</span>
+&nbsp;&nbsp;<span class="y">then</span> rewrite dst → 10.244.1.5:80  <span class="g"># pick an endpoint (random)</span>
+&nbsp;&nbsp;<span class="y">else if</span> … next endpoint <span class="g"># (rule set balances across all)</span></div>
+<div class="callout co-ok"><span class="ico">✨</span><div><b>The Illusion, resolved:</b> a Pod dies → Endpoints object updates → every node's kube-proxy rewrites its rules → the <b>VIP never moved</b>. Stability on the outside, churn on the inside, and the packets never knew.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One-liner for exams:</b> <i>kube-proxy watches Services/Endpoints and programs packet-rewriting rules on every node — it never forwards traffic itself.</i></div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch26">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch28">next ▶</a></span><span>Page 30</span></div></div>
+
+<!-- ═══ CH28 ═══ -->
+<div class="page" id="ch28"><div class="pghead"><span class="chip">CH 28</span><h2 class="t">📦 Following ONE Packet — 6 Steps</h2><span class="dbadge">🔵 FINALE · CORE</span></div>
+<p class="lead">A Pod runs <code>curl nginx-svc</code>. Follow the single packet:</p>
+<div style="margin:4px 0;">
+<div class="road">
+<div class="step"><span class="stepnum">1</span><span><b>DNS</b> — <code>nginx-svc</code> resolves to the VIP <code>10.96.0.50</code> · CoreDNS answered from the Service's namespace</span></div>
+<div class="step"><span class="stepnum">2</span><span><b>Send</b> — Pod sends to the VIP (nothing is there — remember CH 26) · dest: 10.96.0.50:80</span></div>
+<div class="step"><span class="stepnum">3</span><span><b>DNAT</b> — the node's iptables rules rewrite the destination → a real Pod IP: <code>10.244.1.5:80</code></span></div>
+<div class="step"><span class="stepnum">4</span><span><b>Route</b> — same node → direct delivery; different node → CNI overlay carries it</span></div>
+<div class="step"><span class="stepnum">5</span><span><b>Receive</b> — the Pod sees a normal packet addressed to <i>its own</i> IP · it replies</span></div>
+<div class="step"><span class="stepnum">6</span><span><b>Return</b> — conntrack rewrites the reply back through the VIP — the client believes it talked to 10.96.0.50 the whole time 🎩</span></div>
+</div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The entire machine in one sentence:</b> DNS gives you a stable fake IP; kube-proxy's rules secretly rewrite it to a mortal Pod; conntrack makes the lie symmetric. <b>That's Service networking — everything else is detail.</b></div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch27">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch29">labs ▶</a></span><span>Page 31</span></div></div>
+
+<!-- ═══ CH29 LAB 1 ═══ -->
+<div class="page" id="ch29"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Observe vs Control</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TAB 1 · OBSERVE</div><div class="tabbody"><span class="p">$</span> kubectl get deployments -w
+<span class="p">$</span> kubectl get pods -w
+<span class="p">$</span> kubectl get rs -w</div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">⚙️ TAB 2 · CONTROL</div><div class="tabbody"><span class="p">$</span> kubectl create deploy web --image=nginx --replicas=2
+<span class="p">$</span> kubectl delete pod &lt;pod-name&gt;
+<span class="p">$</span> kubectl scale deploy web --replicas=4</div></div>
+</div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Create</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl create deployment web --image=nginx --replicas=2
+<span class="g">deployment.apps/web created</span></div></div>
+<div><div class="labtag">👀 EXPECTED in TAB 1</div><div class="term mini"><span class="y">web</span>&nbsp;&nbsp;2/2&nbsp;&nbsp;<span class="p">READY</span>
+web-<span class="c">aaaaa</span>&nbsp;&nbsp;1/1&nbsp;&nbsp;Running
+web-<span class="c">bbbbb</span>&nbsp;&nbsp;1/1&nbsp;&nbsp;Running</div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Kill a Pod</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl delete pod web-aaaaa
+<span class="g">pod "web-aaaaa" deleted</span></div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini">web-aaaaa&nbsp;&nbsp;<span class="r">Terminating</span>
+web-<span class="c">ccccc</span>&nbsp;&nbsp;<span class="c">ContainerCreating</span>
+web-ccccc&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;<span class="g"># replacement!</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · What we proved</div>
+<p class="small" style="margin:4px 0 0;">A ReplicaSet owns the Pods → deletion is a mismatch, not a tragedy. The <b>name</b> died; the <b>promise</b> didn't. (Standalone pods: <code>kubectl run p1 --image=nginx</code> then delete it — silence. Try it.)</p></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch28">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch30">next ▶</a></span><span>Page 32</span></div></div>
+
+<!-- ═══ CH30 LAB 2 ═══ -->
+<div class="page" id="ch30"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">📏 Scale &amp; Self-Healing</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Scale to 5</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl scale deploy web --replicas=5
+<span class="g">deployment.apps/web scaled</span></div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini">three new pods
+<span class="c">ContainerCreating → Running</span>
+<span class="g">total: 5/5</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Delete two at once</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl delete pod web-ccccc web-ddddd</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="g"># two replacements appear
+# concurrently, new random names</span>
+back to <span class="p">5/5</span> in seconds</div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 3 · The edge — starve it</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl scale deploy web --replicas=<span class="y">50</span>
+<span class="p">$</span> kubectl get pods</div></div>
+<div><div class="labtag">👀 YOU'LL SEE</div><div class="term mini">many pods stuck
+<span class="r">Pending</span>&nbsp;&nbsp;<span class="g"># not enough cluster CPU</span></div></div>
+</div>
+<p class="small" style="margin:6px 0 0;"><b>The lesson:</b> self-healing repairs <i>state</i>, not <i>capacity</i>. Scale back down: <code>kubectl scale deploy web --replicas=2</code>.</p></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Scale is just editing the promise.</b> The ReplicaSet reconciles upward and downward — surplus Pods get terminated, deficits get filled. Same loop, both directions.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch29">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch31">next ▶</a></span><span>Page 33</span></div></div>
+
+<!-- ═══ CH31 LAB 3 ═══ -->
+<div class="page" id="ch31"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🗂️ Namespaces</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Same name, two apartments</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl create ns dev
+<span class="p">$</span> kubectl run nginx --image=nginx -n dev
+<span class="p">$</span> kubectl run nginx --image=nginx</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="p">$</span> kubectl get pods -A | <span class="c">grep</span> nginx
+<span class="y">default&nbsp;&nbsp;</span>&nbsp;nginx&nbsp;&nbsp;Running
+<span class="y">dev&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;nginx&nbsp;&nbsp;Running
+<span class="g"># two different pods, zero collision</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Namespace flags matter</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl get pods          <span class="g"># default only</span>
+<span class="p">$</span> kubectl get pods -n dev    <span class="g"># dev only</span>
+<span class="p">$</span> kubectl get pods -A        <span class="g"># everything</span></div></div>
+<div><div class="labtag">👀 NOTE</div><div class="term mini"><span class="p">$</span> kubectl get nodes -n dev
+<span class="g"># same node list — -n is IGNORED
+# nodes are cluster-scoped!</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 3 · The cascade ⚠️</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl delete ns dev
+<span class="g">namespace "dev" deleted</span></div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="g"># everything inside dev is
+# terminated and removed —
+# the pod included</span></div></div>
+</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Deleting a namespace deletes EVERYTHING in it.</b> There is no trash can, no undo. In production, some teams even pin RBAC so only admins can delete namespaces.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch30">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch32">next ▶</a></span><span>Page 34</span></div></div>
+
+<!-- ═══ CH32 LAB 4 ═══ -->
+<div class="page" id="ch32"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">🎞️ Rollout &amp; Rollback</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Upgrade</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl set image deploy web nginx=<span class="y">nginx:1.26</span>
+<span class="p">$</span> kubectl rollout status deploy web</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="g">Waiting for deployment…</span>
+<span class="p">successfully rolled out</span>
+<span class="p">$</span> kubectl get rs
+<span class="g"># two RS: old 0, new 2</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Ship a broken tag</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl set image deploy web nginx=<span class="r">nginx:1.99</span>
+<span class="p">$</span> kubectl rollout status deploy web</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="r">Waiting… 1 unavailable</span>
+<span class="p">$</span> kubectl get pods
+<span class="g">one pod in ImagePullBackOff
+OLD pods still running!</span></div></div>
+</div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Roll back</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl rollout undo deploy web
+<span class="p">$</span> kubectl rollout history deploy web</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="p">successfully rolled out</span>
+<span class="g"># bad pod terminated, good ones back
+# history shows a NEW revision (v3)</span></div></div>
+</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The safety net is structural:</b> a bad rollout can never take down the old version — the Deployment only removes old Pods once new ones are Ready. Broken tag? The cluster waits, old version serves, you type <code>undo</code>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch31">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch33">next ▶</a></span><span>Page 35</span></div></div>
+
+<!-- ═══ CH33 LAB 5 ═══ -->
+<div class="page" id="ch33"><div class="pghead"><span class="chip">LAB 5</span><h2 class="t">🚧 Taints &amp; Tolerations</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Taint AFTER the Pod exists</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl taint node <span class="y">&lt;node&gt;</span> env=prod:NoSchedule
+<span class="p">$</span> kubectl scale deploy web --replicas=4</div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="g"># existing pods keep running
+# NEW 4th pod → Pending</span>
+<span class="r">0/1 Nodes available</span>
+<span class="g">…taint…that pod tolerates not</span></div></div>
+</div>
+<p class="small" style="margin:4px 0 0;"><b>Key insight:</b> <span class="stbadge st-run">NoSchedule</span> only gates <i>new</i> placements — it never evicts.</p></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Rescue with a toleration</div>
+<div class="term mini"><span class="c">spec</span>:
+  <span class="c">tolerations</span>:
+  - <span class="c">key</span>: env
+    <span class="c">operator</span>: <span class="y">Equal</span>
+    <span class="c">value</span>: prod
+    <span class="c">effect</span>: NoSchedule   <span class="g"># pod may now LAND on the tainted node</span></div>
+<p class="small" style="margin:4px 0 0;">Apply → the Pending pod schedules immediately. <b>Taint = the lock. Toleration = the key.</b></p></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 3 · NoExecute — the eviction</div>
+<div class="labcols">
+<div><div class="labtag">⚙️ RUN</div><div class="term mini"><span class="p">$</span> kubectl taint node <span class="y">&lt;node&gt;</span> env=prod:<span class="r">NoExecute</span></div></div>
+<div><div class="labtag">👀 EXPECTED</div><div class="term mini"><span class="g"># non-tolerating pods on that
+# node get EVICTED — now</span></div></div>
+</div></div>
+<table class="tb">
+<tr><th>Effect</th><th>Existing Pods</th><th>New Pods</th></tr>
+<tr><td><span class="stbadge st-run">NoSchedule</span></td><td>stay</td><td>blocked (unless tolerated)</td></tr>
+<tr><td><span class="stbadge st-pend">PreferNoSchedule</span></td><td>stay</td><td>avoided if possible</td></tr>
+<tr><td><span class="stbadge st-term">NoExecute</span></td><td><b>evicted</b></td><td>blocked (unless tolerated)</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Remember the direction:</b> taints repel (node → pods); tolerations permit (pod → tainted node). Taints <b>never attract</b> — for that you'd use nodeSelector/affinity (Book 04 in depth).</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch32">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch34">quiz ▶</a></span><span>Page 36</span></div></div>
+
+<!-- ═══ CH34 QUIZ ═══ -->
+<div class="page" id="ch34"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>A Kubernetes cluster consists of…<br><b>A.</b> API Server + etcd only &nbsp; <b>B.</b> Control Plane + Worker Nodes &nbsp; <b>C.</b> Nodes + Pods only &nbsp; <b>D.</b> Masters only</div>
+<div class="qz"><span class="qn">Q2.</span>Which component is the ONLY door to the cluster — everyone talks through it?<br><b>A.</b> etcd &nbsp; <b>B.</b> Scheduler &nbsp; <b>C.</b> API Server &nbsp; <b>D.</b> kubelet</div>
+<div class="qz"><span class="qn">Q3.</span>A worker dies running 1 of 3 Deployment replicas. What happens?<br><b>A.</b> Nothing until you fix the node &nbsp; <b>B.</b> Replica count drops to 2 &nbsp; <b>C.</b> A replacement Pod is created on a healthy node &nbsp; <b>D.</b> The whole Deployment restarts</div>
+<div class="qz"><span class="qn">Q4.</span>With 5 Control-Plane nodes, how many can fail before etcd loses quorum?<br><b>A.</b> 1 &nbsp; <b>B.</b> 3 &nbsp; <b>C.</b> 2 &nbsp; <b>D.</b> 4</div>
+<div class="qz"><span class="qn">Q5.</span><code>kubectl get nodes -n dev</code> returns…<br><b>A.</b> dev's nodes &nbsp; <b>B.</b> an error &nbsp; <b>C.</b> nothing &nbsp; <b>D.</b> all nodes — nodes are cluster-scoped, the flag is ignored</div>
+<div class="qz"><span class="qn">Q6.</span>You delete a ReplicaSet-owned Pod. Result?<br><b>A.</b> Gone forever &nbsp; <b>B.</b> Recreated with a new name &nbsp; <b>C.</b> Same Pod restarts &nbsp; <b>D.</b> ReplicaSet is deleted too</div>
+<div class="qz"><span class="qn">Q7.</span>Pod stuck in <code>ImagePullBackOff</code>. Most likely cause?<br><b>A.</b> Bad/typo image tag or missing registry credentials &nbsp; <b>B.</b> App crashed &nbsp; <b>C.</b> No CPU available &nbsp; <b>D.</b> Service misconfigured</div>
+<div class="qz"><span class="qn">Q8.</span>Valid NodePort range?<br><b>A.</b> 1024–65535 &nbsp; <b>B.</b> 1–1024 &nbsp; <b>C.</b> 8080–9999 &nbsp; <b>D.</b> 30000–32767</div>
+<div class="qz"><span class="qn">Q9.</span>kube-proxy's actual job?<br><b>A.</b> Forward packets between nodes &nbsp; <b>B.</b> Assign Pod IPs &nbsp; <b>C.</b> Watch Services/Endpoints and program node routing rules &nbsp; <b>D.</b> Run CoreDNS</div>
+<div class="qz"><span class="qn">Q10.</span>Which taint effect <b>evicts existing</b> non-tolerating Pods?<br><b>A.</b> NoExecute &nbsp; <b>B.</b> NoSchedule &nbsp; <b>C.</b> PreferNoSchedule &nbsp; <b>D.</b> EvictOnly</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch33">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch35">answers ▶</a></span><span>Page 37</span></div></div>
+
+<!-- ═══ CH35 KEY ═══ -->
+<div class="page" id="ch35"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>B</b></td><td>Cluster = Control Plane (decides) + Workers (execute) — CH 01</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>API Server is the only door; only it touches etcd — CH 02/04</td></tr>
+<tr><td>3</td><td><b>C</b></td><td>Desired 3 ≠ Actual 2 → reconciliation creates a replacement — CH 06/16</td></tr>
+<tr><td>4</td><td><b>C</b></td><td>Quorum of 5 = 3 → tolerate floor(5/2) = 2 failures — CH 08</td></tr>
+<tr><td>5</td><td><b>D</b></td><td>Nodes are cluster-scoped; <code>-n</code> is silently ignored — CH 11</td></tr>
+<tr><td>6</td><td><b>B</b></td><td>Ownership means the promise survives; new name each time — CH 15/16</td></tr>
+<tr><td>7</td><td><b>A</b></td><td>Pull failed: bad tag or private registry without credentials — CH 23</td></tr>
+<tr><td>8</td><td><b>D</b></td><td>30000–32767, auto-assigned if omitted — CH 25</td></tr>
+<tr><td>9</td><td><b>C</b></td><td>Watch &amp; program iptables/IPVS — never forwards traffic itself — CH 27</td></tr>
+<tr><td>10</td><td><b>A</b></td><td>NoExecute evicts now; NoSchedule/Prefer only block placement — CH 33</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Exam-ready on this material</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read the missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run the labs — then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q4 or Q10?</b> Those are the two most common interview traps: quorum math and NoExecute eviction. Missed Q5? The cluster-scoped list (Nodes, PVs, ClusterRoles, Namespaces) is a free exam point — memorize it.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch34">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch36">next ▶</a></span><span>Page 38</span></div></div>
+
+<!-- ═══ CH36 GLOSSARY ═══ -->
+<div class="page" id="ch36"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>Cluster</b> — Control Plane + Worker Nodes managed as one unit.</div>
+<div class="gl"><b>Control Plane</b> — the brain: API Server, etcd, Scheduler, Controllers. Makes decisions; runs no user workloads (by taint).</div>
+<div class="gl"><b>API Server</b> — the only door 🚪. All reads/writes (kubectl, kubelet, controllers) go through it; only it touches etcd.</div>
+<div class="gl"><b>etcd</b> — the cluster's memory 💾. Needs quorum (majority) to write — why production runs 3 or 5 Control Planes.</div>
+<div class="gl"><b>Scheduler</b> — assigns new Pods to Nodes based on resources, taints, affinity.</div>
+<div class="gl"><b>Controller</b> — reconciliation loop: watch actual vs desired, act to close the gap.</div>
+<div class="gl"><b>kubelet</b> — the node agent 👷. Talks to the API Server, runs Pods via the runtime, reports status.</div>
+<div class="gl"><b>Container Runtime</b> — pulls images and runs containers (containerd, CRI-O).</div>
+<div class="gl"><b>kube-proxy</b> — watches Services/Endpoints, programs iptables/IPVS rules per node. Never forwards packets itself.</div>
+<div class="gl"><b>Pod</b> — smallest deployable unit: 1+ containers sharing IP, volumes, lifecycle.</div>
+<div class="gl"><b>ReplicaSet</b> — the guarantor: keeps N matching-labeled Pods alive via a template.</div>
+<div class="gl"><b>Deployment</b> — manages ReplicaSets to enable versioned, zero-downtime rollouts and rollbacks.</div>
+<div class="gl"><b>Namespace</b> — logical partition of names + RBAC + quotas inside one cluster. Apartments, not buildings.</div>
+<div class="gl"><b>Service</b> — stable virtual IP + DNS name in front of a changing set of Pods.</div>
+<div class="gl"><b>NodePort</b> — Service type opening one high port (30000–32767) on every node.</div>
+<div class="gl"><b>Taint / Toleration</b> — node-side repulsion / pod-side permission. NoSchedule blocks placement; NoExecute also evicts.</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Self-test the glossary:</b> cover the right side, read each term, say the one-line definition aloud. If you can't — that's tonight's reading.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch35">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch37">next ▶</a></span><span>Page 39</span></div></div>
+
+<!-- ═══ CH37 CHEAT SHEET ═══ -->
+<div class="page" id="ch37"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">⚙️ Lifecycle</div><div class="term mini"><span class="p">$</span> kubectl create deploy web --image=nginx --replicas=3
+<span class="p">$</span> kubectl get pods -w
+<span class="p">$</span> kubectl scale deploy web --replicas=5
+<span class="p">$</span> kubectl set image deploy/web nginx=nginx:1.26
+<span class="p">$</span> kubectl rollout status|history|undo deploy/web
+<span class="p">$</span> kubectl delete deploy web</div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🩺 Debug</div><div class="term mini"><span class="p">$</span> kubectl describe pod P&nbsp;&nbsp;<span class="g"># events at BOTTOM</span>
+<span class="p">$</span> kubectl logs P --previous&nbsp;<span class="g"># crashed container</span>
+<span class="p">$</span> kubectl exec -it P -- sh
+<span class="p">$</span> kubectl get events --sort-by=.lastTimestamp
+<span class="g">Pending→scheduler · ImagePull→registry
+CrashLoop→app</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🌐 Service types</div><table class="tb" style="margin:0;"><tr><th>Type</th><th>Reach</th></tr><tr><td>ClusterIP</td><td>inside only (VIP + DNS)</td></tr><tr><td>NodePort</td><td>node:30000–32767 from outside</td></tr><tr><td>LoadBalancer</td><td>cloud LB → NodePorts</td></tr></table></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🚧 Taints</div><div class="term mini"><span class="p">$</span> kubectl taint node N k=v:NoSchedule
+<span class="p">$</span> kubectl taint node N k=v:NoExecute
+<span class="p">$</span> kubectl taint node N k=v:NoSchedule-<span class="g">&nbsp;# remove</span>
+<span class="g">tolerations: key/op/value/effect</span></div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>Cluster = CP + Workers · API Server is the only door · only it touches etcd</li>
+<li>Quorum: 3 CP → tolerate 1 · <b>2 CP is the worst number</b> · odd counts only</li>
+<li>Namespace partitions <b>names</b>, not hardware · Nodes are cluster-scoped</li>
+<li>Standalone Pod dies = gone · owned Pod dies = replaced (new name)</li>
+<li>Deployment → ReplicaSet(s) → Pods · rollback = new revision, not a rewind</li>
+<li>ClusterIP is a fiction · kube-proxy programs rules, forwards nothing</li>
+<li>One Pod = one IP · containers share localhost, volumes, and fate</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch36">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch38">finale ▶</a></span><span>Page 40</span></div></div>
+
+<!-- ═══ CH38 FINALE ═══ -->
+<div class="page" id="ch38"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ The Map You Can Draw From Memory</h2><span class="dbadge">🎓 graduation</span></div>
+<p class="lead">The whole book in one tree. Close this page, draw it on paper, then check yourself.</p>
+<div class="mtree"><b>☸️ CLUSTER</b>
+├── <b>🧠 CONTROL PLANE ×3</b> <span class="g">(quorum)</span>
+│   ├── <u>API Server</u> 🚪 <span class="g">← kubectl · kubelet · controllers · scheduler</span>
+│   ├── <u>etcd</u> 💾 <span class="g">← API Server only</span>
+│   ├── <u>Scheduler</u> 🎯 <span class="g">Pod → Node placement</span>
+│   └── <u>Controllers</u> 🔄 <span class="g">desired ↔ actual, forever</span>
+├── <b>🗂️ NAMESPACES</b> <span class="g">frontend · ai · dev (+ 4 system ns)</span>
+│   └── <u>Deployments → ReplicaSets → Pods 🫛</u> <span class="g">(+ Services · DNS)</span>
+└── <b>💪 WORKERS</b>
+    ├── <u>kubelet</u> 👷 <span class="g">agent ↔ API Server</span>
+    ├── <u>Runtime</u> ⚙️ <span class="g">containers</span>
+    └── <u>kube-proxy</u> 🌐 <span class="g">VIP rules · DNAT · never forwards</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Draw the two halves and name all 7 components with one verb each</li>
+<li>Explain self-healing as a <b>reconciliation loop</b>, not magic</li>
+<li>Do the quorum math and say why 2 Control Planes are the worst number</li>
+<li>Trace <code>nginx:1.25 → 1.26 → broken → undo</code> through the ReplicaSet versions</li>
+<li>Narrate one packet: DNS → VIP → DNAT → Pod → conntrack → home</li>
+<li>Taint a node, watch a Pod go Pending, write the toleration that rescues it</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next:</b> ConfigMaps · Secrets &amp; RBAC (Book 02) · Services deep-dive &amp; Ingress (Book 03) · Taints &amp; scheduling in full (Book 04). The spine you just learned is the same spine in every one of them.</div></div>
+<div class="center" style="margin-top:14px;font-size:20px;">— End of Book 01 · 🎬 —</div>
+<div class="pgfoot"><span>📘 The Complete Kubernetes Guide</span><span><a href="#ch37">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 41</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

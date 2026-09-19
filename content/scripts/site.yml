@@ -1,0 +1,11 @@
+---
+- name: Install nginx via generic role
+  hosts: all
+  become: true
+  roles:
+    - role: generic_package
+      vars:
+        package_name: nginx
+        service_name: nginx
+        app_port: 80
+        template_enabled: false

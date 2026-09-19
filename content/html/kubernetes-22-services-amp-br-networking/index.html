@@ -1,0 +1,871 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Services & Networking Deep Dive — Kubernetes Book 03</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm; background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch02 h3.sec{margin:10px 0 6px}
+#ch02 .callout,#ch02 .cka{margin:7px 0;padding:8px 11px}
+#ch02 .term,#ch02 .mtree,#ch02 table.tb{margin:8px 0}
+#ch02 .term,#ch02 .mtree{padding:9px 12px}
+#ch02 p.lead{margin:0 0 7px}
+#ch02 .grid2,#ch02 .grid3{margin:8px 0;gap:10px}
+#ch02 .card,#ch02 .zone,#ch02 .labstep{padding:9px 11px}
+#ch02 .qz{margin:6px 0;padding:6px 9px}
+#ch02 .gl{margin:3px 0;padding:4px 8px}
+#ch02 .rowc{margin:7px 0}
+#lab3 h3.sec{margin:10px 0 6px}
+#lab3 .callout,#lab3 .cka{margin:7px 0;padding:8px 11px}
+#lab3 .term,#lab3 .mtree,#lab3 table.tb{margin:8px 0}
+#lab3 .term,#lab3 .mtree{padding:9px 12px}
+#lab3 p.lead{margin:0 0 7px}
+#lab3 .grid2,#lab3 .grid3{margin:8px 0;gap:10px}
+#lab3 .card,#lab3 .zone,#lab3 .labstep{padding:9px 11px}
+#lab3 .qz{margin:6px 0;padding:6px 9px}
+#lab3 .gl{margin:3px 0;padding:4px 8px}
+#lab3 .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#lab3 p.small,#lab3 li{font-size:12.2px;line-height:1.42}
+#lab3 .callout,#lab3 .cka{font-size:12.2px;line-height:1.44}
+#lab3 .qz{font-size:11.3px;line-height:1.42}
+#lab3 .gl{font-size:10.8px;line-height:1.36}
+#lab3 .term{font-size:11.6px;line-height:1.55}
+#lab3 .mtree{font-size:11.8px;line-height:1.6}
+#lab3 table.tb{font-size:11.7px} #lab3 .tb td{padding:5px 8px}
+/* MICRO nudge for borderline pages (L2-insufficient, pre-split attempt) */
+#lab3 .callout,#lab3 .cka{margin:6px 0;padding:7px 10px}
+#lab3 .labstep{padding:7px 10px;margin:8px 0}
+#lab3 .term.mini{font-size:10.5px;padding:7px 10px}
+#lab3 .tabbody{font-size:11px;padding:8px 11px}
+#lab3 .zone{padding:7px 9px}
+#lab3 .rowc{margin:5px 0;gap:7px}
+#lab3 .grid2,#lab3 .grid3{gap:8px}
+#lab3 .kchip{padding:4px 10px}
+#lab3 ul.tick li{padding:3px 0 3px 2px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🌐</div>
+<h1>SERVICES &amp;<br>NETWORKING</h1>
+<div class="sub">Book 03 of the series — from NodePort demo tricks to production traffic: LoadBalancer, Ingress &amp; TLS termination, the controller ecosystem, NetworkPolicy zero-trust, CoreDNS internals, and the Gateway API that comes next.</div>
+<div class="row">
+<div class="glass">⚖️ LoadBalancer<small>cloud entry point</small></div>
+<div class="glass">🚦 Ingress<small>host &amp; path routing</small></div>
+<div class="glass">🔐 TLS<small>terminate at the edge</small></div>
+<div class="glass">🧭 Controllers<small>nginx · traefik…</small></div>
+</div>
+<div class="row">
+<div class="glass">🚧 NetworkPolicy<small>default-deny</small></div>
+<div class="glass">📮 CoreDNS<small>service discovery</small></div>
+<div class="glass">🛣️ Gateway API<small>the successor</small></div>
+<div class="glass">🧪 4 Labs<small>prove it hands-on</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 03 · CONTINUES BOOKS 01–02 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">7 parts · 22 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · Beyond NodePort</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>The Exposition Ladder<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>LoadBalancer — The Cloud Type<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>The Problem Ingress Solves<span class="dots"></span><span class="tp">p.5</span></a>
+<div class="tocpart">Part II · Ingress</div>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Ingress &amp; IngressClass<span class="dots"></span><span class="tp">p.6</span></a>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Host &amp; Path Routing<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>TLS Termination<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Ingress Controllers<span class="dots"></span><span class="tp">p.9</span></a>
+<div class="tocpart">Part III · NetworkPolicy</div>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>The Default-Allow World<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>NetworkPolicy — Ingress Rules<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>Egress + The Default-Deny Playbook<span class="dots"></span><span class="tp">p.12</span></a>
+<div class="tocpart">Part IV · DNS</div>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>CoreDNS — Discovery Internals<span class="dots"></span><span class="tp">p.13</span></a>
+<a class="tocrow" href="#ch12"><span class="cb"></span><span class="tnum">CH 12</span>dnsPolicy &amp; DNS Debugging<span class="dots"></span><span class="tp">p.14</span></a>
+<div class="tocpart">Part V · What's Next</div>
+<a class="tocrow" href="#ch13"><span class="cb"></span><span class="tnum">CH 13</span>Gateway API — The Successor<span class="dots"></span><span class="tp">p.15</span></a>
+<div class="tocpart">Part VI · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>Path Routing via Ingress<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>TLS on an Ingress<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>Default-Deny → Selective Allow<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>DNS Debugging from Inside a Pod<span class="dots"></span><span class="tp">p.19</span></a>
+<div class="tocpart">Part VII · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.21</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.22</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.23</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 04<span class="dots"></span><span class="tp">p.24</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–02.</b> You know ClusterIP/NodePort and the virtual-IP trick (Book 01 · CH 25–28), service DNS basics (Book 01 · CH 12), and Secrets — including the <code>tls</code> type (Book 02 · CH 05–07). This book takes traffic from "port 30080 and pray" to production-grade entry and zero-trust inside.</div></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">🪜 The Exposition Ladder</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">Three ways to reach a Service, each one delegating to the one below it. Book 01 showed the first two — this chapter frames them as a <b>ladder</b>, because every rung exists to fix the rung beneath.</p>
+<div class="zone zone-net">
+<div class="zlabel">The ladder — top is for humans, bottom is machinery</div>
+<div class="rowc"><div class="nb c-violet" style="min-width:230px;">⚖️ LoadBalancer<small>cloud LB · one public IP</small></div></div>
+<div class="stem"></div><div class="barwrap"><div class="hbar bar2"></div></div>
+<div class="cols">
+<div class="col"><div class="stub"></div><div class="nb c-sky" style="width:100%;">🚪 NodePort<small>30000–32767 on every node</small></div></div>
+<div class="col"><div class="stub"></div><div class="nb c-emerald" style="width:100%;">🕸️ ClusterIP<small>internal virtual IP only</small></div></div>
+</div>
+<p class="dnote">LB forwards to NodePorts · NodePorts forward through kube-proxy DNAT to Pods — each rung hides the one below</p>
+</div>
+<table class="tb">
+<tr><th>Rung</th><th>Reach</th><th>Kills it</th></tr>
+<tr><td><b>ClusterIP</b></td><td>inside the cluster only</td><td>literally unreachable from outside</td></tr>
+<tr><td><b>NodePort</b></td><td>any node's IP + a high port</td><td>raw ports, users hate <code>:30080</code>, no LB across nodes, no TLS story</td></tr>
+<tr><td><b>LoadBalancer</b></td><td>one cloud IP per Service</td><td>$$$ per Service — 10 services = 10 LB bills, and still no path routing</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the ladder is a delegation chain — <i>LoadBalancer → NodePort → ClusterIP → Pods</i>. NodePort solved reachability but not usability; LoadBalancer solved usability but not your cloud invoice. The next rung up — <b>Ingress</b> — fixes the invoice.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ First, the cloud rung in detail — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: LoadBalancer</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">⚖️ LoadBalancer — The Cloud Type</h2><span class="dbadge">🟡 5 MIN</span></div>
+<div class="term"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Service
+<span class="c">metadata</span>:
+  <span class="c">name</span>: web
+<span class="c">spec</span>:
+  <span class="c">type</span>: <span class="y">LoadBalancer</span>     <span class="g"># on a supported platform</span>
+  <span class="c">selector</span>: { <span class="c">app</span>: web }
+  <span class="c">ports</span>:
+  - <span class="c">port</span>: <span class="y">80</span>
+    <span class="c">targetPort</span>: <span class="y">8080</span></div>
+<h3 class="sec">🌩️ What actually happens on apply</h3>
+<div class="zone zone-cp" style="max-width:150mm;margin:0 auto;">
+<div class="rowc"><div class="nb c-blue" style="min-width:170px;">API Server<small>Service created</small></div><span class="harr">──►</span><div class="nb c-indigo" style="min-width:190px;">Cloud LoadBalancer Controller<small>watches Services</small></div></div>
+<div class="dn">▼</div>
+<div class="rowc"><div class="kchip">☁️ provisions ELB / Azure LB / GCLB<small>&nbsp;public IP assigned</small></div><span class="harr">──►</span><div class="nb c-sky" style="min-width:170px;">LB → NodePorts<small>of every healthy node</small></div><span class="harr">──►</span><div class="pod">🫛 Pods</div></div>
+</div>
+<div class="term"><span class="p">$</span> kubectl get svc web
+<span class="y">NAME&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EXTERNAL-IP&nbsp;&nbsp;PORT(S)</span>
+web&nbsp;&nbsp;&nbsp;LoadBalancer&nbsp;&nbsp;<span class="r">&lt;pending&gt;</span>&nbsp;&nbsp;80:31234/TCP&nbsp;&nbsp;<span class="g"># provisioning…</span>
+web&nbsp;&nbsp;&nbsp;LoadBalancer&nbsp;&nbsp;<span class="p">203.0.113.7</span>&nbsp;&nbsp;80:31234/TCP&nbsp;&nbsp;<span class="g"># ready ✓</span></div>
+<ul class="tick">
+<li>🔍 The NodePort in the port column is the tell: <b>LoadBalancer is NodePort underneath</b> — the LB just fronts it</li>
+<li>🏠 <b>No cloud?</b> On minikube run <code>minikube tunnel</code> and the <code>&lt;pending&gt;</code> becomes a real local IP; bare metal can run <b>MetalLB</b> to play the cloud controller's role</li>
+<li>💰 <b>Cost model:</b> one cloud LB <i>per Service</i> that asks — this is exactly the tax CH 03 abolishes</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b><code>&lt;pending&gt;</code> forever?</b> Either your platform has no LB controller (plain kubeadm, kind, Docker Desktop) or the cloud quota/IAM is blocking. The Service is never "broken" — the environment just can't fulfill the request.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <i>LoadBalancer = NodePort + a cloud wallet</i>. Great for the one true edge of an app; terrible as a per-microservice habit.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">💡 The Problem Ingress Solves</h2><span class="dbadge">🟢 4 MIN</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;">
+<div class="zlabel" style="text-align:left;">❌ Naive: one LB per Service</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;"><span class="r">cloud LB #1 → web-svc</span>
+<span class="r">cloud LB #2 → api-svc</span>
+<span class="r">cloud LB #3 → admin-svc</span>
+<span class="r">cloud LB #4 → docs-svc</span>
+<span class="g">$ × 4 · TLS certs × 4 · WAF × 4
+· no shared path rules · bill pain</span></div>
+</div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">✅ Ingress: one edge, many routes</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">cloud LB <span class="u">(just 1)</span>
+└── Ingress controller
+    ├── shop.example.com      → web-svc
+    ├── example.com/api       → api-svc
+    ├── example.com/admin     → admin-svc
+    └── docs.example.com      → docs-svc
+<span class="g">1 bill · 1 TLS cert · L7 rules as YAML</span></div>
+</div>
+</div>
+<p class="lead">Ingress is <b>Layer-7</b> awareness at the edge: it reads the HTTP <b>hostname</b> and <b>path</b> and routes accordingly — something NodePort/LoadBalancer (dumb TCP forwards) fundamentally cannot do.</p>
+<div class="rowc">
+<div class="kchip">🌍 https://shop.example.com</div><span class="harr">┐</span>
+<div class="kchip">🌍 https://example.com/api</div><span class="harr">┤</span><span class="harr">──►</span>
+<div class="nb c-violet" style="min-width:150px;">🚦 Ingress<small>1 LB · 1 TLS</small></div><span class="harr">──►</span>
+<div class="pod">web</div><div class="pod">api</div><div class="pod">docs</div>
+</div>
+<div class="callout co-fun"><span class="ico">😄</span><div><b>Apartment update:</b> LoadBalancer built every visitor their own private bridge to one apartment. Ingress hired a <b>front desk</b>: one entrance, a directory, and it reads the address on your letter to send you to the right apartment.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Ingress consolidates N cloud load balancers into one, and upgrades dumb port-forwarding into <b>hostname/path-aware HTTP routing</b> — declared as plain YAML, versioned with your app.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🚦 Ingress &amp; IngressClass</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Two facts before any YAML: <b>(1)</b> an Ingress is just a rulebook — <b>nothing forwards traffic until a controller reads it</b>; <b>(2)</b> <code>ingressClassName</code> declares <i>which</i> controller owns it.</p>
+<div class="term"><span class="c">apiVersion</span>: networking.k8s.io/v1
+<span class="c">kind</span>: Ingress
+<span class="c">metadata</span>:
+  <span class="c">name</span>: main
+<span class="c">spec</span>:
+  <span class="c">ingressClassName</span>: <span class="y">nginx</span>     <span class="g"># which referee handles this rulebook</span>
+  <span class="c">rules</span>:
+  - <span class="c">host</span>: <span class="m">demo.local</span>
+    <span class="c">http</span>:
+      <span class="c">paths</span>:
+      - <span class="c">path</span>: <span class="m">/</span>
+        <span class="c">pathType</span>: <span class="y">Prefix</span>
+        <span class="c">backend</span>:
+          <span class="c">service</span>: { <span class="c">name</span>: web, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">80</span> } }</div>
+<table class="tb">
+<tr><th>Piece</th><th>Role</th><th>Apartment translation</th></tr>
+<tr><td><code>Ingress</code></td><td>the routing rulebook ( declarative YAML)</td><td>the front-desk directory</td></tr>
+<tr><td><code>IngressClass</code></td><td>named type of controller; routes rulebooks to referees</td><td>which security firm staffs the desk</td></tr>
+<tr><td><b>Ingress Controller</b></td><td>actual reverse proxy watching Ingress objects</td><td>the desk itself</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The silent trap:</b> <code>kubectl apply</code> an Ingress with <b>no controller installed</b> and you get <b>zero errors</b> — the object is stored, accepted, and does nothing. The classic symptom: Ingress exists, <code>get ingress</code> shows no ADDRESS, curl hangs. Check <code>kubectl get ingressclass</code> first.</div></div>
+<div class="term mini"><span class="g"># minikube — one command installs ingress-nginx + the "nginx" IngressClass:</span>
+<span class="p">$</span> minikube addons enable ingress
+<span class="p">$</span> kubectl get pods -n ingress-nginx
+<span class="g">ingress-nginx-controller-xxxxx&nbsp;&nbsp;1/1&nbsp;&nbsp;Running</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Rulebook vs referee:</b> the Ingress <i>object</i> states intent; the <i>controller</i> is the running reverse proxy that enforces it. Kubernetes ships the grammar — you supply the proxy.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🛣️ Host &amp; Path Routing</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The full routing surface: multiple <b>hosts</b>, each with multiple <b>paths</b>, each pointing at its own Service.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">ingressClassName</span>: <span class="y">nginx</span>
+  <span class="c">rules</span>:
+  - <span class="c">host</span>: <span class="m">shop.example.com</span>            <span class="g"># name-based virtual host</span>
+    <span class="c">http</span>:
+      <span class="c">paths</span>:
+      - <span class="c">path</span>: <span class="m">/api</span>
+        <span class="c">pathType</span>: <span class="y">Prefix</span>
+        <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: api-svc, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">80</span> } } }
+      - <span class="c">path</span>: <span class="m">/</span>
+        <span class="c">pathType</span>: <span class="y">Prefix</span>
+        <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: web-svc, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">80</span> } } }
+  - <span class="c">host</span>: <span class="m">docs.example.com</span>             <span class="g"># second host, same edge</span>
+    <span class="c">http</span>:
+      <span class="c">paths</span>:
+      - <span class="c">path</span>: <span class="m">/</span>
+        <span class="c">pathType</span>: <span class="y">Prefix</span>
+        <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: docs-svc, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">80</span> } } }</div>
+<table class="tb">
+<tr><th>pathType</th><th>Matches</th><th><code>/api/v1</code>?</th></tr>
+<tr><td><code>Prefix</code></td><td>path <i>and everything under it</i>, by segments</td><td>✅ yes (for <code>/api</code>)</td></tr>
+<tr><td><code>Exact</code></td><td>only the literal path</td><td>❌ no — only <code>/api</code> itself</td></tr>
+<tr><td><code>ImplementationSpecific</code></td><td>controller decides (nginx treats it like Prefix + regex support)</td><td>controller-defined</td></tr>
+</table>
+<ul class="tick">
+<li>🧮 <b>Order doesn't matter</b> — nginx sorts by longest-prefix, so <code>/api</code> wins over <code>/</code> no matter where it's listed</li>
+<li>🎯 No host field at all = catch-all for <b>every</b> hostname hitting the edge (handy, but easy to shadow specific rules — be deliberate)</li>
+</ul>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Testing locally:</b> map the hostname in <code>/etc/hosts</code> → <code>&lt;minikube-ip&gt; demo.local shop.example.com</code>, then plain <code>curl http://shop.example.com/api</code>. No DNS purchased — the Host header does the routing.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Mental model:</b> hosts are <b>apartments in the directory</b>, paths are <b>rooms within them</b>. One edge serves the whole building — the request's Host header is the mailman reading the label.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🔐 TLS Termination</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">"Termination" = the TLS handshake <b>ends at the ingress</b>. Users get HTTPS; your Pods receive plain HTTP on the internal network. One cert, managed once, at the edge.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">tls</span>:
+  - <span class="c">hosts</span>: [<span class="m">shop.example.com</span>]
+    <span class="c">secretName</span>: <span class="y">shop-tls</span>       <span class="g"># type kubernetes.io/tls (Book 02 · CH 05)</span>
+  <span class="c">rules</span>:
+  - <span class="c">host</span>: <span class="m">shop.example.com</span>
+    <span class="c">http</span>:
+      <span class="c">paths</span>:
+      - <span class="c">path</span>: <span class="m">/</span>
+        <span class="c">pathType</span>: <span class="y">Prefix</span>
+        <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: web-svc, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">80</span> } } }  <span class="g"># plain HTTP here!</span></div>
+<div class="term mini"><span class="g"># the secret the edge serves (self-signed for labs — Lab 2 does it live):</span>
+<span class="p">$</span> openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
+    <span class="y">-keyout</span> tls.key <span class="y">-out</span> tls.crt <span class="y">-subj</span> <span class="m">"/CN=shop.example.com"</span>
+<span class="p">$</span> kubectl create secret tls shop-tls <span class="y">--cert</span>=tls.crt <span class="y">--key</span>=tls.key</div>
+<div class="zone zone-net" style="max-width:150mm;margin:0 auto;">
+<div class="zlabel">Termination point</div>
+<div class="rowc">
+<div class="kchip">🌍 HTTPS 🔒</div><span class="harr">──►</span>
+<div class="nb c-violet" style="min-width:150px;">Ingress<small>🔒 decrypts here</small></div><span class="harr">──►</span>
+<div class="kchip">HTTP (plain)</div><span class="harr">──►</span>
+<div class="pod">🫛 Pod :80</div>
+</div>
+</div>
+<ul class="tick">
+<li>🔁 Re-encryption (HTTPS all the way to Pods) is possible but controller-specific — check before promising "end-to-end encrypted" in a security review</li>
+<li>🎟️ Production certs come from cert-manager (Let's Encrypt automation) — same <code>secretName</code> mechanism, the cert just appears</li>
+<li>⚠️ Missing/expired secret named in <code>tls</code> → nginx serves a <b>fake default cert</b>; browsers scream. Diagnose: check the cert issuer, not just the padlock</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> TLS terminates at the edge — the padlock in the user's bar is the Ingress's certificate; inside the cluster, traffic rides the private network as HTTP unless you deliberately re-encrypt.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🧭 Ingress Controllers</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A controller is a <b>reverse proxy in a Pod</b> + a reconciliation loop: watch Ingress objects → render proxy config → hot-reload. The <code>ingress-nginx</code> controller literally writes an <code>nginx.conf</code> for your rulebook.</p>
+<div class="mtree" style="font-size:12px;"><b>Ingress objects</b> <span class="g">(the rulebooks)</span>
+      │ watch
+      ▼
+<b>Controller Pod</b> <span class="g">render config → reload proxy</span>
+      │
+      ▼
+<b>nginx/traefik/haproxy</b> <span class="g">the process actually serving :80/:443</span></div>
+<table class="tb">
+<tr><th>Controller</th><th>Underlying proxy</th><th>Know it for</th></tr>
+<tr><td><b>ingress-nginx</b></td><td>nginx</td><td>the de-facto standard; huge annotation ecosystem; minikube addon</td></tr>
+<tr><td><b>Traefik</b></td><td>traefik (Go)</td><td>CERT-by-default ACME, CRD-native, popular in homelab/k3s</td></tr>
+<tr><td><b>HAProxy</b></td><td>haproxy</td><td>raw TCP performance pedigree</td></tr>
+<tr><td><b>AWS ALB / GCE</b></td><td>managed cloud LB</td><td>Ingress provisions <i>real</i> ALB/GLB instead of in-cluster proxy</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Annotation culture — power and trap:</b> behavior beyond core routing (rewrites, CORS, IP allowlists, timeouts) arrives via per-controller <b>annotations</b>, e.g. <code>nginx.ingress.kubernetes.io/rewrite-target: /</code>. Powerful — but <b>non-portable</b>: swap controllers and those annotations are silently meaningless. K8s-native versions of some of this live in the Gateway API (CH 13).</div></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Which nginx is which?</b> <code>ingress-nginx</code> = community/kubernetes project. <code>nginx-ingress</code> = F5/NGINX Inc's separate product. Same proxy core, different projects, different annotations — a classic interview gotcha.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the controller is the muscle behind the rulebook — pick one, pin its <code>IngressClass</code>, and treat its annotations as vendor glue to be minimized.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">🔓 The Default-Allow World</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">Book 01 built the flat network: every Pod gets a routable IP and — <b>by default — may talk to every other Pod</b>. Frontend to database, and <i>your-laptop-sidecar to database</i>, all equally welcome.</p>
+<div class="zone" style="border-color:#fca5a5;background:rgba(254,242,242,.6);">
+<div class="zlabel">No NetworkPolicy = zero segmentation</div>
+<div class="rowc">
+<div class="pod">🫛 frontend</div><span class="harr">──►</span>
+<div class="pod">🫛 payment-api</div><span class="harr">──►</span>
+<div class="nb c-rose" style="min-width:130px;">🗄️ postgres<small>:5432</small></div>
+</div>
+<div class="rowc" style="margin-top:2px;">
+<div class="kchip">💀 any compromised pod<small>&nbsp;same rights!</small></div><span class="harr">──►</span>
+<div class="nb c-rose" style="min-width:130px;">🗄️ postgres<small>direct line 😱</small></div>
+</div>
+</div>
+<table class="tb">
+<tr><th>Assumption</th><th>Reality</th></tr>
+<tr><td>"Only my Services can reach my Pods"</td><td>❌ Services are for <i>discovery</i> — Pod-to-Pod by raw IP works regardless</td></tr>
+<tr><td>"Namespaces isolate the network"</td><td>❌ Book 01 · CH 11: namespaces partition <b>names</b>, not traffic — cross-namespace Pod calls flow freely by default</td></tr>
+<tr><td>"We'd notice lateral movement"</td><td>❌ nothing logs what was never segmented</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why flat-by-default?</b> The IP-per-Pod model promises "Pods are like hosts on one big network" — zero-config apps. The price is that <b>security becomes opt-in</b>, via the object the next chapter teaches.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the Kubernetes network starts as a single open room — <b>any pod, any pod, forever</b> — until a NetworkPolicy walls off a table. Zero-trust here is a YAML you have to write.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🚧 NetworkPolicy — Ingress Rules</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The grammar in one sentence: <b>"Pods selected by <code>podSelector</code> may receive connections only from allowed sources, only on allowed ports."</b> The instant one policy selects a Pod, default-allow flips to default-deny <i>for that Pod</i>.</p>
+<div class="term"><span class="c">apiVersion</span>: networking.k8s.io/v1
+<span class="c">kind</span>: NetworkPolicy
+<span class="c">metadata</span>:
+  <span class="c">name</span>: allow-frontend-to-api
+  <span class="c">namespace</span>: shop
+<span class="c">spec</span>:
+  <span class="c">podSelector</span>:                 <span class="g"># THE TARGET — who is being protected</span>
+    <span class="c">matchLabels</span>: { <span class="c">app</span>: api }
+  <span class="c">policyTypes</span>: [<span class="y">Ingress</span>]
+  <span class="c">ingress</span>:
+  - <span class="c">from</span>:                       <span class="g"># allowed SOURCES (any of these)</span>
+    - <span class="c">podSelector</span>:             <span class="g"># same-namespace pods with…</span>
+        <span class="c">matchLabels</span>: { <span class="c">app</span>: frontend }
+    - <span class="c">namespaceSelector</span>:       <span class="g"># …OR all pods from matching namespaces</span>
+        <span class="c">matchLabels</span>: { <span class="c">kubernetes.io/metadata.name</span>: monitoring }
+    <span class="c">ports</span>:
+    - { <span class="c">protocol</span>: <span class="y">TCP</span>, <span class="c">port</span>: <span class="y">8080</span> }   <span class="g"># …only this port</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The AND/OR trap (interview favorite):</b> inside <b>one</b> <code>from</code> list item, <code>podSelector</code> + <code>namespaceSelector</code> = <b>AND</b> (pods matching this label <i>in those</i> namespaces). Across <b>separate</b> items = <b>OR</b> (either source). One character of YAML indentation changes the security meaning.</div></div>
+<ul class="tick">
+<li>➕ <b>Policies are additive:</b> if two policies select the same Pod, the allowed set is the <b>union</b> — policies can only ever <i>add</i> permission, never subtract</li>
+<li>🎯 Empty <code>podSelector: {}</code> = <b>every Pod in the namespace</b> (no <code>matchLabels</code> field at all)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Carry the four questions:</b> <i>who's protected (podSelector)? who may call (from)? on what ports? and does a second policy union with this one?</i> — that's 90% of every NetworkPolicy review.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🚫 Egress + The Default-Deny Playbook</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Same grammar, opposite direction. And the industry-standard starting posture: <b>deny everything, then allow named flows.</b></p>
+<div class="term"><span class="c">kind</span>: NetworkPolicy
+<span class="c">metadata</span>: { <span class="c">name</span>: default-deny-all, <span class="c">namespace</span>: shop }
+<span class="c">spec</span>:
+  <span class="c">podSelector</span>: {}              <span class="g"># every pod in shop</span>
+  <span class="c">policyTypes</span>: [<span class="y">Ingress</span>, <span class="y">Egress</span>]
+  <span class="c">ingress</span>: []                  <span class="g"># empty = deny ALL inbound</span>
+  <span class="c">egress</span>: []                   <span class="g"># empty = deny ALL outbound</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The classic default-deny self-own:</b> deny-all <b>egress</b> instantly kills DNS — no pod can resolve <i>anything</i>. The very first egress allow in any cluster is DNS:</div></div>
+<div class="term mini"><span class="c">kind</span>: NetworkPolicy
+<span class="c">metadata</span>: { <span class="c">name</span>: allow-dns }
+<span class="c">spec</span>:
+  <span class="c">podSelector</span>: {}
+  <span class="c">policyTypes</span>: [<span class="y">Egress</span>]
+  <span class="c">egress</span>:
+  - <span class="c">to</span>:
+    - <span class="c">namespaceSelector</span>:
+        <span class="c">matchLabels</span>: { <span class="c">kubernetes.io/metadata.name</span>: <span class="y">kube-system</span> }
+    <span class="c">ports</span>:
+    - { <span class="c">protocol</span>: <span class="y">UDP</span>, <span class="c">port</span>: <span class="y">53</span> }
+    - { <span class="c">protocol</span>: <span class="y">TCP</span>, <span class="c">port</span>: <span class="y">53</span> }</div>
+<h3 class="sec">📋 The production playbook</h3>
+<div class="rowc">
+<div class="kchip">1 · default-deny all</div><span class="harr">→</span>
+<div class="kchip">2 · allow DNS :53</div><span class="harr">→</span>
+<div class="kchip">3 · allow app flows<small>&nbsp;frontend→api, api→db</small></div><span class="harr">→</span>
+<div class="kchip">4 · allow ingress-ctrl → apps</div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>CNI reality check:</b> NetworkPolicy is just an API — <b>the CNI plugin must enforce it</b>. Calico, Cilium, Weave enforce; <b>flannel does not</b> (policies apply silently, block nothing). If policies "don't work", check your CNI before your YAML. Verify with Lab 3, not with hope.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> default-deny + explicit allows = the Kubernetes zero-trust baseline — and rule #1 of deny-all egress is <b>allow DNS first or nothing works and everything looks broken</b>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">📮 CoreDNS — Discovery Internals</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Book 01 asserted "every Service gets a DNS name." Here's the machinery: a <b>CoreDNS Deployment in <code>kube-system</code></b>, fronted by the <code>kube-dns</code> Service — the cluster's phone book.</p>
+<div class="mtree" style="font-size:12px;"><b>Pod</b> <span class="g">resolv.conf → nameserver 10.96.0.10</span>
+      │ query: "v1.default…"
+      ▼
+<b>kube-dns Service</b> <span class="g">(ClusterIP, stable — dogfooding!)</span>
+      ▼
+<b>CoreDNS Pods</b> <span class="g">watch API Server → build zone in memory</span>
+      ▼
+<span class="u">svc.cluster.local zone</span> <span class="g">every Service &amp; Pod IP, auto</span></div>
+<div class="term mini"><span class="g"># the cluster zone lives in a ConfigMap — the "Corefile":</span>
+<span class="p">$</span> kubectl -n kube-system get cm coredns -o yaml
+<span class="c">Corefile</span>: |
+  .:53 {
+      <span class="y">kubernetes</span> cluster.local <span class="g"># ← serves the cluster zone from the API</span>
+      <span class="y">forward</span> . /etc/resolv.conf  <span class="g"># everything else → upstream DNS</span>
+  }</div>
+<table class="tb">
+<tr><th>Query form</th><th>Resolves</th><th>Works from</th></tr>
+<tr><td><code>v1</code></td><td>same namespace</td><td>pods in <code>default</code> (search list fills the rest)</td></tr>
+<tr><td><code>v1.dev</code></td><td>Service <code>v1</code> in ns <code>dev</code></td><td>anywhere</td></tr>
+<tr><td><code>v1.dev.svc.cluster.local</code></td><td>full FQDN</td><td>anywhere (always works)</td></tr>
+</table>
+<ul class="tick">
+<li>🪄 Zero registration: "create a Service" <i>is</i> the DNS record — CoreDNS watches the API, no sidecar config</li>
+<li>🔎 It also serves <b>Pod records</b> (<code>ip-10-244-1-5.default.pod.cluster.local</code>) and <b>SVC/AAAA</b> types — headless Services return Pod IPs directly</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> CoreDNS is a small API-watching DNS server — the reason service discovery needs no setup, and the reason a broken <code>kube-dns</code> Service makes the entire cluster feel dead.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch12">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ CH12 ═══ -->
+<div class="page" id="ch12"><div class="pghead"><span class="chip">CH 12</span><h2 class="t">🔧 dnsPolicy &amp; DNS Debugging</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<table class="tb">
+<tr><th>dnsPolicy</th><th>Pod uses…</th><th>When</th></tr>
+<tr><td><code>ClusterFirst</code> <span class="stbadge st-comp">default</span></td><td>CoreDNS (cluster names + forwarded externals)</td><td>99% of Pods</td></tr>
+<tr><td><code>Default</code></td><td>the <b>node's</b> resolv.conf — no cluster names!</td><td>rare; e.g. heavy external-DNS workloads</td></tr>
+<tr><td><code>ClusterFirstWithHostNet</code></td><td>CoreDNS even for hostNetwork Pods</td><td>hostNetwork daemons that still need Service names</td></tr>
+<tr><td><code>None</code></td><td>whatever <code>dnsConfig</code> supplies</td><td>full manual control (custom nameservers/search)</td></tr>
+</table>
+<h3 class="sec">🪤 ndots:5 — the sneaky perf tax</h3>
+<div class="term mini"><span class="g"># a default pod's resolv.conf:</span>
+search default.svc.cluster.local svc.cluster.local cluster.local
+options <span class="y">ndots:5</span>
+<span class="g"># any name with &lt;5 dots is tried AS-IS *and* against every search
+# suffix → "google.com" = 1 + 3 = 4 queries. measure, don't guess.</span></div>
+<h3 class="sec">🩺 The debug ladder (Lab 4 runs it live)</h3>
+<div class="term"><span class="p">$</span> kubectl exec dns -- <span class="c">nslookup</span> v1                 <span class="g"># 1 · short name (same ns)</span>
+<span class="p">$</span> kubectl exec dns -- <span class="c">nslookup</span> v1.dev              <span class="g"># 2 · cross-namespace</span>
+<span class="p">$</span> kubectl exec dns -- <span class="c">nslookup</span> kubernetes.default   <span class="g"># 3 · the built-in canary</span>
+<span class="p">$</span> kubectl exec dns -- <span class="c">cat</span> /etc/resolv.conf          <span class="g"># 4 · who's my resolver?</span></div>
+<ul class="tick">
+<li>✅ FQDN resolves but short name fails → search list/<code>ndots</code> issue, not DNS death</li>
+<li>✅ nothing resolves + timeouts → check CoreDNS Pods (<code>-n kube-system</code>) and the <code>kube-dns</code> Service endpoints</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <code>ClusterFirst</code> quietly gives every Pod the cluster phone book plus upstream forwarding — and every "DNS is down" incident is solved by the four-command ladder above, in order.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch13">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ CH13 ═══ -->
+<div class="page" id="ch13"><div class="pghead"><span class="chip">CH 13</span><h2 class="t">🛣️ Gateway API — The Successor</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">Ingress won the world but shows its age: routing power locked behind <b>vendor annotations</b>, cross-namespace routing unsafe, one blob of YAML mixing infra and app concerns. The <b>Gateway API</b> (SIG-Network, <b>GA since v1.0</b>) is the redesigned successor.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">Ingress (2015 model)</div>
+<ul class="tick" style="margin:0;"><li>behavior via per-controller <b>annotations</b> 🩹</li><li>cross-namespace = footgun territory</li><li>platform + app concerns in one object</li><li>not going away — huge installed base</li></ul></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">Gateway API</div>
+<ul class="tick" style="margin:0;"><li><b>native fields</b> — headers, weights, method routing</li><li>cross-namespace via explicit <code>ReferenceGrant</code></li><li><b>role-split objects</b> (see below)</li><li>portable: any conforming implementation</li></ul></div>
+</div>
+<div class="term"><span class="g"># role separation — the headline idea:</span>
+<span class="c">GatewayClass</span>   <span class="g"># platform team: "we run nginx-gateway"</span>
+<span class="c">Gateway</span>        <span class="g"># platform team: listener :443 + TLS cert</span>
+<span class="c">HTTPRoute</span>      <span class="g"># APP team: my host/path → my svc   ← attaches to the Gateway</span>
+<span class="g"># (+ GRPCRoute, TLSRoute… — and app teams never touch LB config)</span></div>
+<div class="term mini"><span class="c">kind</span>: HTTPRoute
+<span class="c">metadata</span>: { <span class="c">name</span>: shop }
+<span class="c">spec</span>:
+  <span class="c">parentRefs</span>: [{ <span class="c">name</span>: edge-gateway }]     <span class="g"># bind to the shared Gateway</span>
+  <span class="c">hostnames</span>: [<span class="m">shop.example.com</span>]
+  <span class="c">rules</span>:
+  - <span class="c">matches</span>: [{ <span class="c">path</span>: { <span class="c">type</span>: <span class="y">PathPrefix</span>, <span class="c">value</span>: <span class="m">/api</span> }}]
+    <span class="c">backendRefs</span>: [{ <span class="c">name</span>: api-svc, <span class="c">port</span>: <span class="y">80</span>, <span class="c">weight</span>: <span class="y">90</span> }]
+  - <span class="c">backendRefs</span>: [{ <span class="c">name</span>: web-svc, <span class="c">port</span>: <span class="y">80</span> }]  <span class="g"># canary: weight 10</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Adoption note:</b> needs a Gateway-API controller installed (nginx-gateway, Envoy Gateway, Traefik v3+…). Guidance for new designs: <i>prototype on Ingress today, keep annotations minimal, know your escape hatch is Gateway API</i> — Book 08's GitOps tooling speaks both.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Gateway API keeps Ingress's job but fixes its politics — <b>infrastructure (Gateway) owned by platform teams, routes (HTTPRoute) owned by app teams</b>, with portability and canary weights as first-class citizens.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch12">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Path Routing via Ingress</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Controller + two apps</div>
+<div class="term mini"><span class="p">$</span> minikube addons enable ingress
+<span class="p">$</span> kubectl create deploy v1 --image=hashicorp/http-echo -- <span class="y">-text</span>=hello-v1
+<span class="p">$</span> kubectl create deploy v2 --image=hashicorp/http-echo -- <span class="y">-text</span>=hello-v2
+<span class="p">$</span> kubectl expose deploy v1 --port=5678 &amp;&amp; kubectl expose deploy v2 --port=5678
+<span class="g"># printf-style echo servers: perfect for proving WHO answered</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · The rulebook</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: networking.k8s.io/v1
+<span class="c">kind</span>: Ingress
+<span class="c">metadata</span>: { <span class="c">name</span>: routes }
+<span class="c">spec</span>:
+  <span class="c">ingressClassName</span>: nginx
+  <span class="c">rules</span>:
+  - <span class="c">host</span>: demo.local
+    <span class="c">http</span>:
+      <span class="c">paths</span>:
+      - { <span class="c">path</span>: <span class="m">/v1</span>, <span class="c">pathType</span>: <span class="y">Prefix</span>,
+          <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: v1, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">5678</span> } } } }
+      - { <span class="c">path</span>: <span class="m">/v2</span>, <span class="c">pathType</span>: <span class="y">Prefix</span>,
+          <span class="c">backend</span>: { <span class="c">service</span>: { <span class="c">name</span>: v2, <span class="c">port</span>: { <span class="c">number</span>: <span class="y">5678</span> } } } }
+<span class="c">EOF</span></div>
+<p class="small" style="margin:6px 0 0;">Add to <code>/etc/hosts</code> (admin): <code>&lt;minikube ip&gt; demo.local</code></p></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TEST</div><div class="tabbody"><span class="p">$</span> curl demo.local/v1
+<span class="p">hello-v1</span>
+<span class="p">$</span> curl demo.local/v2
+<span class="p">hello-v2</span>&nbsp;&nbsp;<span class="g"># path → service, proven</span>
+<span class="p">$</span> curl demo.local/v1/extra
+<span class="p">hello-v1</span>&nbsp;&nbsp;<span class="g"># Prefix catches subpaths</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 PROOF IT'S L7</div><div class="tabbody"><span class="g"># same port 80 for both —
+# only the PATH differed.
+# A NodePort could never do
+# this without 2 services
+# on 2 ports.</span></div></div>
+</div>
+<p class="small"><b>Teardown:</b> <code>kubectl delete ingress routes &amp;&amp; kubectl delete deploy v1 v2 &amp;&amp; kubectl delete svc v1 v2</code></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#ch13">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔐 TLS on an Ingress</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Cert + Secret (Book 02 · CH 05 in action)</div>
+<div class="term mini"><span class="p">$</span> openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
+    <span class="y">-keyout</span> tls.key <span class="y">-out</span> tls.crt <span class="y">-subj</span> <span class="m">"/CN=demo.local"</span>
+<span class="p">$</span> kubectl create secret tls demo-tls <span class="y">--cert</span>=tls.crt <span class="y">--key</span>=tls.key</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Add the tls block to the Lab 1 Ingress</div>
+<div class="term mini"><span class="p">$</span> kubectl patch ingress routes <span class="y">--type</span>=merge <span class="y">-p</span> \
+  <span class="m">'{"spec":{"tls":[{"hosts":["demo.local"],"secretName":"demo-tls"}]}}'</span>
+<span class="p">$</span> kubectl get ingress routes
+<span class="y">HOSTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PORTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGE</span>
+demo.local&nbsp;&nbsp;<span class="p">80, 443</span>&nbsp;&nbsp;<span class="g"># 443 appeared</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TEST HTTPS</div><div class="tabbody"><span class="p">$</span> curl -<span class="y">k</span> https://demo.local/v1
+<span class="p">hello-v1</span>&nbsp;&nbsp;<span class="g"># works! (-k: self-signed)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 INSPECT THE CERT</div><div class="tabbody"><span class="p">$</span> curl -kv https://demo.local 2&gt;&amp;1 | <span class="c">grep</span> subject
+<span class="y">subject: CN=demo.local</span>
+<span class="g"># the EDGE serves your secret —
+# pods never saw a cert</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> termination happens at the Ingress (CH 06) — one self-signed secret, HTTPS at the edge, plain HTTP behind. <b>Teardown:</b> Lab 1 teardown + <code>kubectl delete secret demo-tls</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🚧 Default-Deny → Selective Allow</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="callout co-warn" style="margin-top:0;"><span class="ico">⚠️</span><div><b>CNI check first:</b> minikube default (bridge/kindnet) does <b>not</b> enforce policies. Restart with Calico, or run this lab on a cluster whose CNI enforces: <code>minikube delete &amp;&amp; minikube start --cni=calico</code>.</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Players: a server, a labeled client, an unlabeled client</div>
+<div class="term mini"><span class="p">$</span> kubectl create deploy v1 --image=hashicorp/http-echo -- <span class="y">-text</span>=hello-v1
+<span class="p">$</span> kubectl expose deploy v1 --port=5678
+<span class="p">$</span> kubectl run client --image=busybox:1.36 --restart=Never -- sleep 9999
+<span class="p">$</span> kubectl run stranger --image=busybox:1.36 --restart=Never -- sleep 9999</div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Deny all ingress to v1</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: networking.k8s.io/v1
+<span class="c">kind</span>: NetworkPolicy
+<span class="c">metadata</span>: { <span class="c">name</span>: deny-v1 }
+<span class="c">spec</span>:
+  <span class="c">podSelector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: v1 } }
+  <span class="c">policyTypes</span>: [<span class="y">Ingress</span>]
+  <span class="c">ingress</span>: []
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl exec client -- <span class="c">wget</span> -qO- -T 3 http://v1:5678
+<span class="r">wget: download timed out</span>&nbsp;&nbsp;<span class="g"># ← BLOCKED. the room has a wall.</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#10b981;">STEP 3 · Allow only labeled callers</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: networking.k8s.io/v1
+<span class="c">kind</span>: NetworkPolicy
+<span class="c">metadata</span>: { <span class="c">name</span>: allow-labeled }
+<span class="c">spec</span>:
+  <span class="c">podSelector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: v1 } }
+  <span class="c">ingress</span>:
+  - <span class="c">from</span>: [{ <span class="c">podSelector</span>: { <span class="c">matchLabels</span>: { <span class="c">access</span>: <span class="m">"true"</span> } } }]
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl label pod client access=true
+<span class="p">$</span> kubectl exec client -- <span class="c">wget</span> -qO- http://v1:5678&nbsp;&nbsp;&nbsp;<span class="g"># now labeled</span>
+<span class="p">hello-v1</span>&nbsp;&nbsp;<span class="g"># ✅ allowed</span>
+<span class="p">$</span> kubectl exec stranger -- <span class="c">wget</span> -qO- -T 3 http://v1:5678
+<span class="r">wget: download timed out</span>&nbsp;&nbsp;<span class="g"># ❌ still denied — labels are the keys</span></div></div>
+<p class="small"><b>Proved:</b> policy selects the server; pod labels select the callers; union of policies; enforcement is CNI-dependent. <b>Teardown:</b> <code>kubectl delete np deny-v1 allow-labeled &amp;&amp; kubectl delete pod client stranger &amp;&amp; kubectl delete deploy v1 &amp;&amp; kubectl delete svc v1</code></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ LAB 4 ═══ -->
+<div class="page" id="lab4"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">📮 DNS Debugging from Inside a Pod</h2><span class="dbadge">🟠 8 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · The debug pod + the ladder</div>
+<div class="term mini"><span class="p">$</span> kubectl run dns --image=busybox:1.36 --restart=Never -- sleep 9999
+<span class="p">$</span> kubectl exec dns -- <span class="c">nslookup</span> kubernetes.default
+<span class="y">Server:&nbsp;&nbsp;&nbsp;&nbsp;10.96.0.10</span>&nbsp;&nbsp;<span class="g"># ← CoreDNS via kube-dns Service</span>
+<span class="y">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kubernetes.default.svc.cluster.local</span>
+<span class="y">Address:&nbsp;&nbsp;&nbsp;10.96.0.1</span>&nbsp;&nbsp;&nbsp;<span class="g"># ← the API Server's ClusterIP</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 NAME FORMS</div><div class="tabbody"><span class="p">$</span> kubectl exec dns -- nslookup <span class="p">kubernetes</span>
+<span class="g"># ✅ short name (same ns)</span>
+<span class="p">$</span> kubectl exec dns -- nslookup <span class="p">kube-dns.kube-system</span>
+<span class="g"># ✅ ns-qualified</span>
+<span class="p">$</span> kubectl exec dns -- nslookup \
+  <span class="p">kube-dns.kube-system.svc.cluster.local</span>
+<span class="g"># ✅ full FQDN — always works</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 WHO CONFIGURED ME?</div><div class="tabbody"><span class="p">$</span> kubectl exec dns -- <span class="c">cat</span> /etc/resolv.conf
+<span class="c">nameserver 10.96.0.10</span>
+<span class="y">search default.svc.cluster.local
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svc.cluster.local cluster.local</span>
+<span class="y">options ndots:5</span>
+<span class="g"># dnsPolicy ClusterFirst wrote
+# this file at pod start — CH 12</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> short names ride the search list; the resolver is the stable <code>kube-dns</code> VIP; <code>ndots:5</code> is why "external domains feel slow" (CH 12's perf tax). <b>Teardown:</b> <code>kubectl delete pod dns</code>.</p>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Interview habit unlocked:</b> when someone says "DNS is broken in the cluster," you now open with <code>kubectl exec … nslookup kubernetes.default</code> — the canary that separates cluster-DNS death from an app's bad name.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>A LoadBalancer Service, examined closely, routes traffic to Pods via which underlying mechanism?<br><b>A.</b> NodePorts on every node &nbsp; <b>B.</b> Direct Pod IP registration &nbsp; <b>C.</b> Ingress rules &nbsp; <b>D.</b> HostNetwork daemons</div>
+<div class="qz"><span class="qn">Q2.</span>You apply an Ingress to a cluster with no controller installed. Result?<br><b>A.</b> Apply fails with a validation error &nbsp; <b>B.</b> Ingress is created and works over NodePort fallback &nbsp; <b>C.</b> Ingress is created but silently does nothing — no ADDRESS ever appears &nbsp; <b>D.</b> The API Server starts a default controller</div>
+<div class="qz"><span class="qn">Q3.</span>Which <code>pathType</code> matches <code>/api</code> <i>and</i> <code>/api/v1/users</code>?<br><b>A.</b> Exact &nbsp; <b>B.</b> Prefix &nbsp; <b>C.</b> Whole &nbsp; <b>D.</b> Regex</div>
+<div class="qz"><span class="qn">Q4.</span>An Ingress <code>tls</code> entry's <code>secretName</code> must reference a Secret of which type?<br><b>A.</b> Opaque &nbsp; <b>B.</b> kubernetes.io/tls with tls.crt + tls.key &nbsp; <b>C.</b> dockerconfigjson &nbsp; <b>D.</b> basic-auth</div>
+<div class="qz"><span class="qn">Q5.</span>NetworkPolicies apply but block nothing. Most likely cause?<br><b>A.</b> Missing ingressClassName &nbsp; <b>B.</b> Policies need a namespace label &nbsp; <b>C.</b> The CNI (e.g. flannel) doesn't enforce NetworkPolicy &nbsp; <b>D.</b> policyTypes omitted</div>
+<div class="qz"><span class="qn">Q6.</span>A NetworkPolicy has <code>podSelector: {}</code> and empty <code>ingress: []</code>. It affects…<br><b>A.</b> every Pod in that namespace &nbsp; <b>B.</b> only unlabeled Pods &nbsp; <b>C.</b> the whole cluster &nbsp; <b>D.</b> nothing — empty selector is invalid</div>
+<div class="qz"><span class="qn">Q7.</span>Two NetworkPolicies both select Pod X with different allow rules. X's effective access is…<br><b>A.</b> the intersection (both must match) &nbsp; <b>B.</b> the last-applied policy only &nbsp; <b>C.</b> the first-created policy only &nbsp; <b>D.</b> the union — policies only ever add permission</div>
+<div class="qz"><span class="qn">Q8.</span>The FQDN of Service <code>web</code> in namespace <code>prod</code> is…<br><b>A.</b> web.prod.local &nbsp; <b>B.</b> prod.web.svc.k8s &nbsp; <b>C.</b> web-svc.prod.default &nbsp; <b>D.</b> web.prod.svc.cluster.local</div>
+<div class="qz"><span class="qn">Q9.</span>With <code>dnsPolicy: Default</code>, a Pod resolves names using…<br><b>A.</b> CoreDNS like everyone &nbsp; <b>B.</b> the node's own resolv.conf — cluster Service names fail &nbsp; <b>C.</b> hardcoded 8.8.8.8 &nbsp; <b>D.</b> the kubelet's cache</div>
+<div class="qz"><span class="qn">Q10.</span>In Gateway API, which object carries the app team's routing rules?<br><b>A.</b> Gateway &nbsp; <b>B.</b> GatewayClass &nbsp; <b>C.</b> HTTPRoute &nbsp; <b>D.</b> IngressClass</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#lab4">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>A</b></td><td>LB is NodePort + cloud wallet — the port column betrays it (CH 01–02)</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>Ingress = rulebook; no referee, no game, no error (CH 04)</td></tr>
+<tr><td>3</td><td><b>B</b></td><td>Prefix matches the segment and everything under it (CH 05)</td></tr>
+<tr><td>4</td><td><b>B</b></td><td>tls type mandates tls.crt/tls.key keys — Book 02 · CH 05 (CH 06)</td></tr>
+<tr><td>5</td><td><b>C</b></td><td>Policy is an API; enforcement lives in the CNI — flannel won't (CH 10, Lab 3)</td></tr>
+<tr><td>6</td><td><b>A</b></td><td>Empty selector = all Pods in the namespace; empty rules = deny (CH 09–10)</td></tr>
+<tr><td>7</td><td><b>D</b></td><td>Additive union — policies grant, never revoke (CH 09)</td></tr>
+<tr><td>8</td><td><b>D</b></td><td>&lt;svc&gt;.&lt;ns&gt;.svc.cluster.local — CH 11</td></tr>
+<tr><td>9</td><td><b>B</b></td><td>Default = node's resolver; cluster names don't exist for that Pod (CH 12)</td></tr>
+<tr><td>10</td><td><b>C</b></td><td>Gateway = shared listener; HTTPRoute = app-owned rules (CH 13)</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 04</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–4, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q5 or Q7?</b> Those are the two production incidents-in-waiting: unenforcing CNI (false security) and the additive-union rule (false restriction). Missed Q2? Remember: <i>apply succeeds ≠ traffic flows</i>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 21</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>Exposition ladder</b> — ClusterIP → NodePort → LoadBalancer; each rung delegates to the one below.</div>
+<div class="gl"><b>LoadBalancer</b> — Service type; a cloud controller provisions an external LB fronting NodePorts. One per Service = one bill per Service.</div>
+<div class="gl"><b>MetalLB / minikube tunnel</b> — ways to get LB behavior without a cloud (bare metal / local dev).</div>
+<div class="gl"><b>Ingress</b> — L7 routing rulebook (host/path → Service); inert without a controller.</div>
+<div class="gl"><b>IngressClass</b> — named controller type; <code>spec.ingressClassName</code> binds an Ingress to its referee.</div>
+<div class="gl"><b>Ingress Controller</b> — running reverse proxy (ingress-nginx, Traefik…) that watches Ingress objects and renders live proxy config.</div>
+<div class="gl"><b>pathType</b> — Prefix (segment + subtree) / Exact (literal) / ImplementationSpecific.</div>
+<div class="gl"><b>TLS termination</b> — HTTPS ends at the Ingress; Pod traffic is plain HTTP unless re-encrypted deliberately.</div>
+<div class="gl"><b>Annotation</b> — controller-specific behavior knob (rewrites, CORS…); powerful, non-portable.</div>
+<div class="gl"><b>NetworkPolicy</b> — namespaced firewall rules: podSelector (target) + ingress/egress (from/to/ports); additive union; CNI-enforced.</div>
+<div class="gl"><b>Default-deny</b> — posture where a selected Pod receives/sends nothing unless a policy allows it; empty rules array = deny all.</div>
+<div class="gl"><b>ipBlock / namespaceSelector / podSelector (in from/to)</b> — the three source/destination selector types.</div>
+<div class="gl"><b>CoreDNS</b> — cluster DNS Deployment in kube-system behind the kube-dns Service; serves svc.cluster.local by watching the API.</div>
+<div class="gl"><b>FQDN of a Service</b> — &lt;name&gt;.&lt;namespace&gt;.svc.cluster.local; short names rely on the search list.</div>
+<div class="gl"><b>ndots:5</b> — resolv.conf option causing search-list expansion; the hidden cost behind "slow external names".</div>
+<div class="gl"><b>dnsPolicy</b> — ClusterFirst (default) / Default (node's resolver) / ClusterFirstWithHostNet / None + dnsConfig.</div>
+<div class="gl"><b>Gateway API</b> — GA successor to Ingress: GatewayClass + Gateway (platform-owned) and HTTPRoute (app-owned), portable and cross-namespace-safe via ReferenceGrant.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 22</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🌐 Traffic — commands</div><div class="term mini"><span class="p">$</span> minikube addons enable ingress
+<span class="p">$</span> kubectl get ingressclass
+<span class="p">$</span> kubectl get ingress&nbsp;&nbsp;<span class="g"># ADDRESS must appear!</span>
+<span class="p">$</span> kubectl create secret tls t --cert=c --key=k
+<span class="p">$</span> curl -k https://demo.local/api
+<span class="g"># /etc/hosts: &lt;minikube ip&gt; demo.local</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">📮 DNS — debug ladder</div><div class="term mini"><span class="p">$</span> kubectl run dns --image=busybox:1.36 -it --rm \
+&nbsp;&nbsp;&nbsp;--restart=Never -- nslookup <span class="y">kubernetes.default</span>
+<span class="p">$</span> … nslookup svc.ns.svc.cluster.local
+<span class="p">$</span> kubectl exec dns -- cat /etc/resolv.conf
+<span class="g"># kube-dns VIP = 10.96.0.10 by default</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🚧 Default-deny skeleton</div><div class="term mini"><span class="c">podSelector</span>: {}
+<span class="c">policyTypes</span>: [Ingress, Egress]
+<span class="c">ingress</span>: []&nbsp;&nbsp;<span class="g"># deny in</span>
+<span class="c">egress</span>: []&nbsp;&nbsp;&nbsp;<span class="g"># deny out</span>
+<span class="g"># FIRST allow: DNS udp+tcp 53 → kube-system
+# policies are ADDITIVE (union)
+# CNI must enforce (calico/cilium, NOT flannel)</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🪜 Ladder + rules of thumb</div><table class="tb" style="margin:0;"><tr><th>Need</th><th>Reach for</th></tr><tr><td>internal only</td><td>ClusterIP</td></tr><tr><td>quick demo, one app</td><td>NodePort</td></tr><tr><td>the one edge / TCP thing</td><td>LoadBalancer</td></tr><tr><td>HTTP host/path routing</td><td>Ingress</td></tr><tr><td>portable, canary, multi-team</td><td>Gateway API</td></tr></table></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>LB = NodePort underneath · Ingress without controller = silently dead (check ADDRESS + ingressclass)</li>
+<li>TLS terminates at the edge; Pods stay HTTP unless deliberately re-encrypted</li>
+<li>Annotations are vendor glue — Gateway API is the portable successor (GA v1.0)</li>
+<li>NetworkPolicy: additive union · empty selector = whole namespace · empty rules = deny · AND within a from-item, OR across items</li>
+<li>Deny-all egress kills DNS first — always allow :53 to kube-system</li>
+<li>CoreDNS = API-watching DNS behind kube-dns VIP · ndots:5 = why external lookups multiply</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 23</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 03 complete</span></div>
+<p class="lead">Book 01 built the machine, Book 02 dressed it — this book gave it <b>a front door, a phone book, and locks between the rooms</b>.</p>
+<div class="mtree"><b>🌐 TRAFFIC — fully mapped:</b>
+├── <u>Ladder</u>         <span class="g">ClusterIP → NodePort → LB (each rung delegates)</span>
+├── <u>Ingress</u>        <span class="g">host/path rules → Services · TLS at the edge</span>
+├── <u>Controller</u>     <span class="g">the proxy that enforces the rulebook</span>
+├── <u>NetworkPolicy</u>  <span class="g">default-deny → explicit allows (DNS first!)</span>
+├── <u>CoreDNS</u>        <span class="g">svc.cluster.local · ndots · dnsPolicy</span>
+└── <u>Gateway API</u>    <span class="g">the portable future (Gateway + HTTPRoute)</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Choose the right rung per Service — and explain the cost of picking wrong</li>
+<li>Ship production Ingress: host/path rules, TLS secrets, controller triage (no ADDRESS? no controller)</li>
+<li>Write a default-deny NetworkPolicy set that doesn't strangle DNS — and prove enforcement on the real CNI</li>
+<li>Debug any "DNS broken" report with a four-command ladder instead of vibes</li>
+<li>Place Gateway API in the roadmap and say precisely what it fixes about Ingress</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 04 · Scheduling &amp; Node Management:</b> your traffic arrives at the right door now — Book 04 decides <b>which machines run what</b>: the full taints/tolerations system, node &amp; pod affinity, topology spread, Priority &amp; Preemption, cordon/drain maintenance, and static Pods. You already tasted taints in Book 01's Lab 5 — now we master the whole discipline.</div></div>
+<div class="center" style="margin-top:18px;font-size:20px;">— End of Book 03 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 03 · Services &amp; Networking</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 24</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

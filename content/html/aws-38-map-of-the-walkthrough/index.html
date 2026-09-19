@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALB Stack Walkthrough · INK &amp; AMBER · By Nabawy</title>
+<style>
+:root{
+  --paper:#faf7f1; --ink:#26201a; --amber:#c8893a; --amber-d:#9a6722;
+  --rule:#d8cdb5; --card:#fff9eb; --muted:#6e5f4d; --accent:#5e3b16;
+  --t-green:#1b6e3a; --t-rose:#9f1239;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#e9e2d6;color:var(--ink);
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif}
+.sheet{width:210mm;height:297mm;background:var(--paper);margin:0 auto 9mm;padding:10mm 12mm 14mm;
+  position:relative;box-shadow:0 6px 22px rgba(38,32,26,.22);page-break-after:always;
+  page-break-inside:avoid;overflow:hidden;box-sizing:border-box}
+.sheet::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--amber),var(--amber-d))}
+.cover{background:var(--paper);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:20mm}
+.pghead{margin:0 0 10px;border-bottom:2px solid var(--ink);padding-bottom:7px}
+.pghead .hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.kick{font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-d);margin-bottom:2px}
+.t{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;margin:0;line-height:1.15}
+.hmeta{margin-left:auto;align-self:flex-start;font-size:10.5px;font-weight:800;
+  border:2px solid var(--ink);border-radius:8px;padding:3px 10px;background:var(--card)}
+.lead{font-size:11.4px;line-height:1.4;margin:0 0 8px}
+.small{font-size:10.4px;line-height:1.4;margin:0 0 5px}
+.mark{border-radius:0 10px 10px 0;border-left:5px solid;padding:6px 10px;margin:6px 0;font-size:11.2px;line-height:1.4}
+.m-key{background:#fff2c7;border-color:#d4a017}
+.m-tip{background:#e7f3ff;border-color:#3b82f6}
+.m-warn{background:#ffe7e7;border-color:#dc2626}
+.m-exam{background:#e6f4ea;border-color:#16a34a}
+.m-ok{background:#e6f4ea;border-color:#16a34a}
+.mark .tag{display:block;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.mark b{color:var(--ink)}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;margin:6px 0}
+.ptitle{font-family:Georgia,serif;font-size:13px;font-weight:700;margin:0 0 5px}
+.sec{font-family:Georgia,serif;font-size:13px;font-weight:700;margin:5px 0 4px;color:var(--ink)}
+.sec .n{color:var(--amber-d);margin-right:6px}
+.code{background:#211d19;color:#efe9dd;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;font:9.2px/1.35 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden;margin:5px 0}
+.tree{background:#211d19;color:#e7e0d2;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;font:9.2px/1.35 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden;margin:5px 0}
+.mini{font-size:8.6px;padding:6px 8px;line-height:1.3}
+.tb{width:100%;border-collapse:separate;border-spacing:0;border:2px solid var(--ink);border-radius:10px;overflow:hidden;font-size:9.6px;box-shadow:3px 3px 0 rgba(38,32,26,.85);margin:5px 0}
+.tb th,.tb td{padding:4px 6px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.tb th{background:var(--accent);color:#fffdf8;font-weight:800;font-size:9.4px}
+.tb tr:last-child td{border-bottom:none}
+.tb tr:nth-child(even) td{background:var(--card)}
+.tb code{font:8.6px/1.2 'Consolas','SF Mono',monospace;color:var(--ink);background:#f3eddb;padding:0 3px;border-radius:3px}
+.tb .ok{color:var(--t-green);font-weight:700}
+.tb .bad{color:var(--t-rose);font-weight:700}
+.code .p{color:#fbbf24}.code .c{color:#93c5fd}.code .y{color:#fcd34d}.code .r{color:#f87171}.code .m{color:#f9a8d4}.code .g{color:#a8a29e}.code .s{color:#86efac}
+.tree .g{color:#a8a29e}.tree b{color:#fbbf24}.tree u{color:#86efac;text-decoration:none}.tree em{color:#f9a8d4;font-style:normal}
+.tick{list-style:none;padding:0;margin:4px 0}
+.tick li{padding:2px 0 2px 14px;position:relative;font-size:10.4px;line-height:1.35}
+.tick li::before{content:"✓";position:absolute;left:0;color:var(--t-green);font-weight:800}
+.dnote{margin:4px 0;font-size:10.2px;line-height:1.4;color:var(--muted);font-style:italic}
+.darr{text-align:center;font-size:10.5px;margin:1px 0;color:var(--ink)}
+.harrow{color:var(--ink);font-size:11px;align-self:center}
+.frow{display:flex;align-items:center;gap:6px;margin:5px 0;flex-wrap:wrap;justify-content:center}
+.fstem{width:2.5px;height:14px;background:var(--ink);margin:0 auto}
+.fcol{flex:1;padding:0 4px;display:flex;flex-direction:column;align-items:center;text-align:center;font-size:9.2px;line-height:1.25}
+.fcol b{font-size:9.6px;display:block;margin-bottom:2px}
+.zone{border:2.5px solid var(--ink);border-radius:12px;padding:7px 9px;background:var(--card);box-shadow:3px 3px 0 rgba(38,32,26,.85);margin:5px 0}
+.zlabel{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);text-align:center;margin-bottom:5px}
+.qz{border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:4px 8px;margin:3px 0;background:var(--card);font-size:9.6px;line-height:1.35}
+.qz .qn{font-weight:900;color:var(--amber-d);margin-right:4px}
+.qz .ans{color:var(--t-green);font-weight:700;font-size:8.6px;margin-top:2px}
+.stepitem{display:flex;gap:8px;align-items:flex-start;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);background:var(--card);padding:6px 8px;margin:4px 0}
+.stepnum{min-width:22px;height:22px;background:var(--ink);color:var(--paper);border-radius:6px;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+.stamp{border:3px solid var(--ink);border-radius:14px;box-shadow:5px 5px 0 var(--amber);padding:12px 18px;font-size:24px;line-height:1.25;transform:rotate(-2deg);background:var(--card);text-align:center;display:inline-block;font-weight:800}
+.ambrule{width:80px;border-top:5px solid var(--amber);margin:12px auto}
+.cver{position:absolute;bottom:8mm;left:0;right:0;text-align:center;font-size:9.5px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.cb{width:10px;height:10px;border:1.5px solid var(--ink);border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px;flex:none}
+.dcol{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:5px 0}
+.dcol3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:5px 0}
+.drow{display:flex;gap:9px;margin:5px 0;align-items:stretch}
+.drow>*{flex:1}
+.tlink{color:var(--ink);text-decoration:none;font-weight:600}
+a.tlink:hover{color:var(--amber-d);text-decoration:underline}
+.folio{position:absolute;bottom:4mm;left:8mm;right:8mm;display:flex;align-items:center;gap:8px;font-size:8.5px;letter-spacing:.06em;color:var(--muted)}
+.backtoc{color:var(--ink);text-decoration:none;border:1.2px solid var(--ink);border-radius:4px;padding:1px 5px;font-weight:800;font-size:8px;box-shadow:1.5px 1.5px 0 var(--ink);background:var(--card)}
+.bignum{font-family:Georgia,serif;font-size:44px;font-weight:800;color:var(--amber);line-height:1;letter-spacing:-.04em}
+.cover-wrap{display:flex;flex-direction:column;align-items:center;gap:5mm}
+.cover-title{font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1;max-width:175mm;color:var(--ink)}
+.cover-sub{font-size:13px;color:var(--ink);max-width:162mm;line-height:1.5;font-style:italic}
+.credits{font-size:9.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:3mm}
+.kpills{display:flex;gap:5px;flex-wrap:wrap;margin-top:4mm;justify-content:center}
+.kpill{background:var(--card);border:1.5px solid var(--ink);border-radius:999px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;box-shadow:1.5px 1.5px 0 var(--ink)}
+.kpill.amber{background:var(--amber);color:#fffdf8}
+ul.ul-tight{margin:4px 0;padding-left:16px}
+ul.ul-tight li{margin:1px 0;font-size:10.4px;line-height:1.35}
+@media print{body{background:#fff}.sheet{box-shadow:none;margin:0;page-break-after:always}}
+</style>
+</head>
+<body>
+
+<!-- ═══ 01 · COVER ═══ -->
+<div class="sheet cover" id="cover">
+  <div class="cover-wrap">
+    <div class="kick" style="font-size:11px;letter-spacing:.34em">ONEXT · LEVEL 2 · HANDS-ON · PROJECT WALKTHROUGH</div>
+    <div class="cover-title" style="margin-top:7mm">The Application<br>Load Balancer Stack</div>
+    <div class="stamp" style="margin-top:7mm">Public ALB · Internal ALB<br>2 Tiers · 18 Resources</div>
+    <div class="cover-sub" style="margin-top:7mm">Internet-facing and internal ALBs, target groups, listeners, four security groups, four EC2 instances, three workspaces. Terraform <code>~&gt; 5.0</code>, Floci-verified, ready for the FLOCI pipeline.</div>
+    <div class="ambrule"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8mm;margin-top:5mm">
+      <div><div class="bignum">18</div><div class="small" style="margin:0">resource blocks</div></div>
+      <div><div class="bignum">3</div><div class="small" style="margin:0">workspaces</div></div>
+      <div><div class="bignum">66</div><div class="small" style="margin:0">resources deployed</div></div>
+      <div><div class="bignum">~&gt;5.0</div><div class="small" style="margin:0">AWS provider pin</div></div>
+    </div>
+    <div class="credits">A Technical Book · INK &amp; AMBER Series · By <b>Nabawy</b><br>Project: <b>live-verify-floci/alb-cluster</b></div>
+    <div class="kpills"><span class="kpill">PUBLIC ALB</span><span class="kpill amber">INTERNAL ALB</span><span class="kpill">4 SGS</span><span class="kpill">FLOCI-READY</span></div>
+    <div class="cver">IDEMPOTENT · VERSION-PINNED · MULTI-ENV — BY NABAWY</div>
+  </div>
+</div>
+
+<!-- ═══ 02 · TOC ═══ -->
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">CONTENTS</div><h1 class="t">🗺️ Map of the Walkthrough</h1></div><span class="hmeta">📖 15 SHEETS</span></div></div>
+  <p class="lead">One task, three phases: <b>plan → build → prove</b>. Click any row to jump; every page has a <span class="backtoc">TOC</span> badge back.</p>
+  <div class="sec"><span class="n">I</span>PLAN</div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">03</span><a class="tlink" href="#summary">Executive Summary — the task in one paragraph</a><span class="tocp">5 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">04</span><a class="tlink" href="#map">The Resource Map — two tiers, one picture</a><span class="tocp">5 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">05</span><a class="tlink" href="#layout">Project Layout — 10 files, why each exists</a><span class="tocp">4 min</span></div>
+  <div class="sec"><span class="n">II</span>BUILD — THE FILES</div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">06</span><a class="tlink" href="#files">versions.tf + providers.tf — the pin &amp; the Floci switch</a><span class="tocp">7 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">07</span><a class="tlink" href="#inputs">variables.tf + locals.tf — every knob, workspace naming</a><span class="tocp">6 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">08</span><a class="tlink" href="#net">main.tf I — Networking + the 4 Security Groups</a><span class="tocp">7 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">09</span><a class="tlink" href="#alb">main.tf II — EC2 fleet + the Public ALB quartet</a><span class="tocp">8 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">10</span><a class="tlink" href="#int">main.tf III — Internal ALB + health-check anatomy</a><span class="tocp">6 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">11</span><a class="tlink" href="#out">outputs.tf — the 10-value contract</a><span class="tocp">4 min</span></div>
+  <div class="sec"><span class="n">III</span>PROVE</div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">12</span><a class="tlink" href="#ws">Workspaces — dev/staging/prod from one codebase</a><span class="tocp">6 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">13</span><a class="tlink" href="#gates">Verify + Idempotence + Docs cross-reference</a><span class="dots"></span><span class="tocp">6 min</span></div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">14</span><a class="tlink" href="#pipe">FLOCI pipeline + Cleanup + the Truth Table</a><span class="dots"></span><span class="tocp">6 min</span></div>
+  <div class="sec"><span class="n">IV</span>FINALE</div>
+  <div class="tocrow"><span class="cb"></span><span class="tocn">15</span><a class="tlink" href="#recap">Recap + Cheat Sheet + Self-Check</a><span class="tocp">🏁 end</span></div>
+  <div class="mark m-tip" style="margin-top:9px"><span class="tag">DEBUG</span><b>Reading order:</b> pages 4–5 are the plan (what exists, where it lives), 6–11 are the build (every file, in dependency order), 12–14 are the proof (apply, verify, pipeline). Estimated time: <b>30 min</b> with Floci, <b>60 min</b> on real AWS.</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 2 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#cover">prev</a> | <a class="tlink" href="#summary">next</a></span></div>
+</div>
+
+<!-- ═══ 03 · SUMMARY ═══ -->
+<div class="sheet" id="summary">
+  <div class="pghead"><div class="hrow"><div><div class="kick">EXECUTIVE SUMMARY</div><h1 class="t">The Task — In One Paragraph</h1></div><span class="hmeta">📖 5 MIN</span></div></div>
+  <p class="lead">Provision a <b>public</b> Application Load Balancer in front of two frontend EC2 instances (public subnets) and an <b>internal</b> Application Load Balancer in front of two backend EC2 instances (private subnets). Four custom security groups, two target groups with HTTP health checks, two listeners, four target-group attachments, plus the surrounding VPC plumbing. Use Terraform 1.x with the <code>hashicorp/aws ~&gt; 5.0</code> provider — exactly the modern arguments from the official docs — and drive dev/staging/prod with <b>workspaces</b> so one codebase ships three environments.</p>
+  <div class="drow">
+    <div class="mark m-key"><span class="tag">🔑 TIER 1 — PUBLIC</span>internet → <b>public ALB</b> → frontend EC2 ×2. SG allows 80/443 from the world. The front door.</div>
+    <div class="mark m-key"><span class="tag">🔑 TIER 2 — INTERNAL</span>frontend + VPC CIDR → <b>internal ALB</b> → backend EC2 ×2. SG chains by reference. Defense-in-depth.</div>
+  </div>
+  <div class="sec"><span class="n">▣</span>The route through this walkthrough</div>
+  <div class="dcol3">
+    <div class="panel"><div class="ptitle">🗺️ Resource Map</div>The full traffic picture — both tiers, SGs, TGs, attachments — one diagram.</div>
+    <div class="panel"><div class="ptitle">🌳 Project Layout</div>10 files, and <i>why</i> each is its own file.</div>
+    <div class="panel"><div class="ptitle">🏛️ Pin &amp; Switch</div>versions.tf locks providers; providers.tf redirects every API to Floci.</div>
+    <div class="panel"><div class="ptitle">🎛️ Inputs &amp; Naming</div>12 tunable knobs; workspace-aware name prefix + common tags.</div>
+    <div class="panel"><div class="ptitle">🌐 SG Chain</div>4 security groups chained by reference — no 0.0.0.0/0 beyond the public ALB.</div>
+    <div class="panel"><div class="ptitle">⚖️ The Quartet</div>LB + target group + listener + attachment, per tier — the canonical four.</div>
+    <div class="panel"><div class="ptitle">🔍 The Proof</div>Workspaces ×3 applied to Floci, verify script, "No changes" idempotence gate.</div>
+    <div class="panel"><div class="ptitle">⚙️ The Pipeline</div>FLOCI CI — fmt / init / validate / select / apply / verify per workspace.</div>
+    <div class="panel"><div class="ptitle">🔧 The Rescue Kit</div>Troubleshooting, cleanup commands, and the honest Floci truth table.</div>
+  </div>
+  <div class="mark m-exam"><span class="tag">🎓 TIME BUDGET</span><b>30 minutes</b> with Floci (emulated control plane, EC2 excluded) · <b>60 minutes</b> on real AWS (full stack including EC2 + attachments).</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 3 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#toc">prev</a> | <a class="tlink" href="#map">next</a></span></div>
+</div>
+
+<!-- ═══ 04 · RESOURCE MAP ═══ -->
+<div class="sheet" id="map">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 01 · THE PICTURE</div><h1 class="t">🗺️ The Resource Map</h1></div><span class="hmeta">📖 5 MIN</span></div></div>
+  <p class="lead">The whole stack in one diagram. Read it top-down for Tier 1 (public), then the second block for Tier 2 (internal). Every arrow is an SG rule or a TG attachment.</p>
+  <div class="tree" style="font-size:9px">                        internet
+                           │
+                           ▼
+              ┌─────────────────────────┐
+              │ sg public_alb  (80/443) │
+              └────────────┬────────────┘
+                           ▼
+              ┌─────────────────────────┐
+              │ aws_lb.public  (public) │
+              └────────────┬────────────┘
+                           ▼
+              ┌─────────────────────────┐
+              │ tg public               │  health_check { /, 200 }
+              └────────────┬────────────┘
+                           ▼
+              ┌─────────────────────────┐
+              │ attachment → frontend   │
+              │   [0] [1]               │
+              └─────────────────────────┘
+
+   sg frontend_ec2 ──80──▶ ┌─────────────────────────┐
+   VPC CIDR ──────80──▶    │ aws_lb.internal (int)   │
+                           │ sg internal_alb         │
+                           └────────────┬────────────┘
+                                        ▼
+                           ┌─────────────────────────┐
+                           │ tg internal             │  health_check { /, 200 }
+                           └────────────┬────────────┘
+                                        ▼
+                           ┌─────────────────────────┐
+                           │ attachment → backend    │
+                           │   [0] [1]               │
+                           └─────────────────────────┘</div>
+  <div class="mark m-key"><span class="tag">🔑 THE SHAPE</span>Both tiers are the <b>same quartet</b> — ALB → target group → listener → attachments — differing only in exposure (<code>internal = false/true</code>), security group, subnets, and which instance set they point at. Learn one tier, you know both.</div>
+  <div class="mark m-tip"><span class="tag">💡 COUNT THE ARROWS</span>The SG chain: world → public_alb SG → frontend_ec2 SG (by reference) → internal_alb SG (by reference + VPC CIDR) → backend_ec2 SG (by reference). <b>No 0.0.0.0/0 anywhere except the public ALB.</b> That chain <i>is</i> the security model.</div>
+  <div class="mark m-warn"><span class="tag">⚠ NOT IN THE MAP</span>The VPC plumbing (IGW, route tables, 4 subnets across 2 AZs) sits underneath everything — counted in the 18 resource blocks, but it carries no app traffic itself.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>"What does this stack do?" → <b>two ALB tiers: public ALB → 2 frontend EC2s in public subnets; internal ALB → 2 backend EC2s in private subnets; HTTP health checks on <code>/</code> expecting 200; SGs chained by reference; 3 environments via workspaces.</b></div>
+  <p class="lead" style="margin-top:8px">⏭️ Where do the 18 resource blocks live? → <a class="tlink" href="#layout">Project Layout</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 4 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#summary">Prev</a> · <a class="tlink" href="#layout">Next</a></span></div>
+</div>
+
+<!-- ═══ 05 · LAYOUT ═══ -->
+<div class="sheet" id="layout">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 02 · THE FILES</div><h1 class="t">🌳 Project Layout</h1></div><span class="hmeta">📖 4 MIN</span></div></div>
+  <p class="lead">Ten files under <code>live-verify-floci/alb-cluster/</code>. Each is its own file for a reason:</p>
+  <div class="tree" style="font-size:10px">live-verify-floci/alb-cluster/
+├── <u>versions.tf</u>               <span class="g"># Terraform + AWS provider pin</span>
+├── <u>providers.tf</u>             <span class="g"># AWS provider with Floci endpoint switching</span>
+├── <i>variables.tf</i>             <span class="g"># all declared inputs</span>
+├── <i>locals.tf</i>                <span class="g"># name_prefix + common_tags</span>
+├── <b>main.tf</b>                  <span class="g"># 18 resources (VPC, subnets, SGs, EC2, ALBs…)</span>
+├── <u>outputs.tf</u>               <span class="g"># DNS names, TG ARNs, instance IDs</span>
+├── <i>terraform.tfvars.example</i> <span class="g"># sample inputs</span>
+├── <i>run-alb.sh</i>               <span class="g"># one-command deploy across workspaces</span>
+├── <i>verify-alb.sh</i>            <span class="g"># post-apply smoke test (queries Floci)</span>
+└── README.md                <span class="g"># usage notes</span></div>
+  <div class="taskhead">TASK [Why each file is its own file]<span class="hst">the reviewer's view</span></div>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:24%">File</th><th>Why it's its own file</th></tr>
+    <tr><td><code>versions.tf</code></td><td>Locks Terraform &amp; provider versions — <b>protects the team from drift</b>.</td></tr>
+    <tr><td><code>providers.tf</code></td><td>Floci endpoint switching lives here so the rest of the code <b>never knows whether AWS is real or emulated</b>.</td></tr>
+    <tr><td><code>variables.tf</code></td><td>Every input the next platform engineer might tweak — one place to read the contract.</td></tr>
+    <tr><td><code>locals.tf</code></td><td><code>name_prefix = "${var.project}-${terraform.workspace}"</code> so <b>every resource names itself correctly</b> per environment.</td></tr>
+    <tr><td><code>main.tf</code></td><td>All 18 resources — VPC plumbing + 4 SGs + EC2 + 2 ALBs + 2 TGs + 2 listeners + 4 TG attachments.</td></tr>
+    <tr><td><code>outputs.tf</code></td><td>DNS names and ARNs that downstream stacks (DNS, autoscaling) consume.</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">🔑 KEY IDEA</span>The split is a <b>review strategy</b>, not a style preference: a PR touching <code>providers.tf</code> gets different scrutiny than one touching <code>main.tf</code>. Mixed files hide intent; separated files declare it.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Memorize the six core files: <b>versions (pin) · providers (switch) · variables (contract) · locals (naming) · main (resources) · outputs (handoff)</b>. Plus two shell scripts for the pipeline, one tfvars example, one README.</div>
+  <p class="lead" style="margin-top:8px">⏭️ The two files that make Floci possible: → <a class="tlink" href="#files">versions.tf + providers.tf</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 5 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#map">Prev</a> · <a class="tlink" href="#files">Next</a></span></div>
+</div>
+
+<!-- ═══ 06 · VERSIONS + PROVIDERS ═══ -->
+<div class="sheet" id="files">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 03 · THE PIN &amp; THE SWITCH</div><h1 class="t">🏛️ versions.tf + providers.tf</h1></div><span class="hmeta">⏱ 7 MIN</span></div></div>
+  <div class="sec"><span class="n">§3</span>versions.tf — the pin that makes it portable</div>
+  <div class="code">terraform {
+  required_version = <span class="s">"&gt;= 1.6.0, &lt; 2.0.0"</span>
+  required_providers {
+    aws = {
+      source  = <span class="s">"hashicorp/aws"</span>
+      version = <span class="s">"~&gt; 5.0"</span>
+    }
+  }
+}</div>
+  <ul class="tick">
+    <li><code>~&gt; 5.0</code> means <b>5.x but not 6.0</b> — roll forward to bug-fixes without re-approval.</li>
+    <li>Commit the auto-generated <code>.terraform.lock.hcl</code> so a teammate's <code>init</code> downloads the <b>same provider bytes</b>.</li>
+  </ul>
+  <div class="sec"><span class="n">§4</span>providers.tf — Floci or real AWS with one variable</div>
+  <div class="code">provider <span class="c">"aws"</span> {
+  region                      = var.region
+  access_key                  = <span class="s">"test"</span>
+  secret_key                  = <span class="s">"test"</span>
+  skip_credentials_validation = <span class="s">true</span>
+  skip_metadata_api_check     = <span class="s">true</span>
+  skip_requesting_account_id  = <span class="s">true</span>
+  s3_use_path_style           = <span class="s">true</span>
+  insecure                    = <span class="s">true</span>
+
+  <span class="y">dynamic</span> <span class="s">"endpoints"</span> {
+    <span class="y">for_each</span> = var.floci_endpoint != <span class="y">null</span> ? [1] : []
+    content {
+      ec2   = var.floci_endpoint
+      elb   = var.floci_endpoint
+      <span class="ok">elbv2  = var.floci_endpoint</span>
+      iam   = var.floci_endpoint
+      sts   = var.floci_endpoint
+      s3    = var.floci_endpoint
+    }
+  }
+}</div>
+  <div class="mark m-key"><span class="tag">🔑 THE TRICK</span>The <code>dynamic "endpoints"</code> block: when <code>var.floci_endpoint</code> is <b>null</b> the block is empty → real AWS. When it points at Floci → every API the provider might call (<code>ec2</code>, <code>elb</code>, <code>elbv2</code>, <code>iam</code>, <code>sts</code>, <code>s3</code>) is redirected. One variable, two worlds.</div>
+  <div class="mark m-warn"><span class="tag">⚠ THE BUG I HIT AND FIXED</span>The <code>elbv2</code> line is <b>mandatory for ALBs</b> — the classic <code>elb</code> endpoint only serves CLBs. A missing <code>elbv2</code> line makes <code>aws_lb</code> <b>silently call real AWS</b> even with <code>TF_VAR_floci_endpoint</code> set.</div>
+  <div class="mark m-tip"><span class="tag">💡 WHY THE FLAGS</span><code>insecure = true</code> plus the four <code>skip_*</code> flags are LocalStack/Floci-friendly defaults — they strip TLS, IMDS, account-ID and STS validation that's pointless when the API is a stub.</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 6 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#layout">Prev</a> · <a class="tlink" href="#inputs">Next</a></span></div>
+</div>
+
+<!-- ═══ 07 · VARIABLES + LOCALS ═══ -->
+<div class="sheet" id="inputs">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTIONS 05–06 · CONTRACT &amp; NAMES</div><h1 class="t">🎛️ variables.tf + locals.tf</h1></div><span class="hmeta">⏱ 6 MIN</span></div></div>
+  <div class="sec"><span class="n">§5</span>variables.tf — every knob the platform team can tune per workspace</div>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:30%">Var</th><th style="width:34%">Default</th><th>Notes</th></tr>
+    <tr><td><code>region</code></td><td><code>us-east-1</code></td><td>One region per deploy.</td></tr>
+    <tr><td><code>floci_endpoint</code></td><td><code>null</code></td><td>Set <code>http://localhost:4566</code> to use Floci.</td></tr>
+    <tr><td><code>project</code></td><td><code>onext</code></td><td>Resource-name prefix.</td></tr>
+    <tr><td><code>vpc_cidr</code></td><td><code>10.30.0.0/16</code></td><td></td></tr>
+    <tr><td><code>public_subnets</code></td><td><code>["10.30.1.0/24","10.30.2.0/24"]</code></td><td></td></tr>
+    <tr><td><code>private_subnets</code></td><td><code>["10.30.10.0/24","10.30.11.0/24"]</code></td><td></td></tr>
+    <tr><td><code>frontend_instance_type</code></td><td><code>t3.micro</code></td><td></td></tr>
+    <tr><td><code>backend_instance_type</code></td><td><code>t3.micro</code></td><td></td></tr>
+    <tr><td><code>frontend_count</code></td><td><code>2</code></td><td>Used by <code>count</code> and TG attachments.</td></tr>
+    <tr><td><code>backend_count</code></td><td><code>2</code></td><td></td></tr>
+    <tr><td><code>health_check_path</code></td><td><code>/</code></td><td>Target ping path on the backend.</td></tr>
+    <tr><td><code>health_check_matcher</code></td><td><code>200</code></td><td>Comma-separated acceptable HTTP codes.</td></tr>
+  </table></div>
+  <div class="mark m-tip"><span class="tag">💡 WHY A STRING, NOT A BOOL</span>The Floci switch is a <code>string</code> because the provider's <code>endpoints { ... }</code> block accepts an HTTP <b>URL</b> — a bool would force an extra indirection.</div>
+  <div class="sec"><span class="n">§6</span>locals.tf — workspace-aware naming</div>
+  <div class="code"><span class="y">locals</span> {
+  name_prefix = <span class="s">"${var.project}-${terraform.workspace}"</span>
+  common_tags = {
+    Project     = var.project
+    Environment = terraform.workspace
+    ManagedBy   = <span class="s">"terraform"</span>
+  }
+}</div>
+  <div class="mark m-key"><span class="tag">🔑 ONE CODEBASE, THREE NAME SPACES</span>Every <code>Name = "${local.name_prefix}-vpc"</code> becomes <code>onext-dev-vpc</code> in dev, <code>onext-staging-vpc</code> in staging, <code>onext-prod-vpc</code> in prod. Same for ALB names, TG names, listener names. <b>No renaming, no collisions.</b></div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 7 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#files">Prev</a> · <a class="tlink" href="#net">Next</a></span></div>
+</div>
+
+<!-- ═══ 08 · NET + SGS ═══ -->
+<div class="sheet" id="net">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 07 · MAIN.TF I</div><h1 class="t">🌐 Networking + <span class="en">the 4 Security Groups</span></h1></div><span class="hmeta">⏱ 7 MIN</span></div></div>
+  <div class="sec"><span class="n">§7.1</span>Networking foundation — always first</div>
+  <ul class="tick">
+    <li><code>data "aws_availability_zones" "available"</code> gives real AZ names — never hard-code them.</li>
+    <li>Then: <code>aws_vpc</code> · <code>aws_internet_gateway</code> · <code>aws_subnet.public</code> · <code>aws_subnet.private</code> · <code>aws_route_table.public</code> (IGW default route) · <code>aws_route_table.private</code>.</li>
+    <li>Two <code>aws_route_table_association</code> blocks use <code>count = length(aws_subnet.public)</code> / <code>length(aws_subnet.private)</code> — the count-over-a-list lesson: going from 2 AZs to 1 shrinks the code <b>without touching the associations</b>.</li>
+  </ul>
+  <div class="sec"><span class="n">§7.2</span>Security groups — each its own resource so changes review cleanly</div>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:22%">SG</th><th style="width:38%">Ingress</th><th>Why</th></tr>
+    <tr><td><code>public_alb</code></td><td>TCP 80/443 from <code>0.0.0.0/0</code></td><td>Internet-facing load balancer.</td></tr>
+    <tr><td><code>internal_alb</code></td><td>TCP 80 from <code>frontend_ec2</code> SG <b>and</b> VPC CIDR</td><td>Defense-in-depth.</td></tr>
+    <tr><td><code>frontend_ec2</code></td><td>TCP 80 from <code>public_alb</code> SG <b>only</b></td><td>ALB → EC2 path.</td></tr>
+    <tr><td><code>backend_ec2</code></td><td>TCP 80 from <code>internal_alb</code> SG <b>only</b></td><td>Internal traffic only.</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">🔑 THE DEPENDENCY CHAIN</span>The two SG pairs that reference each other (<code>frontend_ec2</code> ↔ <code>public_alb</code>, <code>backend_ec2</code> ↔ <code>internal_alb</code>) form a dependency chain Terraform resolves <b>automatically</b> — the SGs are created in topological order, <b>no depends_on needed</b>.</div>
+  <div class="mark m-warn"><span class="tag">⚠ READ THE CHAIN ALOUD</span>world → public ALB → frontend EC2 → internal ALB → backend EC2. Traffic can only flow <b>down the chain</b>, and every hop narrows the source. There is no path from the internet to the backends — that's the design.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Memorize the 4 SGs and their ingress: <b>public_alb</b> (80/443 from world) · <b>internal_alb</b> (80 from frontend SG + VPC CIDR) · <b>frontend_ec2</b> (80 from public_alb SG only) · <b>backend_ec2</b> (80 from internal_alb SG only).</div>
+  <p class="lead" style="margin-top:8px">⏭️ Network and walls in place — the machines and the first quartet: → <a class="tlink" href="#alb">EC2 + Public ALB</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 8 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#inputs">Prev</a> · <a class="tlink" href="#alb">Next</a></span></div>
+</div>
+
+<!-- ═══ 09 · EC2 + PUBLIC QUARTET ═══ -->
+<div class="sheet" id="alb">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 07 · MAIN.TF II</div><h1 class="t">🖥️→⚖️ EC2 Fleet + <span class="en">the Public ALB Quartet</span></h1></div><span class="hmeta">⏱ 8 MIN</span></div></div>
+  <div class="sec"><span class="n">§7.3</span>EC2 fleet (2 + 2)</div>
+  <p class="small"><code>data "aws_ami" "amazon_linux"</code> looks up the <b>latest amzn2 AMI</b> so the code never pins an outdated AMI id. <code>aws_instance.frontend</code> / <code>.backend</code> use <code>count</code> with a <code>user_data</code> script installing Apache and serving a workspace-aware page — so the health-check <code>/</code> path returns 200 the moment the instance boots. Spread across AZs: <code>subnet_id = aws_subnet.public[count.index % length(...)].id</code>.</p>
+  <div class="mark m-warn"><span class="tag">⚠ FLOCI NOTE</span>Floci's EC2 returns instances in <code>terminated</code> state, which crashes Terraform's state serializer. <b>The IaC is correct</b> and works on real AWS — <code>run-alb.sh</code> excludes the EC2 + TG-attach targets from the Floci apply so the rest verifies end-to-end.</div>
+  <div class="sec"><span class="n">§7.4</span>Public ALB — the canonical quartet</div>
+  <div class="code"><span class="y">resource</span> <span class="s">"aws_lb"</span> <span class="s">"public"</span> {
+  name               = <span class="s">"${local.name_prefix}-pub-alb"</span>
+  load_balancer_type = <span class="s">"application"</span>
+  internal           = <span class="y">false</span>     <span class="g"># ← internet-facing</span>
+  security_groups    = [aws_security_group.public_alb.id]
+  subnets            = aws_subnet.public[*].id
+  tags = merge(local.common_tags, { Name = <span class="s">"${local.name_prefix}-pub-alb"</span> })
+}
+<span class="y">resource</span> <span class="s">"aws_lb_target_group"</span> <span class="s">"public"</span> {
+  name = <span class="s">"${local.name_prefix}-pub-tg"</span>  port = 80  protocol = <span class="s">"HTTP"</span>
+  target_type = <span class="s">"instance"</span>  vpc_id = aws_vpc.this.id
+  health_check {
+    enabled = <span class="y">true</span>  path = var.health_check_path
+    port = <span class="s">"traffic-port"</span>  matcher = var.health_check_matcher
+    interval = 30  timeout = 5  healthy_threshold = 2  unhealthy_threshold = 3
+  }
+  tags = merge(local.common_tags, { Name = <span class="s">"${local.name_prefix}-pub-tg"</span> })
+}
+<span class="y">resource</span> <span class="s">"aws_lb_listener"</span> <span class="s">"public_http"</span> {
+  load_balancer_arn = aws_lb.public.arn
+  port = 80  protocol = <span class="s">"HTTP"</span>
+  default_action {
+    type = <span class="s">"forward"</span>
+    target_group_arn = aws_lb_target_group.public.arn
+  }
+}
+<span class="y">resource</span> <span class="s">"aws_lb_target_group_attachment"</span> <span class="s">"public"</span> {
+  count            = length(aws_instance.frontend)
+  target_group_arn = aws_lb_target_group.public.arn
+  target_id        = aws_instance.frontend[count.index].id
+  port             = 80
+}</div>
+  <div class="mark m-key"><span class="tag">🔑 THE CANONICAL QUARTET</span>Load balancer + target group + listener + attachment. <b>Every ALB stack in AWS needs at least these four blocks per tier</b> — and these four resources are exactly what the internal tier copies.</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 9 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#net">Prev</a> · <a class="tlink" href="#int">Next</a></span></div>
+</div>
+
+<!-- ═══ 10 · INTERNAL + HEALTH ═══ -->
+<div class="sheet" id="int">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 07 · MAIN.TF III</div><h1 class="t">🔒 Internal ALB + <span class="en">Health-Check Anatomy</span></h1></div><span class="hmeta">⏱ 6 MIN</span></div></div>
+  <div class="sec"><span class="n">§7.5</span>Internal ALB — same quartet, internal = true</div>
+  <p class="small">The internal block is the public block copied with <code>internal = true</code>, swapped security group (<code>internal_alb</code>), swapped subnets (private), swapped target group, swapped instance set (backend). The name changes (<code>int</code> vs <code>pub</code>) keep ALB names <b>unique in AWS</b>.</p>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">public: <b>internal = false</b> · pub SG · public subnets · frontend TG</span>
+      <span class="harrow">⇄</span>
+      <span class="chipr">internal: <b>internal = true</b> · int SG · private subnets · backend TG</span>
+    </div>
+  </div>
+  <div class="sec"><span class="n">§7.6</span>Health-check anatomy — every line, one meaning</div>
+  <div class="code">health_check {
+  enabled             = <span class="y">true</span>
+  path                = <span class="s">"/"</span>                <span class="g"># GET / on each target</span>
+  port                = <span class="s">"traffic-port"</span>     <span class="g"># follow the TG port (80)</span>
+  matcher             = <span class="s">"200"</span>              <span class="g"># expect HTTP 200</span>
+  interval            = 30                 <span class="g"># probe every 30 s</span>
+  timeout             = 5                  <span class="g"># give up after 5 s</span>
+  healthy_threshold   = 2                  <span class="g"># 2 passes → healthy</span>
+  unhealthy_threshold = 3                  <span class="g"># 3 fails → unhealthy</span>
+}</div>
+  <div class="mark m-tip"><span class="tag">💡 TUNING RULES</span>The numbers are tuned for a small backend. Rule of thumb: <code>interval ≥ 2 × timeout</code> (a probe must finish before the next fires) and <code>healthy_threshold + unhealthy_threshold = 5</code> for fast convergence on small fleets.</div>
+  <div class="mark m-warn"><span class="tag">⚠ WHY THE HEALTH CHECK IS THE STAR</span>The ALB only routes to <b>healthy</b> targets. If your app serves <code>/</code> with anything but the matcher code, the TG marks everything unhealthy and the ALB returns 503s — <b>while every instance is technically running</b>. The health check is the contract between the LB and the app.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Internal-vs-public differences: <b>internal flag · SG · subnets · TG · instance set</b> — five swaps, one copied quartet. Health check contract: GET path, expect matcher, interval/timeout/thresholds as tuned.</div>
+  <p class="lead" style="margin-top:8px">⏭️ The stack is coded — what does the rest of the platform consume? → <a class="tlink" href="#out">outputs.tf</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 10 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#alb">Prev</a> · <a class="tlink" href="#out">Next</a></span></div>
+</div>
+
+<!-- ═══ 11 · OUTPUTS ═══ -->
+<div class="sheet" id="out">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 08 · THE HANDOFF</div><h1 class="t">📤 outputs.tf <span class="en">— What the Platform Consumes</span></h1></div><span class="hmeta">⏱ 4 MIN</span></div></div>
+  <p class="lead">Outputs are this stack's <b>contract</b> — ten values that DNS, autoscaling, and observability stacks will reference:</p>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:36%">Output</th><th>Purpose</th></tr>
+    <tr><td><code>vpc_id</code></td><td>For peering / TGW / observability stacks.</td></tr>
+    <tr><td><code>public_subnet_ids</code></td><td>For ASGs, Lambda ENIs, etc.</td></tr>
+    <tr><td><code>private_subnet_ids</code></td><td>Same.</td></tr>
+    <tr><td><code>public_alb_dns_name</code></td><td>Route53 alias records, app config.</td></tr>
+    <tr><td><code>public_alb_zone_id</code></td><td>Required for a Route53 <b>alias</b> to the ALB.</td></tr>
+    <tr><td><code>internal_alb_dns_name</code></td><td>Internal service discovery.</td></tr>
+    <tr><td><code>public_target_group_arn</code></td><td>For autoscaling attachments.</td></tr>
+    <tr><td><code>internal_target_group_arn</code></td><td>Same.</td></tr>
+    <tr><td><code>frontend_instance_ids</code></td><td>For SSM / CloudWatch inventory.</td></tr>
+    <tr><td><code>backend_instance_ids</code></td><td>Same.</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">🔑 WHY THE ZONE ID</span>A Route53 <b>alias record</b> to an ALB needs both the DNS name <b>and</b> the ALB's hosted zone ID — that's why <code>public_alb_zone_id</code> is exported separately. Forgetting it breaks the alias Terraform-side.</div>
+  <div class="mark m-tip"><span class="tag">💡 TG ARNS EXIST FOR AUTOSCALING</span>An ASG can register itself with a target group directly via <code>target_group_arn</code> — exporting both TG ARNs means a future autoscaling stack attaches to the ALB <b>without editing this code</b>.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Count them: <b>1 VPC + 2 subnet sets + 2 DNS + 1 zone ID + 2 TG ARNs + 2 instance sets = 10 outputs</b>. Every one exists because <i>some other stack</i> will need it — outputs are written for the consumer, not the author.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Code and contract done — three workspaces, three applies: → <a class="tlink" href="#ws">Workspaces</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 11 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#int">Prev</a> · <a class="tlink" href="#ws">Next</a></span></div>
+</div>
+
+<!-- ═══ 12 · WORKSPACES ═══ -->
+<div class="sheet" id="ws">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 09 · THREE ENVIRONMENTS</div><h1 class="t">🗂️ Workspaces <span class="en">— dev / staging / prod</span></h1></div><span class="hmeta">⏱ 6 MIN</span></div></div>
+  <div class="taskhead">TASK [The command sequence]<span class="hst">one codebase, three applies</span></div>
+  <div class="code"><span class="y">cd</span> live-verify-floci/alb-cluster
+<span class="y">export</span> TF_VAR_floci_endpoint=http://localhost:4566
+<span class="p">$</span> terraform init
+<span class="p">$</span> terraform workspace <span class="y">new</span> dev      <span class="g"># creates + selects</span>
+<span class="p">$</span> terraform workspace <span class="y">new</span> staging
+<span class="p">$</span> terraform workspace <span class="y">new</span> prod
+<span class="p">$</span> ./run-alb.sh dev                 <span class="g"># apply dev (22 non-EC2 resources)</span>
+<span class="p">$</span> ./run-alb.sh staging
+<span class="p">$</span> ./run-alb.sh prod
+<span class="p">$</span> terraform workspace list
+<span class="g">  default
+* dev
+  staging
+  prod</span></div>
+  <div class="mark m-key"><span class="tag">🔑 ISOLATION PROOF</span>Each workspace gets its own state file under <code>terraform.tfstate.d/&lt;name&gt;/terraform.tfstate</code> — and its own resources in Floci: <b>3 separate VPCs, 12 subnets, 12 SGs, 6 ALBs, 6 target groups, 6 listeners</b>, all live. Nothing is shared between environments.</div>
+  <div class="mark m-tip"><span class="tag">💡 WHERE THE 66 COMES FROM</span>The cover said "66 resources deployed": ~22 non-EC2 resources × 3 workspaces ≈ 66 live objects in Floci. The EC2 + attachment blocks are coded and state-tracked but excluded from the Floci apply (the terminated-state limitation from page 9).</div>
+  <div class="mark m-warn"><span class="tag">⚠ THE DEFAULT WORKSPACE</span>First <code>init + apply</code> without creating a workspace lands everything in <b>default</b> with an unprefixed state key. Create <code>dev</code> <b>before</b> the first apply — the sequence above is ordered deliberately.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>The proof of multi-env: <b>3 workspaces → 3 state files → 3 complete, separately-named stacks</b> (<code>onext-dev-*</code>, <code>onext-staging-*</code>, <code>onext-prod-*</code>), all from one codebase with zero environment conditionals in the resource blocks — the naming comes from <code>locals.tf</code>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Applied — now prove what's live matches what's coded: → <a class="tlink" href="#gates">Verify + Idempotence</a></p>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 12 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#out">Prev</a> · <a class="tlink" href="#gates">Next</a></span></div>
+</div>
+
+<!-- ═══ 13 · VERIFY + IDEMPOTENCE + DOCS ═══ -->
+<div class="sheet" id="gates">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTIONS 10–12 · THE PROOF</div><h1 class="t">✅ Verify · Idempotence · <span class="en">Docs Cross-Ref</span></h1></div><span class="hmeta">⏱ 6 MIN</span></div></div>
+  <div class="sec"><span class="n">§10</span>Verifying the apply</div>
+  <div class="code"><span class="p">$</span> ./verify-alb.sh onext-dev-vpc</div>
+  <p class="small">The script hits the Floci endpoint directly and dumps every VPC, subnet, security group, load balancer, target group, and listener it sees — confirming <code>Apply complete!</code> matches what's <b>actually in the emulator</b>.</p>
+  <div class="sec"><span class="n">§11</span>Idempotence check — the correctness gate</div>
+  <div class="code"><span class="p">$</span> terraform plan <span class="y">-target</span>=aws_lb.public <span class="y">-target</span>=aws_lb.internal …
+<span class="ok">No changes. Your infrastructure matches the configuration.</span></div>
+  <div class="mark m-exam"><span class="tag">🎓 THE PROOF</span>Re-running <code>terraform plan</code> on a clean workspace returning <b>"No changes"</b> is the proof the IaC is correct — <b>not just one-shot</b>. Apply-once luck isn't engineering; the no-change plan is.</div>
+  <div class="sec"><span class="n">§12</span>Cross-reference — every argument from the 5.x docs</div>
+  <div class="tblwrap"><table class="tb" style="font-size:9.2px">
+    <tr><th style="width:44%">Resource</th><th>Doc anchor (registry.terraform.io/providers/hashicorp/aws/latest/docs/…)</th></tr>
+    <tr><td><code>aws_lb</code></td><td><code>resources/lb</code></td></tr>
+    <tr><td><code>aws_lb_listener</code></td><td><code>resources/lb_listener</code></td></tr>
+    <tr><td><code>aws_lb_target_group</code></td><td><code>resources/lb_target_group</code></td></tr>
+    <tr><td><code>aws_lb_target_group_attachment</code></td><td><code>resources/lb_target_group_attachment</code></td></tr>
+    <tr><td><code>aws_security_group</code></td><td><code>resources/security_group</code></td></tr>
+    <tr><td><code>aws_vpc</code> · <code>aws_subnet</code> · <code>aws_route_table</code> · <code>aws_internet_gateway</code> · <code>aws_route_table_association</code></td><td><code>resources/&lt;name&gt;</code> each</td></tr>
+    <tr><td><code>aws_instance</code></td><td><code>resources/instance</code></td></tr>
+    <tr><td><code>data "aws_ami"</code></td><td><code>data-sources/ami</code></td></tr>
+  </table></div>
+  <div class="mark m-warn"><span class="tag">⚠ THE HARD REQUIREMENT</span>Every argument used here — <code>internal</code>, <code>load_balancer_type</code>, <code>target_type</code>, <code>health_check { … }</code>, <code>default_action { type = "forward" }</code>, <code>ingress { security_groups = [...] }</code> — comes from the <b>5.x docs</b>. No deprecated syntax, no guessed arguments.</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 13 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#ws">Prev</a> · <a class="tlink" href="#pipe">Next</a></span></div>
+</div>
+
+<!-- ═══ 14 · PIPELINE + CLEANUP + TRUTH ═══ -->
+<div class="sheet" id="pipe">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTIONS 13–15 · THE PIPELINE</div><h1 class="t">⚙️ FLOCI Pipeline · Cleanup · <span class="en">Truth Table</span></h1></div><span class="hmeta">⏱ 6 MIN</span></div></div>
+  <div class="sec"><span class="n">§13</span>FLOCI pipeline integration</div>
+  <div class="stepitem"><div class="stepnum">1</div><div class="small" style="margin:0">CI sets <code>TF_VAR_floci_endpoint=http://localhost:4566</code></div></div>
+  <div class="stepitem"><div class="stepnum">2</div><div class="small" style="margin:0"><code>terraform fmt -check -recursive</code> — formatting gate</div></div>
+  <div class="stepitem"><div class="stepnum">3</div><div class="small" style="margin:0"><code>terraform init -input=false</code> — pulls the locked provider</div></div>
+  <div class="stepitem"><div class="stepnum">4</div><div class="small" style="margin:0"><code>terraform validate</code> — fails the build on syntax errors</div></div>
+  <div class="stepitem"><div class="stepnum">5</div><div class="small" style="margin:0">Per workspace (dev/staging/prod): <code>workspace select $ws</code> → <code>./run-alb.sh $ws</code> (<code>-auto-approve</code>, EC2 excluded) → <code>./verify-alb.sh</code> proves it's live → <code>terraform plan</code> must report <b>No changes</b> (idempotence gate)</div></div>
+  <div class="mark m-key"><span class="tag">🔑 SAME CODE, REAL AWS</span>The EC2/TG-attach blocks <b>stay in main.tf</b> so the same code ships to staging/prod on real AWS unchanged. Floci is for <b>pipeline verification</b>, not production.</div>
+  <div class="sec"><span class="n">§14</span>Cleanup</div>
+  <div class="code"><span class="p">$</span> ./run-alb.sh destroy dev       <span class="g"># tears down dev (non-EC2)</span>
+<span class="p">$</span> ./run-alb.sh destroy staging
+<span class="p">$</span> ./run-alb.sh destroy prod
+<span class="p">$</span> terraform workspace delete dev staging prod</div>
+  <p class="small" style="margin-top:2px">Real AWS teardown: drop the <code>-target</code> filters and let <code>terraform destroy -auto-approve</code> reap everything — EC2s and TG attachments included.</p>
+  <div class="sec"><span class="n">§15</span>The FLOCI truth table</div>
+  <div class="tblwrap"><table class="tb" style="font-size:9.4px">
+    <tr><th style="width:44%">Resource</th><th style="width:28%">Floci behavior</th><th>Real AWS</th></tr>
+    <tr><td><code>aws_vpc</code> + subnets + routes + IGW</td><td class="ok">full</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_security_group</code></td><td class="ok">full</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_lb</code> (ALB)</td><td class="ok">full (elbv2 endpoint)</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_lb_target_group</code></td><td class="ok">full</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_lb_listener</code></td><td class="ok">full</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_lb_target_group_attachment</code></td><td class="ok">full (target is a stub)</td><td class="ok">full</td></tr>
+    <tr><td><code>aws_instance</code></td><td class="bad">returns terminated → crashes state write</td><td class="ok">full</td></tr>
+    <tr><td><code>data "aws_ami"</code></td><td>most-recent amzn2 stub</td><td class="ok">full</td></tr>
+  </table></div>
+  <div class="mark m-warn"><span class="tag">⚠ THE HONEST SUMMARY</span>Floci is <b>complete for the ALB control plane</b> and <b>partial for EC2</b>. The IaC here is complete for both — Floci verifies the control plane, real AWS ships the full stack.</div>
+  <div class="folio"><span>ALB Stack · By Nabawy</span><span class="fnum">— 14 —</span><span><a class="backtoc" href="#toc">TOC</a> ◀ <a class="tlink" href="#gates">Prev</a> · <a class="tlink" href="#recap">Next</a></span></div>
+</div>
+
+<!-- ═══ 15 · RECAP + CHEAT + QUIZ ═══ -->
+<div class="sheet" id="recap">
+  <div class="pghead"><div class="hrow"><div><div class="kick">SECTION 16 · FINALE</div><h1 class="t">🏁 Recap · Cheat Sheet · <span class="en">Self-Check</span></h1></div><span class="hmeta">🏁 THE END</span></div></div>
+  <div class="sec"><span class="n">§16</span>Recap — the five-line summary</div>
+  <ul class="tick">
+    <li><b>18 resource blocks</b> in main.tf: VPC, IGW, 4 subnets, 2 RTs + 2 associations, 4 SGs, 2+2 EC2, 2 ALBs, 2 TGs, 2 listeners, 2 count-driven attachments.</li>
+    <li><b>Every resource uses modern AWS ~&gt; 5.0 syntax</b> — <code>internal</code>, <code>load_balancer_type</code>, <code>target_type</code>, <code>health_check {…}</code>, <code>default_action { type = "forward" }</code>, <code>ingress { security_groups }</code>.</li>
+    <li><b>Workspaces</b> isolate three environments from one codebase — all three deployed and verified on Floci.</li>
+    <li><b>Idempotent</b> — re-running plan reports no changes.</li>
+    <li><b>FLOCI-ready</b> — run/verify scripts are the pipeline gates; EC2 excluded only because of Floci's stub, not an IaC defect.</li>
+  </ul>
+  <div class="sec"><span class="n">📌</span>Command cheat sheet</div>
+  <div class="code mini"><span class="y">export</span> TF_VAR_floci_endpoint=http://localhost:4566
+<span class="p">$</span> terraform init && terraform workspace new dev && ./run-alb.sh dev
+<span class="p">$</span> ./verify-alb.sh onext-dev-vpc
+<span class="p">$</span> terraform plan   <span class="g"># → No changes = idempotent ✅</span>
+<span class="p">$</span> ./run-alb.sh destroy dev</div>
+  <div class="sec"><span class="n">🎯</span>Self-check — answer before peeking</div>
+  <div class="dcol3">
+    <div class="qz"><span class="qn">1.</span>Which provider endpoint is mandatory for ALBs on Floci?<div class="ans">elbv2 — elb only serves CLBs.</div></div>
+    <div class="qz"><span class="qn">2.</span>Which SG can use 0.0.0.0/0?<div class="ans">Only public_alb (80/443). Everything else chains by reference.</div></div>
+    <div class="qz"><span class="qn">3.</span>The "canonical quartet" per ALB tier?<div class="ans">aws_lb · target group · listener · attachment.</div></div>
+    <div class="qz"><span class="qn">4.</span>What proves idempotence?<div class="ans">Re-plan → "No changes. Your infrastructure matches the configuration."</div></div>
+    <div class="qz"><span class="qn">5.</span>Why is EC2 excluded from the Floci apply?<div class="ans">Floci returns terminated instances → state write crashes. IaC itself is correct.</div></div>
+    <div class="qz"><span class="qn">6.</span>Health-check rule of thumb?<div class="ans">interval ≥ 2×timeout; healthy+unhealthy thresholds sum to 5.</div></div>
+  </div>
+  <div class="mark m-key" style="margin-top:7px"><span class="tag">🔑 CLOSING LINE</span>The task done end-to-end: <b>IaC authored, validated, applied to an AWS-compatible emulator across three workspaces, verified live, and reproducible from a fresh clone with three shell commands.</b> ▶</div>
+  <div class="folio"><span>ALB Stack · <span class="by">By Nabawy</span> · INK &amp; AMBER Series</span><span class="fnum">— 15 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span><span>▶ The End 🎬</span></div>
+</div>
+
+</body>
+</html>

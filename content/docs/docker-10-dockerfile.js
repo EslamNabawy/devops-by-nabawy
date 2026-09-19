@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["docker-10-dockerfile"]={"html":"<pre class=\"code\" data-lang=\"md\"><code>FROM python:3.12-slim\nWORKDIR /app\nCOPY hello.py .\nCMD [\"python\", \"hello.py\"]\n</code></pre>","toc":[],"words":11,"assets":[]};

@@ -1,0 +1,370 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<title>Jenkins to Docker Hub — Roadmap | Created By Nabawy</title>
+<style>
+@page { margin: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { background-color: #ffffff; }
+@media (prefers-color-scheme: dark) { html { background-color: #1f1f1f; } }
+body { padding: 24px 0; margin: 0 auto; max-width: 900px !important; border: none !important; background: transparent !important; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.6; }
+.page { height: 297mm; margin: 0 auto 12px auto; padding: 16mm 14mm 10mm 14mm; background-color: #ffffff; border: 1px solid rgba(0, 0, 0, 0.12); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+@media screen and (max-width: 600px) { body { padding: 16px 0; } .page { margin: 0 auto 8px auto; border: none; padding: 12px 16px; } }
+.page-content { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.page-footer { flex-shrink: 0; margin-top: auto; padding-top: 3mm; display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #64748b; border-top:1px solid #f1f5f9; }
+@media print { *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } body { padding: 0; background: none; } .page { margin: 0; border: none; height: 297mm; break-after: page; page-break-after: always; } .page:last-child { break-after: auto; page-break-after: auto; } }
+[contenteditable]:focus { outline: none; }
+
+/* — Roadmap Design System — */
+:root{ --blue:#0284c7; --blue2:#0369a1; --navy:#0c4a6e; --slate:#0f172a; --amber:#f59e0b; --violet:#7c3aed; --emerald:#059669; --rose:#e11d48; --gray:#64748b; }
+.eyebrow{ font-size:7pt; letter-spacing:0.14em; text-transform:uppercase; font-weight:800; color:var(--blue); display:flex; align-items:center; gap:8px; }
+.eyebrow i{ width:18px; height:2px; background:var(--blue); border-radius:999px; display:inline-block; }
+h1{ font-size:25pt; line-height:1.05; letter-spacing:-0.02em; font-weight:900; color:#fff; margin:0; }
+h2{ font-size:11pt; font-weight:800; color:var(--slate); margin:12px 0 8px 0; display:flex; align-items:center; gap:8px; }
+.muted{ font-size:7.5pt; color:#64748b; }
+code{ font-family:Consolas,monospace; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 5px; border-radius:4px; font-size:8pt; color:#be123c; }
+
+/* COVER */
+.cover{ background: radial-gradient(700px 380px at 85% -5%, rgba(56,189,248,0.32) 0%, transparent 62%), radial-gradient(520px 320px at 8% 108%, rgba(124,58,237,0.22) 0%, transparent 60%), linear-gradient(135deg, #0284c7 0%, #0369a1 52%, #0c4a6e 100%); border-radius:14px; padding:18px 18px 14px 18px; color:#fff; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.14); margin:-1mm -1mm 10px -1mm; }
+.cover::after{ content:""; position:absolute; inset:0; background: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size:20px 20px; mask:radial-gradient(800px 400px at 50% 0, black 65%, transparent 100%); opacity:0.35; pointer-events:none; }
+.cover-top{ display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1; margin-bottom:10px; }
+.cover-badge{ display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.18); backdrop-filter:blur(6px); padding:4px 10px; border-radius:999px; font-size:7pt; font-weight:800; letter-spacing:0.09em; text-transform:uppercase; }
+.cover-badge b{ background:#38bdf8; width:7px; height:7px; border-radius:50%; display:inline-block; box-shadow:0 0 0 4px rgba(56,189,248,0.25); }
+.cover-meta{ display:flex; gap:8px; font-size:7.5pt; color:#e0f2fe; }
+.cover-meta span{ display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.14); padding:3px 8px; border-radius:999px; }
+.cover h1 span{ color:#7dd3fc; }
+.cover-sub{ color:#e0f2fe; font-size:9pt; line-height:1.5; max-width:540px; margin:6px 0 12px 0; position:relative; z-index:1; }
+
+/* Horizontal roadmap ribbon */
+.roadmap-ribbon{ position:relative; z-index:1; background:rgba(255,255,255,0.97); border-radius:10px; padding:12px 10px 10px 10px; border:1px solid rgba(255,255,255,0.7); box-shadow:0 8px 24px rgba(2,132,199,0.18); }
+.ribbon-label{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.ribbon-label b{ font-size:7pt; letter-spacing:0.09em; text-transform:uppercase; color:#0369a1; }
+.ribbon-label span{ font-size:7pt; color:#64748b; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 7px; border-radius:999px; }
+.ribbon-track{ position:relative; display:flex; justify-content:space-between; align-items:flex-start; gap:4px; padding:6px 4px 0 4px; }
+.ribbon-track::before{ content:""; position:absolute; left:18px; right:18px; top:18px; height:4px; background:linear-gradient(90deg, #0284c7 0%, #7c3aed 50%, #059669 100%); border-radius:999px; opacity:0.95; }
+.ribbon-node{ flex:1; text-align:center; position:relative; z-index:1; }
+.ribbon-dot{ width:36px; height:36px; border-radius:50%; background:#fff; border:3px solid #e2e8f0; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto; font-size:12px; box-shadow:0 2px 8px rgba(15,23,42,0.08); position:relative; }
+.ribbon-node.active .ribbon-dot{ border-color:var(--blue); background:var(--blue); color:#fff; box-shadow:0 0 0 4px #e0f2fe; }
+.ribbon-node:nth-child(2) .ribbon-dot{ border-color:#f59e0b; } .ribbon-node:nth-child(2).active .ribbon-dot{ background:#f59e0b; border-color:#f59e0b; box-shadow:0 0 0 4px #fef3c7; color:#fff; }
+.ribbon-node:nth-child(3) .ribbon-dot{ border-color:#7c3aed; } .ribbon-node:nth-child(3).active .ribbon-dot{ background:#7c3aed; border-color:#7c3aed; box-shadow:0 0 0 4px #ede9fe; color:#fff; }
+.ribbon-node:nth-child(4) .ribbon-dot{ border-color:#059669; } .ribbon-node:nth-child(4).active .ribbon-dot{ background:#059669; border-color:#059669; box-shadow:0 0 0 4px #d1fae5; color:#fff; }
+.ribbon-node:nth-child(5) .ribbon-dot{ border-color:#0f172a; }
+.ribbon-num{ position:absolute; top:-4px; right:50%; transform:translateX(14px); background:var(--slate); color:#fff; font-size:6.5pt; font-weight:800; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1.5px solid #fff; }
+.ribbon-node.active .ribbon-num{ background:var(--slate); }
+.ribbon-title{ font-size:7.5pt; font-weight:800; color:#0f172a; line-height:1.2; }
+.ribbon-sub{ font-size:6.8pt; color:#64748b; line-height:1.3; margin-top:1px; }
+.ribbon-time{ font-size:6.5pt; font-weight:700; color:#0284c7; background:#e0f2fe; padding:1px 5px; border-radius:999px; display:inline-block; margin-top:3px; }
+
+/* Vertical roadmap */
+.v-roadmap{ position:relative; padding-left:22px; margin:8px 0; }
+.v-roadmap::before{ content:""; position:absolute; left:7px; top:6px; bottom:6px; width:3px; background:linear-gradient(180deg, #0284c7 0%, #f59e0b 30%, #7c3aed 60%, #059669 100%); border-radius:999px; opacity:0.9; }
+.rm-step{ position:relative; margin-bottom:9px; }
+.rm-step:last-child{ margin-bottom:0; }
+.rm-dot{ position:absolute; left:-22px; top:10px; width:16px; height:16px; border-radius:50%; background:#fff; border:2.5px solid #e2e8f0; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 3px #f8fafc; font-size:7pt; }
+.rm-step.active .rm-dot{ background:var(--blue); border-color:var(--blue); color:#fff; box-shadow:0 0 0 3px #e0f2fe; }
+.rm-step.warn .rm-dot{ border-color:#f59e0b; } .rm-step.warn.active .rm-dot{ background:#f59e0b; border-color:#f59e0b; box-shadow:0 0 0 3px #fef3c7; color:#fff; }
+.rm-step.violet .rm-dot{ border-color:#7c3aed; } .rm-step.violet.active .rm-dot{ background:#7c3aed; border-color:#7c3aed; box-shadow:0 0 0 3px #ede9fe; color:#fff; }
+.rm-step.green .rm-dot{ border-color:#059669; } .rm-step.green.active .rm-dot{ background:#059669; border-color:#059669; box-shadow:0 0 0 3px #d1fae5; color:#fff; }
+.rm-card{ background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px 11px; display:flex; gap:10px; align-items:flex-start; box-shadow:0 1px 6px rgba(15,23,42,0.04); }
+.rm-card.accent-blue{ border-left:3px solid var(--blue); }
+.rm-card.accent-amber{ border-left:3px solid #f59e0b; }
+.rm-card.accent-violet{ border-left:3px solid #7c3aed; }
+.rm-card.accent-emerald{ border-left:3px solid #059669; }
+.rm-icon{ width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; border:1px solid #e2e8f0; }
+.rm-title{ font-size:8.5pt; font-weight:800; color:#0f172a; line-height:1.2; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.rm-title .phase{ font-size:6.5pt; letter-spacing:0.08em; text-transform:uppercase; padding:2px 6px; border-radius:999px; font-weight:800; border:1px solid #e2e8f0; background:#f8fafc; color:#475569; }
+.rm-desc{ font-size:7.8pt; color:#475569; line-height:1.5; margin-top:3px; }
+.rm-meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.rm-pill{ font-size:6.5pt; font-weight:700; letter-spacing:0.04em; padding:2px 6px; border-radius:999px; border:1px solid #e2e8f0; background:#f8fafc; color:#334155; }
+.rm-pill.blue{ background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
+.rm-pill.amber{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
+.rm-pill.violet{ background:#f5f3ff; border-color:#ddd6fe; color:#6d28d9; }
+.rm-pill.emerald{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+
+/* Prereq chips */
+.chip-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin:8px 0; }
+.chip{ background:#fff; border:1px solid #e2e8f0; border-radius:9px; padding:8px 9px; display:flex; gap:8px; align-items:center; }
+.chip i{ width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; border:1px solid #e2e8f0; }
+.chip b{ font-size:7.8pt; color:#0f172a; display:block; line-height:1.1; }
+.chip span{ font-size:7pt; color:#64748b; line-height:1.3; }
+
+/* Table */
+.file-table{ width:100%; border-collapse:separate; border-spacing:0; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; font-size:8pt; margin:8px 0; }
+.file-table th{ background:#f8fafc; color:#475569; font-size:6.8pt; letter-spacing:0.08em; text-transform:uppercase; font-weight:800; padding:7px 9px; text-align:left; border-bottom:1px solid #e2e8f0; }
+.file-table td{ padding:7px 9px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+.file-table tr:last-child td{ border-bottom:none; }
+.fbadge{ display:inline-flex; align-items:center; gap:6px; font-family:Consolas,monospace; font-weight:700; font-size:8pt; }
+.dot{ width:7px; height:7px; border-radius:50%; display:inline-block; }
+
+/* Form mock */
+.form-mock{ background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; box-shadow:0 2px 10px rgba(15,23,42,0.05); }
+.form-head{ background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; font-size:7pt; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:#475569; }
+.form-body{ padding:9px 10px; display:grid; gap:6px; }
+.field{ display:grid; grid-template-columns:90px 1fr; gap:8px; align-items:center; }
+.field label{ font-size:6.8pt; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:#64748b; }
+.field .input{ border:1px solid #e2e8f0; background:#f8fafc; border-radius:7px; padding:6px 8px; font-size:7.8pt; color:#334155; display:flex; justify-content:space-between; }
+
+/* Code */
+.code-window{ border:1px solid #1e293b; border-radius:11px; overflow:hidden; background:#0f172a; box-shadow:0 10px 28px rgba(15,23,42,0.16); margin:8px 0; }
+.code-head{ background:#0f172a; border-bottom:1px solid #1e293b; padding:7px 10px; display:flex; justify-content:space-between; align-items:center; }
+.code-dots i{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:4px; }
+pre{ background:transparent !important; color:#e2e8f0; padding:10px 12px !important; margin:0 !important; border:none !important; font-size:8.2pt !important; line-height:1.55 !important; }
+pre code{ background:transparent !important; color:#e2e8f0 !important; }
+.kw{ color:#7dd3fc; } .str{ color:#86efac; } .cmt{ color:#64748b; font-style:italic; } .fn{ color:#fde68a; }
+.anno-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-top:6px; }
+.anno{ background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 8px; }
+.anno b{ display:block; font-size:6.8pt; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:var(--blue); margin-bottom:2px; }
+.anno span{ font-size:7.3pt; color:#475569; line-height:1.4; }
+
+/* Hub mock */
+.hub-mock{ border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#fff; box-shadow:0 2px 10px rgba(15,23,42,0.05); margin:7px 0; }
+.hub-head{ padding:9px 10px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+.hub-table{ width:100%; border-collapse:collapse; font-size:7.8pt; }
+.hub-table th{ background:#f8fafc; padding:7px 10px; text-align:left; font-size:6.8pt; letter-spacing:0.07em; text-transform:uppercase; color:#475569; border-bottom:1px solid #e2e8f0; }
+.hub-table td{ padding:7px 10px; border-bottom:1px solid #f1f5f9; }
+.tag-pill{ display:inline-flex; align-items:center; gap:5px; padding:2px 7px; border-radius:999px; font-family:Consolas,monospace; font-size:7.5pt; font-weight:700; border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; }
+.tag-pill.latest{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+
+/* CTA */
+.cta{ background:linear-gradient(135deg,#0284c7 0%, #0c4a6e 100%); color:#fff; border-radius:10px; padding:11px 13px; display:flex; justify-content:space-between; align-items:center; gap:10px; position:relative; overflow:hidden; }
+.cta::after{ content:""; position:absolute; inset:0; background:radial-gradient(380px 180px at 92% 0, rgba(255,255,255,0.13), transparent 60%); }
+.cta b, .cta p, .cta div{ position:relative; z-index:1; }
+.cta b{ font-size:9pt; } .cta p{ font-size:7.5pt; color:#e0f2fe; margin:2px 0 0 0; }
+.cta .btn{ background:#fff; color:#0c4a6e; padding:6px 10px; border-radius:999px; font-size:7.5pt; font-weight:800; white-space:nowrap; }
+
+/* Note */
+.note{ background:#f8fafc; border:1px solid #e2e8f0; border-left:3px solid var(--blue); padding:8px 10px; border-radius:0 9px 9px 0; display:flex; gap:8px; margin:7px 0; }
+.note.warn{ border-left-color:#f59e0b; background:#fffbeb; border-color:#fde68a; }
+.note.success{ border-left-color:#059669; background:#ecfdf5; border-color:#a7f3d0; }
+.note strong{ font-size:7.8pt; color:#0f172a; display:block; }
+.note p{ font-size:7.5pt; color:#475569; margin:2px 0 0 0; line-height:1.45; }
+.footer-badge{ width:20px; height:20px; border-radius:6px; background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:7.5pt; font-weight:800; }
+.dots{ display:flex; gap:4px; } .dots i{ width:12px; height:3px; border-radius:999px; background:#e2e8f0; } .dots i.on{ background:var(--blue); width:16px; }
+</style>
+</head>
+<body>
+<div contenteditable="true">
+
+<!-- PAGE 1 — COVER + ROADMAP OVERVIEW -->
+<section class="page">
+<div class="page-content">
+  <div class="cover">
+    <div class="cover-top">
+      <div class="cover-badge"><b></b> CI/CD Roadmap &nbsp;·&nbsp; Jenkins → Docker Hub</div>
+      <div class="cover-meta"><span>◷ 12 min</span><span>⬢ Intermediate</span><span>Created By Nabawy</span></div>
+    </div>
+    <h1>Jenkins to Docker Hub<br><span>CI/CD Pipeline</span></h1>
+    <p class="cover-sub">A visual roadmap from <b style="color:#fff;">git push</b> to <b style="color:#fff;">container registry</b> — five connected milestones, one declarative pipeline.</p>
+    <div class="roadmap-ribbon">
+      <div class="ribbon-label"><b>Roadmap at a glance — 5 milestones</b><span>Start → Ship in ~15 min</span></div>
+      <div class="ribbon-track">
+        <div class="ribbon-node active"><div class="ribbon-dot">◈<span class="ribbon-num">1</span></div><div class="ribbon-title">Foundation</div><div class="ribbon-sub">Overview +<br>Prerequisites</div><div class="ribbon-time">2 min</div></div>
+        <div class="ribbon-node active"><div class="ribbon-dot">⎇<span class="ribbon-num">2</span></div><div class="ribbon-title">Source & Auth</div><div class="ribbon-sub">Repo files +<br>Credentials</div><div class="ribbon-time">4 min</div></div>
+        <div class="ribbon-node active"><div class="ribbon-dot">⬢<span class="ribbon-num">3</span></div><div class="ribbon-title">Pipeline</div><div class="ribbon-sub">Jenkinsfile<br>as Code</div><div class="ribbon-time">3 min</div></div>
+        <div class="ribbon-node"><div class="ribbon-dot">▶<span class="ribbon-num">4</span></div><div class="ribbon-title">Execute</div><div class="ribbon-sub">Build &<br>Run</div><div class="ribbon-time">2 min</div></div>
+        <div class="ribbon-node"><div class="ribbon-dot">✔<span class="ribbon-num">5</span></div><div class="ribbon-title">Ship</div><div class="ribbon-sub">Verify &<br>Deploy</div><div class="ribbon-time">2 min</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="eyebrow"><i></i> Milestone 01 — Foundation</div>
+  <h2 style="margin-top:6px;">Why this roadmap exists</h2>
+  <p style="font-size:8.3pt; color:#334155; margin:0 0 8px 0; line-height:1.6;">Every commit should produce a versioned, push-ready image without manual steps. This roadmap stitches <b>Git</b> → <b>Jenkins</b> → <b>Docker</b> → <b>Docker Hub</b> into a single observable path with secure credentials and automatic cleanup.</p>
+
+  <div class="chip-grid">
+    <div class="chip"><i style="background:#eff6ff; color:#0284c7;">⬢</i><div><b>Jenkins</b><span>Pipeline + Docker Pipeline + Git</span></div></div>
+    <div class="chip"><i style="background:#eff6ff; color:#0ea5e9;">⬣</i><div><b>Docker Engine</b><span>On controller or agent</span></div></div>
+    <div class="chip"><i style="background:#fef3c7; color:#d97706;">🔒</i><div><b>Permissions</b><span><code>jenkins</code> ∈ <code>docker</code> group</span></div></div>
+    <div class="chip"><i style="background:#ecfdf5; color:#059669;">◈</i><div><b>Docker Hub</b><span>Account + target repo</span></div></div>
+    <div class="chip"><i style="background:#f5f3ff; color:#7c3aed;">⎇</i><div><b>Git Repo</b><span>GitHub / GitLab / Bitbucket</span></div></div>
+    <div class="chip"><i style="background:#fffbeb; color:#f59e0b;">⚡</i><div><b>Outcome</b><span><code>:build-N</code> + <code>:latest</code> pushed</span></div></div>
+  </div>
+
+  <div class="note success" style="margin-top:6px;">
+    <div style="width:26px; height:26px; border-radius:7px; background:#ecfdf5; border:1px solid #a7f3d0; display:flex; align-items:center; justify-content:center; color:#059669; flex-shrink:0; font-size:12px;">✓</div>
+    <div><strong>You will ship</strong><p><code>yourusername/myapp:build-&lt;N&gt;</code> + <code>:latest</code> — authenticated via Jenkins credentials, cleaned after each run. No tokens in Git, no passwords in logs.</p></div>
+  </div>
+  <div class="note warn">
+    <div style="width:26px; height:26px; border-radius:7px; background:#fffbeb; border:1px solid #fde68a; display:flex; align-items:center; justify-content:center; color:#d97706; flex-shrink:0;">⚠</div>
+    <div><strong>Golden rule — never hardcode secrets</strong><p>Use <b>Manage Jenkins → Credentials</b> and inject with <code>credentials('dockerhub-credentials')</code>. The roadmap fails safely if ID mismatches.</p></div>
+  </div>
+</div>
+<footer class="page-footer">
+  <div style="display:flex; align-items:center; gap:7px;"><div class="footer-badge">N</div><b style="color:#0f172a;">Jenkins to Docker Hub — Roadmap</b><span style="color:#94a3b8;">· Created By Nabawy</span></div>
+  <div style="display:flex; align-items:center; gap:8px;"><div class="dots"><i class="on"></i><i></i><i></i><i></i></div>01 / 04 — Foundation</div>
+</footer>
+</section>
+
+<!-- PAGE 2 — MILESTONES 02 -->
+<section class="page">
+<div class="page-content">
+  <div class="eyebrow"><i></i> Milestone 02 — Source & Auth <span style="margin-left:auto; font-size:6.5pt; background:#0284c7; color:#fff; padding:2px 7px; border-radius:999px; letter-spacing:0.06em;">You are here →</span></div>
+  <h2>Source repository — the single source of truth</h2>
+  <p style="font-size:8.3pt; color:#334155; margin:0 0 6px 0;">Four files at repo root. Jenkins checks these out, builds from the Dockerfile, and deploys via the Jenkinsfile.</p>
+
+  <table class="file-table">
+    <thead><tr><th style="width:26%;">File</th><th>Description</th><th style="width:20%;">Roadmap role</th></tr></thead>
+    <tbody>
+      <tr><td><span class="fbadge"><span class="dot" style="background:#38bdf8;"></span> hello.py</span></td><td style="font-size:7.8pt; color:#475569;">App source — pipeline entrypoint.</td><td><span class="rm-pill blue">Runtime</span></td></tr>
+      <tr><td><span class="fbadge"><span class="dot" style="background:#f59e0b;"></span> requirements.txt</span></td><td style="font-size:7.8pt; color:#475569;">Dependencies installed during build.</td><td><span class="rm-pill amber">Build</span></td></tr>
+      <tr><td><span class="fbadge"><span class="dot" style="background:#0ea5e9;"></span> Dockerfile</span></td><td style="font-size:7.8pt; color:#475569;">Blueprint for <code>docker build</code>.</td><td><span class="rm-pill" style="background:#eff6ff; border-color:#bfdbfe; color:#0369a1;">Image</span></td></tr>
+      <tr><td><span class="fbadge"><span class="dot" style="background:#ef4444;"></span> Jenkinsfile</span></td><td style="font-size:7.8pt; color:#475569;">Declarative pipeline (Milestone 03).</td><td><span class="rm-pill violet">CI/CD</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Credentials — secure the path to Docker Hub</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:6px;">
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px 11px; border-left:3px solid #f59e0b;">
+      <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px;"><span style="width:22px; height:22px; border-radius:7px; background:#f59e0b; color:#fff; display:flex; align-items:center; justify-content:center; font-size:8pt; font-weight:800;">A</span><b style="font-size:8.3pt; color:#0f172a;">Create Access Token</b></div>
+      <div class="v-roadmap" style="margin:0; padding-left:18px;">
+        <div class="rm-step active" style="margin-bottom:6px;"><div class="rm-dot" style="width:12px; height:12px; left:-18px; top:4px; font-size:6pt;">1</div><div style="font-size:7.5pt; color:#334155;"><b>hub.docker.com</b> → Avatar → <b>Account Settings</b></div></div>
+        <div class="rm-step active" style="margin-bottom:6px;"><div class="rm-dot" style="width:12px; height:12px; left:-18px; top:4px; font-size:6pt; background:#f59e0b; border-color:#f59e0b; color:#fff;">2</div><div style="font-size:7.5pt; color:#334155;"><b>Security → New Access Token</b></div></div>
+        <div class="rm-step active" style="margin-bottom:6px;"><div class="rm-dot" style="width:12px; height:12px; left:-18px; top:4px; font-size:6pt; background:#f59e0b; border-color:#f59e0b; color:#fff;">3</div><div style="font-size:7.5pt; color:#334155;">Desc: <code>Jenkins Pipeline Token</code> → Generate</div></div>
+        <div class="rm-step" style="margin-bottom:0;"><div class="rm-dot" style="width:12px; height:12px; left:-18px; top:4px; font-size:6pt; border-color:#f59e0b;">4</div><div style="font-size:7.5pt; color:#334155;"><b style="color:#b45309;">Copy once</b> — token never shown again</div></div>
+      </div>
+      <div class="note" style="margin:8px 0 0 0; padding:7px 8px;"><div style="color:#0284c7; font-size:10px;">◈</div><div><strong style="font-size:7pt;">Why token?</strong><p style="font-size:7pt;">Scoped, revocable, 2FA-friendly — safer than password.</p></div></div>
+    </div>
+    <div>
+      <div class="form-mock">
+        <div class="form-head"><span>Jenkins → Credentials</span><span style="background:#0284c7; color:#fff; padding:2px 6px; border-radius:999px; font-size:6.5pt;">Global</span></div>
+        <div class="form-body">
+          <div class="field"><label>Kind</label><div class="input"><span>Username with password</span><span>▾</span></div></div>
+          <div class="field"><label>Username</label><div class="input"><b>your-dockerhub-user</b></div></div>
+          <div class="field"><label>Password</label><div class="input"><span>•••• •••• ••••</span><span>👁</span></div></div>
+          <div class="field"><label>ID *</label><div class="input" style="background:#eff6ff; border-color:#bfdbfe;"><b style="color:#0284c7;">dockerhub-credentials</b><span style="color:#059669; font-weight:800;">✓</span></div></div>
+          <div class="field"><label>Scope</label><div class="input"><span>Global unrestricted</span></div></div>
+        </div>
+      </div>
+      <p class="muted" style="margin:6px 0 0 0; text-align:center;">Manage Jenkins → Credentials → System → Global → Add</p>
+      <div class="note warn" style="margin-top:6px;"><div style="color:#d97706;">ID</div><div><strong>The ID is the contract</strong><p>Jenkinsfile calls <code>credentials('dockerhub-credentials')</code> — mismatch = auth failure.</p></div></div>
+    </div>
+  </div>
+</div>
+<footer class="page-footer">
+  <div style="display:flex; align-items:center; gap:7px;"><div class="footer-badge">N</div><b style="color:#0f172a;">Jenkins to Docker Hub — Roadmap</b><span style="color:#94a3b8;">· Created By Nabawy</span></div>
+  <div style="display:flex; align-items:center; gap:8px;"><div class="dots"><i></i><i class="on"></i><i></i><i></i></div>02 / 04 — Source & Auth</div>
+</footer>
+</section>
+
+<!-- PAGE 3 — MILESTONE 03 -->
+<section class="page">
+<div class="page-content">
+  <div class="eyebrow"><i></i> Milestone 03 — Pipeline as Code <span style="margin-left:auto; background:#7c3aed; color:#fff; padding:2px 7px; border-radius:999px; font-size:6.5pt; letter-spacing:0.06em;">Core of the roadmap</span></div>
+  <h2>Jenkinsfile — the roadmap in code</h2>
+  <p style="font-size:8.3pt; color:#334155; margin:0 0 6px 0;">Place at repo root. Declarative syntax — Jenkins validates every stage before the first run.</p>
+
+  <div class="code-window">
+    <div class="code-head">
+      <div style="display:flex; align-items:center; gap:8px;"><span class="code-dots"><i style="background:#ef4444;"></i><i style="background:#f59e0b;"></i><i style="background:#10b981;"></i></span><span style="color:#e2e8f0; font-size:7.8pt; font-weight:700; display:flex; align-items:center; gap:6px;">▦ Jenkinsfile <span style="background:#1e293b; border:1px solid #334155; padding:2px 7px; border-radius:999px; font-size:6.5pt;">JENKINSFILE</span></span></div>
+      <span style="background:#f59e0b; color:#fff; padding:2px 7px; border-radius:999px; font-size:6.5pt; font-weight:800; letter-spacing:0.06em;">GROOVY</span>
+    </div>
+<pre><code><span class="kw">pipeline</span> {
+    <span class="kw">agent any</span>
+    <span class="kw">environment</span> {
+        <span class="str">DOCKERHUB_CREDENTIALS</span> = <span class="fn">credentials</span>(<span class="str">'dockerhub-credentials'</span>)
+        <span class="str">DOCKER_IMAGE</span> = <span class="str">"yourusername/myapp"</span> <span class="cmt">// ← your Docker Hub repo</span>
+        <span class="str">IMAGE_TAG</span> = <span class="str">"build-${BUILD_NUMBER}"</span>
+    }
+    <span class="kw">stages</span> {
+        <span class="kw">stage</span>(<span class="str">'Checkout Repo'</span>) { <span class="kw">steps</span> { <span class="fn">checkout scm</span> } }
+        <span class="kw">stage</span>(<span class="str">'Build Docker Image'</span>) { <span class="kw">steps</span> { <span class="kw">script</span> {
+            <span class="fn">sh</span> <span class="str">"docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} ."</span> } } }
+        <span class="kw">stage</span>(<span class="str">'Login to Docker Hub'</span>) { <span class="kw">steps</span> { <span class="kw">script</span> {
+            <span class="fn">sh</span> <span class="str">"echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin"</span> } } }
+        <span class="kw">stage</span>(<span class="str">'Push Image'</span>) { <span class="kw">steps</span> { <span class="kw">script</span> {
+            <span class="fn">sh</span> <span class="str">"docker push ${DOCKER_IMAGE}:${IMAGE_TAG}"</span>
+            <span class="fn">sh</span> <span class="str">"docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_IMAGE}:latest"</span>
+            <span class="fn">sh</span> <span class="str">"docker push ${DOCKER_IMAGE}:latest"</span> } } }
+    }
+    <span class="kw">post</span> { <span class="kw">always</span> { <span class="fn">sh</span> <span class="str">"docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG} || true"</span>; <span class="fn">sh</span> <span class="str">"docker logout"</span> } }
+}</code></pre>
+  </div>
+
+  <div class="anno-grid">
+    <div class="anno"><b>🔐 ENV</b><span>Injects <code>USR/PSW</code> — masked in logs.</span></div>
+    <div class="anno"><b>🏷️ TAG</b><span><code>build-${BUILD_NUMBER}</code> = immutable history.</span></div>
+    <div class="anno"><b>🔑 LOGIN</b><span><code>--password-stdin</code> hides token from ps.</span></div>
+    <div class="anno"><b>🧹 POST</b><span>Clean + logout — keeps agents lean.</span></div>
+  </div>
+
+  <h2 style="margin-top:8px;">Roadmap checkpoints — six stages</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;">
+    <div class="rm-card accent-blue" style="padding:8px 9px;"><div class="rm-icon" style="background:#f0f9ff;">🔐</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Environment</div><div style="font-size:7pt; color:#475569;">Load token as USR/PSW.</div><div style="font-size:6.5pt; color:#0284c7; font-weight:700; margin-top:3px;">CREDENTIALS()</div></div></div>
+    <div class="rm-card accent-blue" style="padding:8px 9px;"><div class="rm-icon" style="background:#fefce8;">⎇</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Checkout</div><div style="font-size:7pt; color:#475569;">Pull code into workspace.</div><div style="font-size:6.5pt; color:#0284c7; font-weight:700; margin-top:3px;">CHECKOUT SCM</div></div></div>
+    <div class="rm-card" style="padding:8px 9px; border-left:3px solid #0ea5e9;"><div class="rm-icon" style="background:#eff6ff;">⬣</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Build</div><div style="font-size:7pt; color:#475569;">Create tagged image.</div><div style="font-size:6.5pt; color:#0369a1; font-weight:700; margin-top:3px;">DOCKER BUILD</div></div></div>
+    <div class="rm-card accent-amber" style="padding:8px 9px;"><div class="rm-icon" style="background:#fffbeb;">🔑</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Login</div><div style="font-size:7pt; color:#475569;">Auth via stdin.</div><div style="font-size:6.5pt; color:#92400e; font-weight:700; margin-top:3px;">DOCKER LOGIN</div></div></div>
+    <div class="rm-card accent-emerald" style="padding:8px 9px;"><div class="rm-icon" style="background:#ecfdf5;">⬆</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Push</div><div style="font-size:7pt; color:#475569;">Push versioned + latest.</div><div style="font-size:6.5pt; color:#059669; font-weight:700; margin-top:3px;">DOCKER PUSH</div></div></div>
+    <div class="rm-card" style="padding:8px 9px; border-left:3px solid #64748b;"><div class="rm-icon" style="background:#f8fafc;">🧹</div><div><div style="font-size:7.8pt; font-weight:800; color:#0f172a;">Post</div><div style="font-size:7pt; color:#475569;">RMI + logout.</div><div style="font-size:6.5pt; color:#475569; font-weight:700; margin-top:3px;">ALWAYS</div></div></div>
+  </div>
+</div>
+<footer class="page-footer">
+  <div style="display:flex; align-items:center; gap:7px;"><div class="footer-badge">N</div><b style="color:#0f172a;">Jenkins to Docker Hub — Roadmap</b><span style="color:#94a3b8;">· Created By Nabawy</span></div>
+  <div style="display:flex; align-items:center; gap:8px;"><div class="dots"><i></i><i></i><i class="on"></i><i></i></div>03 / 04 — Pipeline</div>
+</footer>
+</section>
+
+<!-- PAGE 4 — MILESTONES 04 + 05 -->
+<section class="page">
+<div class="page-content">
+  <div class="eyebrow"><i></i> Milestones 04 & 05 — Execute → Ship</div>
+
+  <div style="display:grid; grid-template-columns:1.05fr 0.95fr; gap:10px; margin-top:6px;">
+    <div>
+      <div style="display:flex; align-items:center; gap:7px; margin-bottom:6px;"><span style="background:#059669; color:#fff; width:20px; height:20px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:8pt; font-weight:800;">4</span><b style="font-size:9pt; color:#0f172a;">Run the Pipeline</b><span style="font-size:6.5pt; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; padding:2px 6px; border-radius:999px; font-weight:700;">▶ Build Now</span></div>
+      <div class="v-roadmap" style="margin:0;">
+        <div class="rm-step green active"><div class="rm-dot">1</div><div class="rm-card accent-emerald" style="padding:7px 9px;"><div class="rm-title">Push Jenkinsfile to Git <span class="phase">Git</span></div><div class="rm-desc">Commit + push to tracked branch.</div></div></div>
+        <div class="rm-step green active"><div class="rm-dot">2</div><div class="rm-card accent-emerald" style="padding:7px 9px;"><div class="rm-title">New Item → Pipeline <span class="phase">Jenkins</span></div><div class="rm-desc">Name it, select <b>Pipeline</b> → OK.</div></div></div>
+        <div class="rm-step green active"><div class="rm-dot">3</div><div class="rm-card accent-emerald" style="padding:7px 9px;"><div class="rm-title">Pipeline script from SCM <span class="phase">SCM</span></div><div class="rm-desc">Git → paste repo URL · Script Path: <code>Jenkinsfile</code></div></div></div>
+        <div class="rm-step green"><div class="rm-dot" style="background:#059669; color:#fff; border-color:#059669;">▶</div><div class="rm-card accent-emerald" style="padding:7px 9px; background:#059669; border-color:#059669; color:#fff;"><div style="font-size:8pt; font-weight:800;">Build Now → Watch Console</div><div style="font-size:7pt; color:#d1fae5;">All stages turn green on success.</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div style="background:#0f172a; border:1px solid #1e293b; border-radius:10px; overflow:hidden;">
+        <div style="background:#1e293b; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; color:#94a3b8; font-size:6.5pt; font-weight:800; letter-spacing:0.07em; text-transform:uppercase;"><span>Console Output</span><span style="color:#86efac;">● SUCCESS</span></div>
+        <div style="padding:9px 10px; font-family:Consolas,monospace; font-size:7.3pt; line-height:1.55; color:#cbd5e1;">
+          <div style="color:#64748b;">[Pipeline] Checkout Repo</div><div style="color:#86efac;">✔ revision a1b2c3d</div>
+          <div style="color:#64748b; margin-top:4px;">[Pipeline] Build</div><div style="color:#86efac;">✔ docker build -t myapp:build-42 .</div>
+          <div style="color:#64748b; margin-top:4px;">[Pipeline] Login</div><div style="color:#86efac;">✔ Login Succeeded</div>
+          <div style="color:#64748b; margin-top:4px;">[Pipeline] Push</div><div style="color:#86efac;">✔ Pushed build-42 + latest</div>
+          <div style="margin-top:6px; color:#fde68a; font-weight:700;">Finished: SUCCESS — 1m 18s</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:7px;"><div style="color:#059669;">✓</div><div><strong>Roadmap checkpoint passed</strong><p>Green stages = image is now in Docker Hub. Any failure stops the roadmap — fix, push, rebuild.</p></div></div>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:7px; margin-top:10px;"><span style="background:#0f172a; color:#fff; width:20px; height:20px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:8pt; font-weight:800;">5</span><b style="font-size:9pt; color:#0f172a;">Verify on Docker Hub — arrival</b><span style="font-size:6.5pt; background:#0f172a; color:#fff; padding:2px 7px; border-radius:999px;">hub.docker.com</span></div>
+  <div class="hub-mock">
+    <div class="hub-head">
+      <div style="display:flex; align-items:center; gap:9px;"><div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#0db7ed,#0284c7); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:9pt;">◈</div><div><b style="font-size:8.5pt; color:#0f172a;">yourusername / myapp</b><div style="font-size:6.8pt; color:#64748b;">Public · Updated 2 min ago</div></div></div>
+      <div style="display:flex; gap:12px; font-size:6.5pt; font-weight:800; letter-spacing:0.07em; text-transform:uppercase; color:#64748b;"><span>Overview</span><span style="color:#0284c7; border-bottom:2px solid #0284c7; padding-bottom:6px; margin-bottom:-10px;">Tags</span><span>Builds</span></div>
+    </div>
+    <table class="hub-table">
+      <thead><tr><th>Tag</th><th>OS / Arch</th><th>Pushed</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag-pill latest">● latest</span></td><td>linux/amd64</td><td>2 min ago</td><td><span style="color:#059669; font-weight:800;">● Active</span></td></tr>
+        <tr><td><span class="tag-pill">● build-42</span></td><td>linux/amd64</td><td>2 min ago</td><td><span style="color:#059669; font-weight:800;">● Active</span></td></tr>
+        <tr><td><span class="tag-pill" style="background:#f8fafc; border-color:#e2e8f0; color:#64748b;">● build-41</span></td><td>linux/amd64</td><td>1 day ago</td><td>Active</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="text-align:center; font-size:6.8pt; color:#64748b; margin-top:4px;">Repositories → your repo → <b>Tags</b> → expect <code>latest</code> + <code>build-&lt;N&gt;</code> with fresh timestamp</div>
+
+  <div class="cta" style="margin-top:8px;">
+    <div><b>Roadmap complete — now deploy anywhere →</b><p>Pull and run via <code style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.2); color:#fff;">docker run</code> · Kubernetes · ECS · Any host with Docker.</p></div>
+    <div class="btn">docker pull yourusername/myapp:latest</div>
+  </div>
+  <div style="display:flex; gap:6px; margin-top:7px;">
+    <span class="rm-pill blue">◈ Hub is source of truth</span>
+    <span class="rm-pill violet">⎇ Next: add tests & scans</span>
+    <span class="rm-pill emerald">▶ Next: webhook auto-build</span>
+  </div>
+</div>
+<footer class="page-footer">
+  <div style="display:flex; align-items:center; gap:7px;"><div class="footer-badge">N</div><b style="color:#0f172a;">Jenkins to Docker Hub — Roadmap</b><span style="color:#94a3b8;">· Created By Nabawy</span></div>
+  <div style="display:flex; align-items:center; gap:8px;"><div class="dots"><i></i><i></i><i></i><i class="on"></i></div>04 / 04 — Ship</div>
+</footer>
+</section>
+
+</div>
+</body></html>

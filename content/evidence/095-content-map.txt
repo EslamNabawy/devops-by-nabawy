@@ -1,0 +1,441 @@
+# Content Map
+
+> Full intended architecture: what exists, what is planned, and how it becomes PDFs + website. Empty/planned folders are NOT created on disk until content justifies them — this map holds their place.
+
+## On Disk (Exists)
+
+```text
+CI-CD/
+├── README.md
+├── ROADMAP.md
+├── DOCUMENTATION_RULES.md
+├── TOPIC_INDEX.md
+├── CONTENT_MAP.md          ← this file
+├── GLOSSARY.md
+├── PDF_BUILD_SPEC.md       ← publication spec (drives all 36 PDFs)
+├── WEBSITE_BUILD_SPEC.md   ← website spec (drives website/dist)
+├── ICON_ASSET_SPEC.md      ← icon discovery + asset rules (live: governs every PDF/website build)
+├── CONTENT_CONNECTIVITY_PROMPT.md ← handoff-rewrite prompt (applied across all 19 content files)
+├── 00-foundations/           [start-here-merged.md ← cicd-overview + git-branching + CI]
+├── 06-ci-cd-pipelines/       [pipelines-build-test.md ← pipelines + build-systems + testing]
+├── 05-artifacts-and-packaging/ [artifact-management.md — standalone]
+├── 07-continuous-delivery/   [delivery-envs-iac.md ← delivery + deployment + envs + iac]
+├── 10-deployment-strategies/ [deployment-strategies.md — standalone]
+├── 13-observability-and-feedback/ [observe-recover-secure.md ← observability + rollback + security]
+├── 16-labs/                   [core-labs-handbook.md ← 01-first-pipeline → 08-jenkins-backup-restore]
+├── jenkins labs/              [JENKINS_LABS_HANDBOOK.md ← 5 lab sources]
+├── 17-reference/               [command-cheatsheet.md — standalone]
+└── 15-platforms-and-tools/
+    ├── github-actions.md     — standalone
+    ├── gitlab-argocd.md      ← gitlab-ci + argocd-gitops
+    └── jenkins/              [jenkins-core-merged.md (5) + jenkins-advanced-ops.md (7), see below]
+> Member sources (pre-merge files) remain on disk as merge inputs. Merged
+> files are canonical for website (`books.json`) and reader (`MD_MAP`).
+```
+
+## Jenkins Domain (Merged 2026-09-17 — 12 files → 2 handbooks)
+
+```text
+15-platforms-and-tools/jenkins/
+├── jenkins-core-merged.md    ← README + architecture + setup + pipelines + agents
+└── jenkins-advanced-ops.md   ← groovy + credentials + plugins + webhooks + security + advanced + troubleshooting
+(member sources retained on disk as merge inputs)
+```
+
+## Planned (Not Yet on Disk)
+
+```text
+└── (nothing — all planned domains are on disk)
+```
+
+## PDF Series Mapping
+
+```text
+PDF 01 — CI/CD Foundations            ← 00
+PDF 02 — Continuous Integration       ← 01 + 02
+PDF 03 — Build + Testing + Artifacts  ← 03 + 04 + 05
+PDF 04 — CI/CD Pipelines              ← 06
+PDF 05 — Continuous Delivery & Deployment ← 07 + 08 + 09 + 10
+PDF 06 — Jenkins                      ← 15/jenkins (core: architecture, setup, pipelines, agents)
+PDF 07 — Jenkins Advanced             ← 15/jenkins (credentials, plugins, webhooks, security, troubleshooting)
+PDF 08 — CI/CD Labs                   ← 16
+```
+
+## Series Edition (Built — `pdf/series/`, generator `scripts/build_series.py`)
+
+```text
+S01 Foundations              ← pdf-01 (12p)
+S02 Continuous Integration   ← pdf-02 + pdf-21 (11p)
+S03 Build, Test & Artifacts  ← pdf-22 + pdf-23 + pdf-04 (14p)
+S04 Pipelines                ← pdf-03 (8p)
+S05 Delivery & Deployment    ← pdf-05 + pdf-24 + pdf-25 + pdf-20 + pdf-27 + pdf-06 (28p)
+S06 Jenkins Core             ← pdf-07 + pdf-08 + pdf-09 + pdf-10 + pdf-12 (22p)
+S07 Jenkins Advanced         ← pdf-11 + pdf-13 + pdf-14 + pdf-15 + pdf-16 + pdf-17 + pdf-18 + pdf-26 (33p)
+S08 Labs                     ← pdf-28…pdf-36 (29p)
+S09 GitHub Actions           ← pdf-19 (7p)
+```
+
+## Website Mapping
+
+Same Markdown source; routes mirror the tree (`/platforms/jenkins/pipelines` ← `15-platforms-and-tools/jenkins/jenkins-pipelines.md`). PDF order must never dictate filenames or hierarchy.
+# CI/CD Topic Index
+
+> Map of the whole knowledge base. Updated on every structural change.
+> 2026-09-17 merge: 40 small sources consolidated into 9 merged handbooks + 5 standalone docs (14 website books). Member sources remain on disk as merge inputs; merged files are canonical.
+
+## Start Here (merged)
+
+- [Start Here: Foundations, Git & CI](00-foundations/start-here-merged.md) — lifecycle, branching, PR gates, merge queues, trunk (merges `00-foundations/cicd-overview.md`, `01-source-control/git-branching-pull-requests.md`, `02-continuous-integration/continuous-integration.md`)
+
+## Pipelines & Verification (merged + standalone)
+
+- [Pipelines, Build & Test](06-ci-cd-pipelines/pipelines-build-test.md) — stages/jobs/runners, hermetic builds, caching, pyramid, flakes (merges `06-ci-cd-pipelines/pipelines.md`, `03-build-systems/build-systems.md`, `04-testing/testing-strategy.md`)
+- [Artifact Management](05-artifacts-and-packaging/artifact-management.md) — Artifact, Registry, versioning, promotion
+
+## Delivery & Operations (merged + standalone)
+
+- [Delivery, Envs & IaC](07-continuous-delivery/delivery-envs-iac.md) — approvals, auto-to-prod, env topology, Terraform state per env (merges `07-continuous-delivery/continuous-delivery.md`, `08-continuous-deployment/continuous-deployment.md`, `09-environments-and-release/environments-release.md`, `12-infrastructure-and-configuration/iac-environments.md`)
+- [Deployment Strategies](10-deployment-strategies/deployment-strategies.md) — Rolling, Blue/Green, Canary, Recreate, Feature Flags
+- [Observe, Recover & Secure](13-observability-and-feedback/observe-recover-secure.md) — golden signals, rollback drills, postmortems, secrets, SBOM (merges `13-observability-and-feedback/observability-feedback.md`, `14-reliability-and-recovery/rollback-recovery.md`, `11-security/cicd-security.md`)
+
+## Platforms & Tools (merged + standalone)
+
+- [Jenkins Core](15-platforms-and-tools/jenkins/jenkins-core-merged.md) — concept map, architecture, setup, pipelines, agents (merges `jenkins/README.md`, `jenkins-architecture.md`, `jenkins-setup.md`, `jenkins-pipelines.md`, `jenkins-agents.md`)
+- [Jenkins Advanced & Operations](15-platforms-and-tools/jenkins/jenkins-advanced-ops.md) — Groovy, credentials, plugins, webhooks, security, JCasC, troubleshooting (merges `jenkins-groovy-cheatsheet.md`, `jenkins-credentials.md`, `jenkins-plugins.md`, `jenkins-webhooks.md`, `jenkins-security.md`, `jenkins-advanced.md`, `jenkins-troubleshooting.md`)
+- [GitHub Actions](15-platforms-and-tools/github-actions.md) — workflows, jobs, runners, environments as gates
+- [GitLab & ArgoCD](15-platforms-and-tools/gitlab-argocd.md) — stages with needs DAG, review apps, pull delivery, sync waves (merges `gitlab-ci.md`, `argocd-gitops.md`)
+
+## Labs (merged handbooks)
+
+- [Core Labs Handbook](16-labs/core-labs-handbook.md) — pipeline, build/test, artifacts, deployment, rollback, Jenkins live, shared lib, DR (merges `16-labs/01-first-pipeline.md` → `08-jenkins-backup-restore.md`)
+- [Jenkins Labs Handbook](16-labs/jenkins-labs-handbook.md) — webhooks, Docker/DockerHub, multibranch, shared library, Terraform FLOCI (merges all 5 `jenkins labs/*.md`; canonical copy lives in `16-labs/` because `jenkins labs/` is gitignored)
+
+## Reference
+
+- [Command Cheatsheet](17-reference/command-cheatsheet.md) — every lab command grouped by tool
+# CONTENT BRIEF — cross-linking, basics spine & tool guidance (no content written yet)
+
+Date: 2026-09-18. Method: measured from `pdf/*.html` (chapter inventory, mention counts,
+heading duplicates, anchor audits) — not guessed. This file specifies WHAT to create and
+WHERE it lands. Content generation is a separate step.
+
+## 1 · Current map (8 books, verified 2026-09-18)
+
+| Book (id) | Chapters (pghead h1 order) | Appendix |
+|---|---|---|
+| start-here | Foundations, Continuous Integration, CI vs CD, Pipeline & Status, Environments & Flow, Console, Artifact & Gate, Failure & Recovery, Check & Map, Source Control, Flow & Commands, Models & Discipline, Check & Handoff, Integration, Gates, Handoff + Map/Glossary/Interview/Cheat/Quiz | full |
+| build-artifacts | Pipelines, Execution, Stages & Builders, Discipline, Handoff, Build Systems, Testing Strategy (+cont), Artifacts, Lifecycle, Trust & Handoff + appendix | full |
+| deliver-operate | Strategies, Mechanics, Check & Handoff, CD, Staging, Failure Modes, Release Trains, Preview Envs, CD(2), IaC, Observability, Best Practices, Recovery Drills, Secrets, + appendix | full |
+| jenkins-complete | 12 chapters (Jenkins→Troubleshooting) + appendix | full |
+| platforms-roadmaps | Actions, GitLab CI, ArgoCD/GitOps, Roadmap Jenkins/Actions, Choice + appendix | full |
+| labs-handbook | 9 labs + appendix | full |
+| cheatsheet | 7 tool sections | none (is appendix) |
+| observability | 20 chapters, reference-built | full |
+
+Known defects to fix while editing (measured):
+- D1 deliver duplicate pghead h1 `1. What Is It?` ×5 → rename: s14 Continuous Deployment,
+  s15 Environments & Release, s17 IaC for Environments, s27 Rollback & Recovery,
+  s30 CI/CD Security (continued sheets keep suffix).
+- D2 platforms duplicate h1s → s08/s09 `ArgoCD & GitOps (+continued)`; s10 is a pure
+  Related-Topics tail → merge into s09, delete, renumber; s11/s12 `GitLab CI (+cont)`;
+  s13/s14 `GitOps Delivery (+cont)`; s19 `Roadmap Risks & Handoff`; s25
+  `Platform Risks & Handoff`; s31 `Decision Risks & Handoff` (continued keep suffix).
+- D3 jenkins duplicate h1s → s14 `Agent Wiring`; s25 `Webhook Wiring`; s20
+  `Bindings & Handoff`; s23 `Plugins & Handoff`; s26 `Webhooks & Handoff`; s29
+  `Security & Handoff`.
+- D4 labs `System Map` ×10 → rename to `<prev-sheet-topic> · Map` using preceding sheet h1
+  (measured pairs: Hermetic Builds, The Production Gate, Canonical Pipeline, Library
+  Consumption, Backup & Restore, Lab 02 End-To-End Trigger, End-To-End Delivery,
+  Lifecycle Management, Conditional Validation, Provisioning & Recovery).
+
+## 2 · Link architecture (the rule)
+
+Every content sheet keeps its folio Prev/Next/TOC (already true, verified). ON TOP:
+- R1 Each book's Handoff/closing sheet links the NEXT book in path order with a ⏭️ bridge
+  (start-here already does: s14→build, book-end→build-artifacts).
+- R2 Every tool-introduction sheet links its tool's WHEN-TO-USE box (G2) and the
+  tool-vs-tool matrix (G3).
+- R3 No new `#anchor` may dangle: run `verify_phase3.py` anchor check after every edit.
+- R4 Link text is the destination's pghead h1 verbatim (no "PDF NN", no "click here").
+
+Chain (path order): start-here → build-artifacts → deliver-operate → observability →
+jenkins-complete → platforms-roadmaps → labs-handbook (+ cheatsheet as reference).
+
+## 3 · Gap catalog (content to create)
+
+### G1 — WHAT-IS spine (basics: what actually is CI/CD)
+Status: scattered (start-here Foundations/CI-vs-CD covers it, but no single spine page).
+Create ONE new sheet in start-here after The Map (id s03, shift rest):
+- pghead: kick `START HERE`, h1 `What CI/CD Actually Is`, hmeta new number.
+- p.lead thesis (2 sentences) + zone flow: commit → CI → artifact → CD → observe.
+- tb.tight 4 rows: CI vs Delivery vs Deployment vs GitOps (question each answers).
+- m-key: "CI answers does-it-work; Delivery keeps it releasable; Deployment ships it."
+- m-exam closing + ⏭️ bridge to Foundations.
+Source material: start-here s04 (CI vs CD), s06 (loop), deliver-operate glossary rows.
+
+### G2 — WHEN-TO-USE boxes (one per tool, same shape)
+Status: ~1 hit per book (measured) — effectively missing.
+Create one `m-tip` box per tool, placed on that tool's intro sheet, identical shape:
+`WHEN TO USE <TOOL> — use when: <3 bullets> · avoid when: <2 bullets>`.
+Placements (sheet ids current; re-resolve after renumber):
+- Jenkins → jenkins-complete Setup sheet (s06): self-hosted, complex pipelines, plugin
+  ecosystem; avoid for greenfield SaaS with no ops team.
+- GitHub Actions → platforms-roadmaps Actions sheet (s02): GitHub-hosted repos, zero
+  infra, supply-chain-gated; avoid for heavy self-hosted compliance fleets.
+- GitLab CI → platforms-roadmaps GitLab sheet (s11 after D2 rename): single-platform
+  shops, review apps, merge trains; avoid polyglot multi-platform estates.
+- ArgoCD/GitOps → platforms-roadmaps ArgoCD sheet (s08 after D2 rename): Kubernetes
+  fleets, pull-model audit needs; avoid non-K8s or tiny estates.
+- Labs tools (Docker/Jenkins/Terraform/FLOCI) → labs-handbook Lab 01 sheet (s03):
+  what each tool does IN the labs and when you'd pick it outside.
+- Loki/Prometheus/Grafana → observability chapters ch-01/ch-04/ch-06 (when-to-use
+  per pillar: logs vs metrics vs traces).
+Acceptance: 6 boxes, same visual shape, each ends with tlink to G3 matrix.
+
+### G3 — TOOL-VS-TOOL matrix (one comparative sheet per rivalry)
+Status: comparisons exist as tables (deliver 40 hits) but no decision clock.
+Create ONE new sheet in platforms-roadmaps after Decision Framework (s29):
+- pghead h1 `Tool vs Tool — The Whole Field`.
+- tb.tight 6 rows × cols (Jenkins | Actions | GitLab | ArgoCD): config lives, runners,
+  gates, secrets, cost shape, best-fit (each cell ≤12 words, distilled from book texts).
+- m-warn: "No best tool — only best fit for team size, hosting, and audit needs."
+- m-exam: one-line pick rule per team shape (solo dev, startup SaaS, regulated bank,
+  K8s platform team).
+- ⏭️ bridge to Convergence + backlink from each G2 box.
+Source material: platforms-roadmaps Side-by-Side (s28), GitLab-vs-Sisters table (s12),
+  roadmap decision content (s27–s31), jenkins-complete Topology/Agents.
+
+### G4 — BASICS checklist (fill don't-think gaps, one sheet each max)
+- G4a start-here: `DevOps vs CI/CD vs CD` m-key box on Foundations sheet (s03) —
+  measured: never stated in one place.
+- G4b build-artifacts: `Build vs Buy runners` m-tip on Execution sheet (s03) —
+  hosted vs self-hosted decision in 4 bullets.
+- G4c deliver-operate: `Staging vs Production data rule` m-warn on Environments
+  sheet (s15 after D1 rename) — sanitized-shape rule, measured as scattered.
+- G4d labs-handbook: `What each lab proves` summary table on TOC-adjacent new sheet
+  after Lab 01? NO — cheaper: extend existing TOC legend area? Decision: new sheet
+  `Lab Map` after toc (9 rows: lab → proves → needs). Source: lab pgheads.
+
+### G5 — Appendix backlinks (close the loop)
+Each book's Quiz FINAL CHECK already points onward except: add tlink from
+labs-handbook quiz → cheatsheet, and cheatsheet → start-here (cycle). One line each.
+
+## 4 · Execution order
+1. D1–D4 heading fixes (mechanical, renumber, anchor-verify).
+2. G1 spine sheet (renumber start-here).
+3. G2 six boxes (no renumber — inline appends before folio).
+4. G3 matrix sheet + G2 backlinks.
+5. G4a–d boxes/sheet.
+6. G5 two lines.
+7. Per step: rebuild + `verify_phase3.py` anchors + `fill_rig.py` clip check on touched
+   sheets + QC. Any clip → split per established procedure.
+
+## 5 · Out of scope (explicitly NOT this brief)
+- Rewriting existing prose, new chapters beyond above, Arabic edition, print export,
+  homepage changes.
+# CICD BY Nabawy — Library
+
+> 8 merged handbooks, SIGNAL study-guide design, static website. Live:
+> https://eslamnabawy.github.io/cicd-by-nabawy/
+
+## Books (source: `pdf/`, manifest: `website/content/books.json`)
+
+| # | Book | File | Path |
+|---|---|---|---|
+| 1 | Start Here: Foundations, Git & CI | `pdf-merged-01-start-here.html` | start-here |
+| 2 | Pipelines, Build, Test & Artifacts | `pdf-merged-10-build-artifacts.html` | build |
+| 3 | Delivery, Deployment & Operations | `pdf-merged-11-deliver-operate.html` | deliver |
+| 4 | Observability: Loki, Prometheus & Grafana | `pdf-43-observability.html` | observability |
+| 5 | Jenkins Complete | `pdf-merged-12-jenkins-complete.html` | jenkins |
+| 6 | Platforms & 2026 Roadmaps | `pdf-merged-13-platforms-roadmaps.html` | platforms |
+| 7 | Labs Handbook | `pdf-merged-14-labs-handbook.html` | labs |
+| 8 | Command Cheatsheet | `pdf-36-command-cheatsheet.html` | reference |
+
+Every book: one cover, Contents sheet, chapters with EXAM boxes, glossary,
+interview, cheat sheet, quiz. Zero `PDF NN` seams.
+
+## Learning Flow
+
+```mermaid
+flowchart LR
+    A[Start Here] --> B[Build, Test & Artifacts]
+    B --> C[Deliver & Operate]
+    C --> D[Observability]
+    D --> E[Jenkins Complete]
+    E --> F[Platforms & Roadmaps]
+    F --> G[Labs Handbook]
+```
+
+## Map (Markdown sources — search index + print fallback)
+
+| Area | Document |
+|---|---|
+| Foundations | [Start Here](00-foundations/start-here-merged.md) |
+| Pipelines/Build/Test | [Pipelines + Builds](06-ci-cd-pipelines/pipelines-build-test.md), [Artifacts](05-artifacts-and-packaging/artifact-management.md) |
+| Delivery/Ops | [Delivery + IaC](07-continuous-delivery/delivery-envs-iac.md), [Strategies](10-deployment-strategies/deployment-strategies.md), [Observe/Recover](13-observability-and-feedback/observe-recover-secure.md) |
+| Jenkins | [Core](15-platforms-and-tools/jenkins/jenkins-core-merged.md), [Advanced](15-platforms-and-tools/jenkins/jenkins-advanced-ops.md) |
+| Platforms | [Actions](15-platforms-and-tools/github-actions.md), [GitLab + ArgoCD](15-platforms-and-tools/gitlab-argocd.md) |
+| Labs | [Core](16-labs/core-labs-handbook.md), [Jenkins](16-labs/jenkins-labs-handbook.md) |
+| Reference | [Cheatsheet](17-reference/command-cheatsheet.md) |
+
+## Rules
+
+- Source of truth: `pdf/` print editions first, Markdown second (search + fallback).
+- Website: `website/` — rebuild after any change (`website/scripts/build.py`),
+  verify (`scripts/qc-check.py`), push source, manual `gh-pages` deploy.
+- Track gaps in [CONTENT-BRIEF.md](CONTENT-BRIEF.md) and [ROADMAP.md](ROADMAP.md).
+- Terms defined in [GLOSSARY.md](GLOSSARY.md).
+- Stale planning docs live in `_archive/` — do not resurrect.
+# STATUS — CICD BY Nabawy (live)
+
+Last verified: 2026-09-18 · QC ALL GREEN · Live:
+https://eslamnabawy.github.io/cicd-by-nabawy/
+
+## Library (8 books, SIGNAL design, EN + Flip-Kit LTR)
+
+| Book | Sheets | Appendix | Fills |
+|---|---|---|---|
+| start-here | 23 | full + Map | clean |
+| build-artifacts | 17 | full | clean |
+| deliver-operate | 36 | full | clean |
+| observability | 26 | reference-built | 2 clips in reference file (untouched) |
+| jenkins-complete | 39 | full | clean |
+| platforms-roadmaps | 37 | full | clean |
+| labs-handbook | 65 | full | clean |
+| cheatsheet | 10 | n/a (is reference) | clean |
+
+Every book: single cover, Contents + legend, chapters with 🎓 EXAM boxes and ⏭️
+bridges, glossary, interview, cheat sheet, quiz. Zero `PDF NN` seams,
+zero dead anchors, zero print clips (measured headless, print media).
+
+## Website
+
+- Home: SIGNAL hero, 7 contents rows, search, saved, resume. No overviews,
+  no detail pages, no shelf — blocks link readers directly.
+- Reader: sidebar (numbered, scroll-spy, replaceState links), sepia default,
+  theme cycle, immersive fullscreen + zoom island, mobile exit button.
+- Threads page (9 threads, 176 chips, SVG graph) + tool picker (5Q ranked).
+- Roadmap (8 sections + live Series edition), glossary, updates, sitemap.
+- Deploy: manual `gh-pages` force-push (CI broken pre-existing).
+
+## Backlog (see CONTENT-BRIEF.md)
+
+- D1–D4 heading renames, G1–G5 basics/tool-guidance content — specced, not started.
+- K8s verdict: no standalone book; scoped "Kubernetes for Pipelines" chapter
+  proposed for Platforms (undecided).
+- `_archive/` holds all superseded planning docs — do not resurrect.
+# Roadmap
+
+> `[x]` complete · `[~]` in progress · `[ ]` planned. Complete = file exists and is sufficiently developed.
+
+## Foundations
+
+- [x] CI/CD overview + end-to-end graph
+- [x] CI vs Delivery vs Deployment distinction
+
+## Source Control
+
+- [x] Git essentials for CI/CD
+- [x] Branching models
+- [x] Pull Requests + status checks
+- [x] CI triggers (push, PR, schedule, manual)
+- [x] CI discipline, PR gates, merge queues, trunk (02)
+
+## Pipelines
+
+- [x] Pipeline, stages, jobs, steps, runners
+- [x] Build stage
+- [x] Test stage
+- [x] Security scan stage
+- [x] Runners deep dive (self-hosted vs managed, caching)
+- [x] Parallelism, dependencies, failure handling
+- [x] Build systems: Maven/Gradle/npm, caching, hermetic (03)
+- [x] Testing strategy: pyramid, contract/E2E, flaky policy, capacity placement, test doubles (04)
+
+## Artifacts
+
+- [x] Artifact concept + registry + promotion
+- [x] Versioning schemes (semver, sha, build numbers, date-based)
+- [x] SBOM / signing / provenance
+
+## Delivery
+
+- [x] CD concept, staging, production, approvals
+- [x] Deployment strategies (rolling, blue/green, canary, recreate, feature flags)
+- [x] Continuous deployment: prereqs, kill criteria (08)
+- [x] Environments & release: topology, config vs code, trains (09)
+- [x] Rollback & recovery procedures + data migration practice (14)
+
+## Feedback
+
+- [x] Observability basics + feedback loop
+- [x] SLI/SLO/alerting (burn-rate alerts, runbooks)
+- [x] DORA metrics (four signals + elite hints)
+
+## Security
+
+- [x] CI/CD security: secrets, signing, SBOM, least privilege, gates (11)
+
+## Platforms (Jenkins Domain)
+
+- [x] Architecture (controller/agents)
+- [x] Setup (Docker, first job)
+- [x] Pipelines (Declarative, Jenkinsfile, multibranch)
+- [x] Agents (labels, executors, ephemeral)
+- [x] Credentials (kinds, scopes, bindings)
+- [x] Plugins (essential set, pinning)
+- [x] Webhooks & triggers
+- [x] Security (matrix, agent trust)
+- [x] Advanced (shared libs, parallel/matrix, JCasC, backup, Script Console)
+- [x] Troubleshooting
+- [x] Jenkins labs 06–08 (controller, shared library, backup/restore in 16-labs/)
+- [x] JCasC + production topology (HA, fleets, zones, DR drill)
+
+## Platforms (GitHub Actions)
+
+- [x] Workflows, jobs, steps, runners, triggers
+- [x] CI + gated CD example
+- [x] Reusable workflows, matrix, concurrency, path filters
+- [x] Self-hosted runners + ARC scale set
+
+## Platforms (GitLab CI, ArgoCD)
+
+- [x] GitLab: stages, needs DAG, rules, runners+tags, review apps, merge trains
+- [x] ArgoCD: push vs pull, Application, sync waves, ApplicationSets
+
+## Infrastructure
+
+- [x] IaC for environments: modules, state per env, plan-as-review, drift, preview automation
+
+## Publication (print editions in `pdf/`)
+
+- [x] 8 merged SIGNAL books (cover, Contents+legend, chapters with EXAM boxes,
+  glossary, interview, cheat sheet, quiz) + observability reference edition
+- [x] Retired singles kept as merge inputs (QC-allowlisted, not in manifest)
+- [x] Series edition S01–S09 in `pdf/series/` (omnibus generator
+  `scripts/build_series.py`, roadmap-linked, ships in `dist/`)
+
+## Website (Live)
+
+- [x] Library + readers in `website/dist/`: 8 books, SIGNAL design, sepia/dark/
+  light themes, search, progress, threads + tool picker, glossary, mobile, print
+- [x] Deployed: https://eslamnabawy.github.io/cicd-by-nabawy/ (site repo
+  `EslamNabawy/cicd-by-nabawy`, `gh-pages` branch, manual deploy — CI broken)
+- Standing: rebuild via `website/scripts/build.py` + QC + push + manual deploy
+  after each content change
+- [x] Knowledge content complete — HTML/PDF work unblocked
+
+## Labs
+
+- [x] 01-first-pipeline (GHA green + branch protection)
+- [x] 02-build-and-test (DAG, cache, hermetic proof)
+- [x] 03-artifacts (SHA tags, GHCR, SBOM)
+- [x] 04-deployment (staging auto, prod approval)
+- [x] 05-rollback (incident, digest redeploy, postmortem)
+- [x] 06-jenkins-controller (compose, agent, first pipeline)
+- [x] 07-jenkins-shared-library (versioned reuse)
+- [x] 08-jenkins-backup-restore (DR drill)
+
+## Reference
+
+- [x] Command cheatsheet (grouped by tool)

@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = 'yourusername/myapp'   // TODO: replace with your Docker Hub repo
+        IMAGE_TAG    = "build-${env.BUILD_NUMBER}"
+    }
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+        stage('Build') {
+            steps { sh 'docker build -t $DOCKER_IMAGE:$IMAGE_TAG .' }
+        }
+        stage('Login & Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'U', passwordVariable: 'P')]) {
+                    sh 'echo "$P" | docker login -u "$U" --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE:$IMAGE_TAG'
+                    sh 'docker tag $DOCKER_IMAGE:$IMAGE_TAG $DOCKER_IMAGE:latest && docker push $DOCKER_IMAGE:latest'
+                }
+            }
+        }
+        stage('Smoke test') {
+            steps { sh 'docker run --rm $DOCKER_IMAGE:$IMAGE_TAG' }
+        }
+    }
+    post {
+        always {
+            sh 'docker rmi $DOCKER_IMAGE:$IMAGE_TAG || true'
+            sh 'docker logout || true'
+        }
+    }
+}

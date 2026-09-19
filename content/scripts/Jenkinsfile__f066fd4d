@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    environment {
+        // Step 1: Environment Setup
+        DOCKER_CREDS_ID = "docker-hub-creds"
+        DOCKER_IMAGE = "eslamnabawy/hello-app"
+        IMAGE_TAG = "v${env.BUILD_NUMBER}"
+        FLOCI_ENDPOINT = "http://floci-simulator-api:4566"
+    }
+
+    stages {
+        stage("Step 2: Code Checkout") {
+            steps {
+                echo "Checking out source repository..."
+                checkout scm
+            }
+        }
+
+        stage("Step 3: Docker Build") {
+            steps {
+                echo "Building Docker Image..."
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                }
+            }
+        }
+
+        stage("Step 4 & 5: Auth & Image Tagging") {
+            steps {
+                echo "Authenticating and applying build tag..."
+                script {
+                    sh "docker tag ${DOCKER_IMAGE}:latest ${DOCKER_IMAGE}:${IMAGE_TAG}"
+
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDS_ID,
+                                     passwordVariable: "DOCKER_PASS",
+                                     usernameVariable: "DOCKER_USER")]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    }
+                }
+            }
+        }
+
+        stage("Step 6: Image Push") {
+            steps {
+                echo "Pushing image tag: ${IMAGE_TAG} to registry..."
+                script {
+                    sh "docker push ${DOCKER_IMAGE}:${IMAGE_TAG}"
+                    sh "docker push ${DOCKER_IMAGE}:latest"
+                }
+            }
+        }
+
+        stage("Step 7: Application Deployment (Floci)") {
+            steps {
+                echo "Deploying to Floci Simulated AWS Environment..."
+                script {
+                    // Trigger simulated deployment via Floci API
+                    sh """
+                        curl -X POST ${FLOCI_ENDPOINT}/deploy                         -H "Content-Type: application/json"                         -d '{"image": "${DOCKER_IMAGE}:${IMAGE_TAG}", "service": "hello-app"}'
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution complete. Cleaning up local workspace."
+            sh "docker logout || true"
+        }
+    }
+}

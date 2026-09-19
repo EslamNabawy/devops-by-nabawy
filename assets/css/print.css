@@ -1,0 +1,8 @@
+/* print.css — clean lesson printing: no chrome, URLs expanded. */
+@media print {
+  .topbar, .strip, .bottomnav, .filters, .readbar, .readnav, .readnav2,
+  .toast-stack, .drop-overlay, .continue, .outline { display: none; }
+  .view { max-width: none; padding: 0; }
+  .reader .article { max-width: none; }
+  a[href^="http"]:after { content: " (" attr(href) ")"; }
+}

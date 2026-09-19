@@ -1,0 +1,753 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Observability & Operations — Kubernetes Book 07</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm;background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.road{position:relative; margin:14px 0 6px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 11px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:9px 13px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch02 h3.sec{margin:10px 0 6px}
+#ch02 .callout,#ch02 .cka{margin:7px 0;padding:8px 11px}
+#ch02 .term,#ch02 .mtree,#ch02 table.tb{margin:8px 0}
+#ch02 .term,#ch02 .mtree{padding:9px 12px}
+#ch02 p.lead{margin:0 0 7px}
+#ch02 .grid2,#ch02 .grid3{margin:8px 0;gap:10px}
+#ch02 .card,#ch02 .zone,#ch02 .labstep{padding:9px 11px}
+#ch02 .qz{margin:6px 0;padding:6px 9px}
+#ch02 .gl{margin:3px 0;padding:4px 8px}
+#ch02 .rowc{margin:7px 0}
+#ch03 h3.sec{margin:10px 0 6px}
+#ch03 .callout,#ch03 .cka{margin:7px 0;padding:8px 11px}
+#ch03 .term,#ch03 .mtree,#ch03 table.tb{margin:8px 0}
+#ch03 .term,#ch03 .mtree{padding:9px 12px}
+#ch03 p.lead{margin:0 0 7px}
+#ch03 .grid2,#ch03 .grid3{margin:8px 0;gap:10px}
+#ch03 .card,#ch03 .zone,#ch03 .labstep{padding:9px 11px}
+#ch03 .qz{margin:6px 0;padding:6px 9px}
+#ch03 .gl{margin:3px 0;padding:4px 8px}
+#ch03 .rowc{margin:7px 0}
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+#lab1 h3.sec{margin:10px 0 6px}
+#lab1 .callout,#lab1 .cka{margin:7px 0;padding:8px 11px}
+#lab1 .term,#lab1 .mtree,#lab1 table.tb{margin:8px 0}
+#lab1 .term,#lab1 .mtree{padding:9px 12px}
+#lab1 p.lead{margin:0 0 7px}
+#lab1 .grid2,#lab1 .grid3{margin:8px 0;gap:10px}
+#lab1 .card,#lab1 .zone,#lab1 .labstep{padding:9px 11px}
+#lab1 .qz{margin:6px 0;padding:6px 9px}
+#lab1 .gl{margin:3px 0;padding:4px 8px}
+#lab1 .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#ch03 p.small,#ch03 li{font-size:12.2px;line-height:1.42}
+#ch03 .callout,#ch03 .cka{font-size:12.2px;line-height:1.44}
+#ch03 .qz{font-size:11.3px;line-height:1.42}
+#ch03 .gl{font-size:10.8px;line-height:1.36}
+#ch03 .term{font-size:11.6px;line-height:1.55}
+#ch03 .mtree{font-size:11.8px;line-height:1.6}
+#ch03 table.tb{font-size:11.7px} #ch03 .tb td{padding:5px 8px}
+#lab1 p.small,#lab1 li{font-size:12.2px;line-height:1.42}
+#lab1 .callout,#lab1 .cka{font-size:12.2px;line-height:1.44}
+#lab1 .qz{font-size:11.3px;line-height:1.42}
+#lab1 .gl{font-size:10.8px;line-height:1.36}
+#lab1 .term{font-size:11.6px;line-height:1.55}
+#lab1 .mtree{font-size:11.8px;line-height:1.6}
+#lab1 table.tb{font-size:11.7px} #lab1 .tb td{padding:5px 8px}
+/* MICRO nudge for borderline pages (L2-insufficient, pre-split attempt) */
+#lab1 .callout,#lab1 .cka{margin:6px 0;padding:7px 10px}
+#lab1 .labstep{padding:7px 10px;margin:8px 0}
+#lab1 .term.mini{font-size:10.5px;padding:7px 10px}
+#lab1 .tabbody{font-size:11px;padding:8px 11px}
+#lab1 .zone{padding:7px 9px}
+#lab1 .rowc{margin:5px 0;gap:7px}
+#lab1 .grid2,#lab1 .grid3{gap:8px}
+#lab1 .kchip{padding:4px 10px}
+#lab1 ul.tick li{padding:3px 0 3px 2px}
+/* WIDTH-FIX wrap pre lines (horizontal chop) */
+#ch09 .mtree{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🔭</div>
+<h1>OBSERVABILITY &amp;<br>OPERATIONS</h1>
+<div class="sub">Book 07 of the series — knowing what your cluster is doing: Probes (the health question Kubernetes can't answer alone), Metrics Server &amp; Prometheus, the exporter cast, log architecture &amp; Loki, Grafana, PromQL/LogQL, events &amp; audit — and the cluster-wide failure playbook.</div>
+<div class="row">
+<div class="glass">🩺 Probes<small>liveness · readiness</small></div>
+<div class="glass">📈 Metrics<small>server · top</small></div>
+<div class="glass">🔥 Prometheus<small>pull model</small></div>
+<div class="glass">🛰️ Exporters<small>node · state · cAd</small></div>
+</div>
+<div class="row">
+<div class="glass">📜 Logs<small>/var/log/pods</small></div>
+<div class="glass">🪵 Loki<small>labels only</small></div>
+<div class="glass">📊 Grafana<small>the pane</small></div>
+<div class="glass">🚑 Playbook<small>cluster triage</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 07 · CONTINUES BOOKS 01–06 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">7 parts · 23 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · Probes — The Health Question</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>Running ≠ Healthy<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>Liveness Probes — Restart the Stuck<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Readiness — The Traffic Gate<span class="dots"></span><span class="tp">p.5</span></a>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Startup Probes &amp; Probe Mechanics<span class="dots"></span><span class="tp">p.6</span></a>
+<div class="tocpart">Part II · Metrics</div>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Metrics Server &amp; kubectl top<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Prometheus — The Pull Model<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>The Exporter Cast — Who Exposes What<span class="dots"></span><span class="tp">p.9</span></a>
+<div class="tocpart">Part III · Logs</div>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>Where Logs Actually Live<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>Collection Patterns — DaemonSet · Sidecar<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>Loki — Prometheus for Logs<span class="dots"></span><span class="tp">p.12</span></a>
+<div class="tocpart">Part IV · See It &amp; Query It</div>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>Grafana — The Unified Pane<span class="dots"></span><span class="tp">p.13</span></a>
+<a class="tocrow" href="#ch12"><span class="cb"></span><span class="tnum">CH 12</span>PromQL &amp; LogQL — First Queries<span class="dots"></span><span class="tp">p.14</span></a>
+<div class="tocpart">Part V · Operations</div>
+<a class="tocrow" href="#ch13"><span class="cb"></span><span class="tnum">CH 13</span>Events &amp; Audit Logging<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#ch14"><span class="cb"></span><span class="tnum">CH 14</span>The Cluster-Scope Failure Playbook<span class="dots"></span><span class="tp">p.16</span></a>
+<div class="tocpart">Part VI · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>Probes That Bite<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Top &amp; Events Triage<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>Install the Stack (Helm Preview)<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>Query Everything<span class="dots"></span><span class="tp">p.20</span></a>
+<div class="tocpart">Part VII · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.21</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.22</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.23</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.24</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 08<span class="dots"></span><span class="tp">p.25</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–06.</b> Book 01's self-healing restarts <b>dead</b> processes — this book's Part I handles the ones that are <i>alive but broken</i>. Book 06's HPA already ate from metrics-server; now you meet the whole kitchen. Your DaemonSet agents (Book 06 · CH 01) return as the log collectors.</div></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">🩺 Running ≠ Healthy</h2><span class="dbadge">🟢 4 MIN · THE HOLE</span></div>
+<p class="lead">Book 01 · CH 06 taught self-healing: a Pod dies → reconciliation replaces it. But look closer at what triggers it — <b>process death</b>. A deadlocked, memory-leaking, or infinitely-hung application never dies. It just keeps <span class="stbadge st-run">Running</span>. Forever. Serving garbage.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;">
+<div class="zlabel" style="text-align:left;">Without probes — the lie of the STATUS column</div>
+<div class="term mini" style="margin:0;"><span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;RESTARTS</span>
+api-7d9f&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;<span class="g"># looks perfect…</span>
+<span class="g"># reality: deadlocked since Tuesday.
+# holds connections open, serves timeouts.
+# self-healing will NEVER touch it —
+# the process is alive. k8s can't see
+# "working" — only "not crashed".</span></div></div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">With probes — you teach k8s what "healthy" means</div>
+<div class="term mini" style="margin:0;"><span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;RESTARTS</span>
+api-x7k2&nbsp;<span class="p">Running</span>&nbsp;&nbsp;<span class="y">37</span>&nbsp;&nbsp;<span class="g"># restarts = the probe
+# KILLING broken containers.
+# 37 restarts looks scary —
+# it's the system working.</span></div></div>
+</div>
+<h3 class="sec">🔭 The three pillars this book covers (and the fourth)</h3>
+<div class="rowc">
+<div class="kchip">📈 <b>Metrics</b><small>&nbsp;how much / how fast</small></div>
+<div class="kchip">📜 <b>Logs</b><small>&nbsp;what happened, exactly</small></div>
+<div class="kchip">🩺 <b>Probes</b><small>&nbsp;is it working NOW</small></div>
+<div class="kchip">🔗 <b>Traces</b><small>&nbsp;where time went — Book 09's horizon</small></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Probes vs monitoring:</b> probes are <b>reflexes</b> — automated, per-Pod, inside the cluster (restart / gate traffic). Metrics and logs are <b>awareness</b> — stored, queried, human-facing. You need both; reflexes without awareness is a body that heals but never learns.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Kubernetes can only see <b>life</b> (the process runs) — probes are how you teach it to see <b>health</b> (the process works), and they come in exactly two flavors of consequence: <b>restart it</b> (liveness) or <b>don't send traffic</b> (readiness) — next two chapters.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The restart reflex — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: Liveness Probes</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">💀 Liveness Probes — Restart the Stuck</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A liveness probe asks one question on a timer: <i>"are you working?"</i> Fail it enough times and the <b>kubelet kills the container</b> — and the restart policy (Book 01) brings it back fresh. Deadlock → cured by machine, not by 3am pager.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: api
+    <span class="c">image</span>: myapi:2.0
+    <span class="c">livenessProbe</span>:
+      <span class="c">httpGet</span>:
+        <span class="c">path</span>: <span class="m">/healthz</span>       <span class="g"># YOUR endpoint — cheap, local, self-contained</span>
+        <span class="c">port</span>: <span class="y">8080</span>
+      <span class="c">initialDelaySeconds</span>: <span class="y">10</span>  <span class="g"># let the app boot first</span>
+      <span class="c">periodSeconds</span>: <span class="y">10</span>        <span class="g"># ask every 10s</span>
+      <span class="c">failureThreshold</span>: <span class="y">3</span>      <span class="g"># 3 consecutive fails → RESTART</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #8b5cf6;"><div class="zlabel" style="text-align:left;">🔍 Four ways to ask</div>
+<table class="tb" style="margin:0;font-size:11.5px;"><tr><th>Mechanism</th><th>Healthy when…</th></tr>
+<tr><td><code>httpGet</code></td><td>response <b>200–399</b></td></tr>
+<tr><td><code>tcpSocket</code></td><td>TCP connect succeeds</td></tr>
+<tr><td><code>exec</code></td><td>command exits <b>0</b></td></tr>
+<tr><td><code>grpc</code></td><td>gRPC health check passes</td></tr></table></div>
+<div class="card" style="border-top:3.5px solid #f59e0b;"><div class="zlabel" style="text-align:left;">⚙️ The timing knobs</div>
+<div class="term mini" style="margin:0;"><span class="c">initialDelaySeconds</span>  <span class="g">grace before first check</span>
+<span class="c">periodSeconds</span>        <span class="g">ask interval (default 10)</span>
+<span class="c">timeoutSeconds</span>       <span class="g">answer deadline (default 1)</span>
+<span class="c">failureThreshold</span>     <span class="g">consecutive fails → act</span>
+<span class="c">successThreshold</span>     <span class="g">fails needed to heal
+(liveness: always 1)</span></div></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The #1 liveness mistake — checking dependencies:</b> if <code>/healthz</code> verifies "can I reach the database?", then one DB blip makes <b>every Pod's liveness fail</b> → the entire fleet restart-loops <i>simultaneously</i> — you converted a database hiccup into a self-inflicted full outage. Liveness = <b>am I functional?</b> (process, event loop, local state) — <b>never</b> "are my friends up?"</div></div>
+<ul class="tick">
+<li>💸 Probes run constantly — keep them <b>cheap</b>: a 2-second liveness check every 10s on 200 Pods is real load</li>
+<li>🔁 Restarts use the <b>crash backoff</b> (10s, 20s, 40s… capped 5 min) — pathological flapping shows as growing RESTARTS + CrashLoopBackOff rhythm (Book 01 · CH 23)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a liveness probe is a <b>dead-man's switch for the walking dead</b> — it lets the kubelet kill what should be dead but isn't, and its cardinal rule is <i>check yourself, never your dependencies</i>. Lab 1 pulls the trigger on purpose.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The gentler sibling — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: Readiness</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">🚦 Readiness — The Traffic Gate</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Liveness answers "keep or kill?" — readiness answers a different question entirely: <b>"send this Pod customers right now?"</b> A failing readiness probe restarts <i>nothing</i>; it just removes the Pod from the Service's endpoints (Book 03 · CH 11 machinery).</p>
+<div class="term"><span class="c">livenessProbe</span>:
+  <span class="c">httpGet</span>: { <span class="c">path</span>: <span class="m">/healthz</span>, <span class="c">port</span>: <span class="y">8080</span> }
+<span class="c">readinessProbe</span>:
+  <span class="c">httpGet</span>: { <span class="c">path</span>: <span class="m">/ready</span>, <span class="c">port</span>: <span class="y">8080</span> }
+  <span class="c">periodSeconds</span>: <span class="y">5</span>
+  <span class="c">failureThreshold</span>: <span class="y">2</span>     <span class="g"># pull from rotation fast</span>
+  <span class="c">successThreshold</span>: <span class="y">1</span>     <span class="g"># but return instantly when it recovers</span></div>
+<div class="zone zone-net" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">What a failing readiness probe actually does</div>
+<div class="rowc">
+<div class="pod">🫛 web-1<small>Ready ✓</small></div>
+<div class="pod" style="border-color:#94a3b8;color:#64748b;background:#f8fafc;">🫛 web-2<small><span class="r">NotReady</span> — gated</small></div>
+</div>
+<div class="dn">▼ Service selector gathers endpoints ▼</div>
+<div class="term mini" style="max-width:120mm;margin:6px auto;"><span class="p">$</span> kubectl get endpoints web
+<span class="y">NAME&nbsp;&nbsp;ENDPOINTS</span>
+web&nbsp;&nbsp;&nbsp;<span class="p">10.244.1.5:8080</span>&nbsp;&nbsp;<span class="g"># web-2 GONE from the list —
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # no restarts, no logs, just no traffic</span></div>
+</div>
+<table class="tb">
+<tr><th></th><th>🩺 Liveness</th><th>🚦 Readiness</th></tr>
+<tr><td><b>Question</b></td><td>are you alive, or kill you?</td><td>should traffic reach you?</td></tr>
+<tr><td><b>On failure</b></td><td><b>container RESTARTED</b></td><td><b>removed from endpoints</b> — nothing else</td></tr>
+<tr><td><b>Recovers by</b></td><td>fresh process</td><td>probe passing again — instant re-admission</td></tr>
+<tr><td><b>Use for</b></td><td>deadlocks, hopeless states</td><td>warming caches, loading models, <b>overload shedding</b>, DB reconnection</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Rolling updates already depended on this:</b> Book 01 · CH 20's "new Pod replaces old only when Ready" — <i>Ready means the readiness probe passes</i>. No readiness probe = rolling update slams traffic into Pods that are still booting. This chapter is where that story gets its ending.</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The readiness death-spiral check:</b> readiness <i>may</i> include dependencies ("can I reach my DB? — if not, shed traffic") where liveness may not. Readiness failing everywhere is <b>safe</b> (traffic stops, pods survive, users see errors) — but ensure something restarts or alerts, because a Pod can sit NotReady <b>forever</b> and Kubernetes will not lift a finger.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> readiness is a <b>traffic valve, not a kill switch</b> — failing pods drop out of the endpoints list silently and rejoin when ready, which is what makes rolling updates, warm-ups, and overload survival possible.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The boot-guard for slow apps — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: Startup Probes</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🐣 Startup Probes &amp; Probe Mechanics</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">Some apps boot slowly — a JVM loading 4GB of heap, a model loading weights. Liveness starts checking at <code>initialDelaySeconds</code>… and if the app needs 90 seconds, you either set a huge delay (slow restarts forever) or watch it <b>restart-loop during every boot</b>. The startup probe solves the dilemma: <b>it disables the other probes until the app is up once.</b></p>
+<div class="term"><span class="c">startupProbe</span>:                    <span class="g"># runs FIRST — liveness/readiness wait</span>
+  <span class="c">httpGet</span>: { <span class="c">path</span>: <span class="m">/healthz</span>, <span class="c">port</span>: <span class="y">8080</span> }
+  <span class="c">failureThreshold</span>: <span class="y">30</span>           <span class="g"># 30 × 10s = up to 5 minutes to boot</span>
+  <span class="c">periodSeconds</span>: <span class="y">10</span>
+<span class="c">livenessProbe</span>:                    <span class="g"># takes over ONLY after startup succeeds</span>
+  <span class="c">httpGet</span>: { <span class="c">path</span>: <span class="m">/healthz</span>, <span class="c">port</span>: <span class="y">8080</span> }
+  <span class="c">periodSeconds</span>: <span class="y">10</span>
+  <span class="c">failureThreshold</span>: <span class="y">3</span></div>
+<div class="mtree"><b>Boot sequence with all three probes:</b>
+container starts ──► <u>startupProbe</u> asks every 10s
+      │ one success (or 30 fails → container killed)
+      ▼
+<u>readiness</u> + <u>liveness</u> activate from this moment
+      ├── readiness fails → out of endpoints (traffic gate)
+      └── liveness fails  → RESTART (and startup runs again first!)</div>
+<table class="tb">
+<tr><th>Probe</th><th>Fires</th><th>On failure</th><th>One-line job</th></tr>
+<tr><td><b>startup</b></td><td>from container start</td><td>restart (after threshold)</td><td>guard the boot — protect slow starters from eager liveness</td></tr>
+<tr><td><b>readiness</b></td><td>after startup passes</td><td>out of endpoints</td><td>gate traffic per moment</td></tr>
+<tr><td><b>liveness</b></td><td>after startup passes</td><td>restart container</td><td>kill the undead</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Rule of thumb:</b> fast-booting app → skip startupProbe, use <code>initialDelaySeconds</code>. Slow or variable boot → startupProbe with generous <code>failureThreshold × periodSeconds</code> budget, and tight liveness afterwards. Best of both: instant restart detection <i>and</i> no boot-looping.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the startup probe is a <b>one-shot gate that silences the other probes until first success</b> — letting slow apps boot in peace while keeping restart-reflexes razor-sharp once they're up. All three together = the complete health contract. Lab 1 fires all of them.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part II: from reflexes to awareness — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: Metrics Server</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">📊 Metrics Server &amp; kubectl top</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">The lightest rung of the metrics ladder: <b>metrics-server</b> — a small in-cluster component that scrapes resource usage from every kubelet and serves it through the Metrics API. It's what makes <code>kubectl top</code> work and what fed Book 06's HPA.</p>
+<div class="term"><span class="p">$</span> minikube addons enable metrics-server
+<span class="p">$</span> kubectl top nodes
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CPU(cores)&nbsp;&nbsp;CPU%&nbsp;&nbsp;&nbsp;MEMORY(bytes)&nbsp;&nbsp;MEMORY%</span>
+minikube&nbsp;&nbsp;347m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17%&nbsp;&nbsp;&nbsp;&nbsp;1823Mi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;47%
+<span class="p">$</span> kubectl top pods -n shop
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CPU(cores)&nbsp;&nbsp;MEMORY(bytes)</span>
+web-x7k2&nbsp;<span class="r">480m</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;210Mi&nbsp;&nbsp;<span class="g"># vs its REQUEST (Book 02 · CH 14) — 96% of 500m!</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Know its ceiling:</b> metrics-server keeps only the <b>latest ~15 minutes</b> of samples. No history, no graphs, no alerts, no dashboards. It answers "how much is it using <i>right now</i>?" — long-term awareness is Prometheus's job (CH 06). <code>top</code> numbers also lag reality by ~1 minute (scrape + aggregation).</div></div>
+<ul class="tick">
+<li>🔗 <b>Its two customers:</b> <code>kubectl top</code> (you) and the <b>HPA's <code>Resource</code> metrics</b> (Book 06 · CH 07) — no metrics-server, no autoscaling on cpu/memory</li>
+<li>🧮 <code>top</code> shows <b>actual usage</b>; compare against <code>requests</code> to spot right-sizing candidates — that comparison is exactly what VPA automates (Book 06 · CH 08)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> metrics-server is the <b>short-term pulse</b> — live CPU/memory per node and Pod for <code>top</code> and the HPA, deliberately keeping nothing older than minutes; everything beyond that is Prometheus's territory, next chapter.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The real memory — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: Prometheus</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🔥 Prometheus — The Pull Model</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Prometheus is the de-facto metrics database of the Kubernetes world. Its defining choice: it <b>pulls</b> — it scrapes each target's <code>/metrics</code> HTTP endpoint on an interval, storing every measurement as a <b>time series</b>.</p>
+<div class="term"><span class="g"># a target's /metrics endpoint is just text — self-describing:</span>
+<span class="p">$</span> curl localhost:8080/metrics
+<span class="c">http_requests_total</span>{method=<span class="m">"POST"</span>,code=<span class="m">"200"</span>} <span class="y">1027</span>
+<span class="c">http_request_duration_seconds</span>{quantile=<span class="m">"0.99"</span>} <span class="y">0.14</span>
+<span class="g"># metric NAME + LABELS (dimensions) + current VALUE —
+# scraped over time, each combo becomes a time series</span></div>
+<div class="grid3">
+<div class="card" style="border-top:3.5px solid #3b82f6;"><p class="small"><b>🗄️ Time Series</b><br>name + labels + timestamped values — the only data shape. Labels are the dimensions you'll slice by.</p></div>
+<div class="card" style="border-top:3.5px solid #14b8a6;"><p class="small"><b>🔍 PromQL</b><br>query language built for rates, aggregation, and math over series (CH 12).</p></div>
+<div class="card" style="border-top:3.5px solid #ef4444;"><p class="small"><b>🚨 Alerting</b><br>PromQL conditions → <b>Alertmanager</b> → Slack/PagerDuty/email routing.</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why pull wins here:</b> the scraper controls the pace and the target list; apps just expose <code>/metrics</code> and need zero knowledge of where Prometheus lives. Bonus: a dead target doesn't vanish — its <code>up</code> metric becomes <b>0</b>, so <i>you can query whether the monitoring itself sees the target</i>: <code>up == 0</code> is the oldest trick in the Prometheus book.</div></div>
+<div class="zone zone-cp" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">In a cluster — who watches the watchers</div>
+<div class="rowc">
+<div class="nb c-slate" style="min-width:150px;">🔥 Prometheus<small>Deployment in ns mon</small></div>
+<span class="harr">──scrape──►</span>
+<div class="pod">🫛 /metrics</div>
+<div class="pod">🫛 /metrics</div>
+<div class="nb c-amber" style="min-width:120px;">🖥️ /metrics<small>node-exporter</small></div>
+</div>
+<p class="dnote">target discovery is automatic — via Service discovery + <b>ServiceMonitor/PodMonitor CRDs</b> (next chapter), never hand-maintained IP lists</p>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Prometheus = <b>pull-based time-series machine</b> — it scrapes self-describing <code>/metrics</code> endpoints, keeps every label-combination as its own series, answers with PromQL, and even reports its own blindness via <code>up == 0</code>.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Where all those endpoints come from — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: The Exporter Cast</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🛰️ The Exporter Cast — Who Exposes What</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Prometheus only scrapes — someone must <b>expose</b> the numbers. Three built-in exporters cover the whole cluster, each answering a different "is it healthy?" question:</p>
+<table class="tb">
+<tr><th>Exporter</th><th>Runs as</th><th>Exposes</th><th>Answers</th></tr>
+<tr><td>🖥️ <b>node-exporter</b></td><td><b>DaemonSet</b> (Book 06 · CH 01!)</td><td>host-level: CPU, memory, disk, network of the <b>machine</b></td><td>"is the <i>machine</i> healthy?"</td></tr>
+<tr><td>⚙️ <b>cAdvisor</b></td><td>embedded in the <b>kubelet</b></td><td>per-container actual usage: CPU, memory, restarts</td><td>"which <i>container</i> eats resources?"</td></tr>
+<tr><td>📦 <b>kube-state-metrics</b></td><td>Deployment, watches the <b>API Server</b></td><td>object states: replicas desired vs ready, pending pods, PVC capacity</td><td>"does <i>Kubernetes</i> think all is well?"</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The layer trick:</b> the same Pod can be healthy in all three views at once — or exactly one. High node CPU (node-exporter) + low pod CPU (cAdvisor) = something else on the machine. Pod Running + <code>kube_pod_status_phase{phase="Pending"}</code> climbing (kube-state-metrics) = scheduling trouble (Book 04!). Three lenses, one truth.</div></div>
+<h3 class="sec">🎯 ServiceMonitor — declarative scrape config</h3>
+<div class="term mini"><span class="c">apiVersion</span>: monitoring.coreos.com/v1        <span class="g"># a CRD — Book 08 previews CRDs</span>
+<span class="c">kind</span>: ServiceMonitor
+<span class="c">metadata</span>: { <span class="c">name</span>: web, <span class="c">labels</span>: { <span class="c">release</span>: mon } }
+<span class="c">spec</span>:
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: web } }
+  <span class="c">endpoints</span>: [{ <span class="c">port</span>: <span class="y">metrics</span> }]
+<span class="g"># "scrape any Service labeled app=web at port `metrics`" —
+# deploy your app WITH its ServiceMonitor → deploy = monitored (Book 02 · CH 04b pattern)</span></div>
+<div class="term mini"><span class="p">$</span> helm install mon prometheus-community/kube-prometheus-stack
+<span class="g"># one chart = Prometheus + Alertmanager + Grafana +
+# node-exporter (DS) + kube-state-metrics + the CRDs — the full bundle</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> cluster metrics come from a three-layer cast — <b>node-exporter (machines, per node), cAdvisor (containers, via kubelet), kube-state-metrics (object states, via API)</b> — and your own apps join by exposing <code>/metrics</code> plus a ServiceMonitor CRD.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part III: the other signal — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: Where Logs Live</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">📜 Where Logs Actually Live</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Every container's <b>stdout and stderr</b> is captured by the container runtime and written to a <b>plain file on the node</b>. That's the entire native logging story — and its limits define everything else in Part III.</p>
+<div class="term"><span class="p">$</span> kubectl logs web-x7k2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># the API reads node files FOR you…</span>
+<span class="p">$</span> minikube ssh
+ $ ls /var/log/pods/
+<span class="y">default_web-x7k2_<span class="c">e1a2…</span>/api/0.log</span>&nbsp;&nbsp;<span class="g"># ns_pod_UID/container/N.log
+# (N = restart count — --previous reads N-1! Book 01 · CH 24)</span>
+ $ ls /var/log/containers/
+web-x7k2_default_api-<span class="c">e1a2…</span>.log&nbsp;&nbsp;<span class="g"># symlinks — stable names for collectors</span></div>
+<table class="tb">
+<tr><th>Fact</th><th>Consequence</th></tr>
+<tr><td>Logs are <b>node-local files</b></td><td><code>kubectl logs</code> must ask the kubelet of <i>that</i> node — Pod gone from node = logs gone</td></tr>
+<tr><td>Runtime <b>rotates</b> them (containerd: 10Mi × 5 default)</td><td>chatty apps wrap around; old logs vanish silently</td></tr>
+<tr><td>Survives <b>container</b> restarts (per-Pod dir), dies with the <b>Pod</b></td><td>Book 05's three-lives ladder, log edition</td></tr>
+<tr><td>Survives <b>nothing else</b> — no cluster-wide store exists</td><td>node loss / eviction (Book 04 drain!) = history gone — hence collectors (CH 09)</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The logging manifesto, 12-factor style:</b> your app writes <b>unbuffered to stdout/stderr</b> — no log files inside the container, no rotation logic. The platform (runtime + collector) handles transport and storage. Apps that insist on writing <code>/var/log/app.log</code> inside the container force you into sidecar workarounds (CH 09).</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The eviction surprise:</b> you debug an incident, run <code>kubectl delete pod</code> to "reset" it — and the evidence dies with the Pod dir. <b>Grab logs before deleting:</b> <code>kubectl logs NAME &gt; incident.log</code>, or better, have a collector already shipping (CH 09–10) so the question never arises.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> container logs are <b>rotating text files on the node</b> — <code>kubectl logs</code> is just a window onto them, and everything you don't ship off-node (CH 09) dies with the Pod, the rotation, or the node itself.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Shipping them somewhere safe — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: Collection Patterns</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🚚 Collection Patterns — DaemonSet · Sidecar</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Node files don't walk to your database by themselves. Two production patterns move them — and you already know the machinery of both.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">Pattern 1 · Node-level agent (DaemonSet) ★ default</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">every node:
+  🫛 <u>agent</u> <span class="g">(Promtail / Fluent Bit)</span>
+    ├── reads <b>/var/log/pods/**</b> <span class="g">(hostPath mount)</span>
+    ├── attaches metadata: ns, pod, container, node
+    └── ships → Loki / ES / cloud
+<span class="g">one agent covers EVERY pod on the node —
+zero per-app config, app stays ignorant</span></div></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;">
+<div class="zlabel" style="text-align:left;">Pattern 2 · Sidecar streamer</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">one pod:
+  🫛 app ──writes──► <u>emptyDir volume</u> <span class="g">(Book 05 · CH 02!)</span>
+  🫛 sidecar ──tails file──► ships to backend
+<span class="g">app CAN'T use stdout? per-app config,
+filtering, multiple destinations?
+the sidecar is app-owned plumbing</span></div></div>
+</div>
+<table class="tb">
+<tr><th></th><th>📡 DaemonSet agent</th><th>🤝 Sidecar</th></tr>
+<tr><td><b>Setup</b></td><td>once per cluster</td><td>every Pod that needs it</td></tr>
+<tr><td><b>Resource cost</b></td><td>one agent per node (shared)</td><td>multiplied per Pod</td></tr>
+<tr><td><b>Coverage</b></td><td>everything on stdout/stderr — automatic</td><td>only Pods you modified</td></tr>
+<tr><td><b>Special needs</b></td><td>none possible per-app</td><td>file-based logs, per-app parsing, routing</td></tr>
+<tr><td><b>Verdict</b></td><td><b>start here — 90% of clusters</b></td><td>escape hatch for stubborn apps</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Pattern 3 exists and is usually a trap:</b> the app pushes directly to the logging backend (embedded client, async handler). Rejected because: credentials in every app (Book 02 lesson), retry/buffer logic duplicated everywhere, and backend outage now <i>breaks your app's logging path</i> — sometimes its threads. Centralize transport; keep apps dumb.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> ship logs with a <b>DaemonSet agent reading /var/log/pods</b> — one deployment, zero app changes — and reach for the <b>sidecar</b> only when an app refuses to write stdout; never embed shipping clients in the app itself.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Where the shipped logs go — <a href="#ch10" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 10: Loki</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🪵 Loki — Prometheus for Logs</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Loki (Grafana Labs) is log aggregation with one radical idea: <b>index the labels, never the text.</b> Full-text engines (ELK) index every word — powerful, expensive. Loki asks: <i>"why index what you never query?"</i></p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">💰 The trade</div>
+<ul class="tick" style="margin:0;">
+<li><b>10–20× cheaper</b> storage — only metadata is indexed</li>
+<li>Log lines stored <b>compressed as chunks</b> in cheap object storage</li>
+<li>Search = filter by <b>labels first</b>, then grep the few surviving lines at query time</li>
+<li>Trade-off accepted: free-text search across everything is weaker than ELK — in Kubernetes, labels are so good it rarely matters</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #3b82f6;">
+<div class="zlabel" style="text-align:left;">🏷️ The shared label model</div>
+<div class="term mini" style="margin:0;">Promtail labels a line with:
+<b>namespace · pod · container · node</b>
+<span class="g">— the SAME labels your metrics carry
+(Book 03 · CH 11's service DNS model) —</span>
+<span class="p">CPU spike on pod X in Grafana →
+jump to logs of pod X — zero config</span></div></div>
+</div>
+<div class="mtree" style="font-size:12px;"><b>Promtail's four-step pipeline</b> <span class="g">(your DaemonSet agent from CH 09, Loki edition)</span>
+├── 1️⃣ <u>Discover</u>  <span class="g">via k8s Service Discovery — every pod on my node</span>
+├── 2️⃣ <u>Tail</u>      <span class="g">/var/log/pods files (CH 08!)</span>
+├── 3️⃣ <u>Label</u>     <span class="g">attach ns/pod/container/node metadata</span>
+└── 4️⃣ <u>Ship</u>      <span class="g">HTTP PUSH batches → Loki's Distributor</span>
+<span class="g">inside Loki: Distributor → Ingester (chunks) → Store → Querier
+— a Log Stream = one unique label combination</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Cardinality is the cardinal sin:</b> every unique label combo = a new stream to index. <code>user_id</code>, <code>request_id</code> as labels → millions of streams → Loki drowns. Labels for <b>bounded, structured</b> dimensions (ns, pod, app, level) — everything variable goes <i>in</i> the line, filtered at query time.</div></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Push vs pull, the asymmetry:</b> Prometheus <b>pulls</b> metrics (CH 06); Promtail <b>pushes</b> logs (files won't offer themselves). Two transport models, one shared label vocabulary — that pairing is the stack's superpower.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Loki is <b>"Prometheus for logs"</b> — index only bounded labels, keep raw lines in cheap chunks, let Promtail's DaemonSet do the labeling — and the same label model makes logs and metrics correlatable out of the box.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The window onto all of it — <a href="#ch11" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 11: Grafana</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">📊 Grafana — The Unified Pane</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">Grafana stores <b>nothing</b>. It's a stateless query-and-render layer over your data sources — the glass pane in front of Prometheus (metrics) and Loki (logs). Empty datasources = empty dashboard; the data always lives in the backends.</p>
+<div class="zone zone-net" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">The classic debug flow — all signals, one pane</div>
+<div class="rowc">
+<div class="kchip">🚨 Metric alert<small>&nbsp;"error rate jumped"</small></div>
+<span class="harr">──►</span>
+<div class="kchip">📈 Prometheus panel<small>&nbsp;confirm · since when</small></div>
+<span class="harr">──►</span>
+<div class="kchip">🪵 Loki panel<small>&nbsp;same labels → the exception line</small></div>
+</div>
+<p class="dnote">label jump: <code>{namespace="shop", pod="api-x7k2"}</code> — metric query and log query share the selector</p>
+</div>
+<ul class="tick">
+<li>🔌 <b>Datasources</b> — Prometheus, Loki, and dozens more; kube-prometheus-stack wires them in at install (Lab 3)</li>
+<li>📈 <b>Dashboards</b> — panels of PromQL/LogQL; community dashboards (node full-coverage, k8s cluster views) import by ID in seconds</li>
+<li>📜 <b>Dashboards as code</b> — export JSON, version in Git next to your manifests — observability joining your declarative world</li>
+<li>🚨 <b>Alerting UI</b> — Grafana can evaluate alert rules too; deep setups keep alerting in Prometheus/Alertmanager (CH 06) and use Grafana for visualization + triage</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The datasources-conflict trap:</b> kube-prometheus-stack deploys Grafana <i>itself</i> (it's part of the bundle) and auto-configures its Prometheus datasource. If you later install Grafana separately and wonder why panels are empty — you're looking at <b>a different Grafana with no datasources</b>. One pane per cluster (or deliberately many, each configured).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Grafana is the <b>stateless window</b> — metrics and logs stay in Prometheus/Loki, and its value is the shared-label jump from "the graph looks wrong" to "here's the exact exception line" in seconds.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Speaking both languages — <a href="#ch12" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 12: PromQL &amp; LogQL</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch12">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ CH12 ═══ -->
+<div class="page" id="ch12"><div class="pghead"><span class="chip">CH 12</span><h2 class="t">🗣️ PromQL &amp; LogQL — First Queries</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Both query languages share DNA (that's deliberate — Loki's LogQL is <i>designed</i> to feel like PromQL). Learn the four moves and you can interrogate both signals.</p>
+<h3 class="sec">📈 PromQL — four moves</h3>
+<div class="term"><span class="g"># 1 · SELECT — by name + label matchers</span>
+container_cpu_usage_seconds_total{namespace=<span class="m">"shop"</span>}
+<span class="g"># 2 · RATE — counters need a rate over a window</span>
+<span class="c">rate</span>(http_requests_total[<span class="y">5m</span>])
+<span class="g"># 3 · AGGREGATE — sum/avg by label dimension</span>
+<span class="c">sum by</span> (pod) (<span class="c">rate</span>(container_cpu_usage_seconds_total
+  {namespace=<span class="m">"shop"</span>, container!=<span class="m">""</span>} [<span class="y">5m</span>]))
+<span class="g"># 4 · CONDITION — the alert-shaped question</span>
+<span class="c">sum by</span> (pod) (<span class="c">rate</span>(http_requests_total{code=~<span class="m">"5.."</span>}[<span class="y">5m</span>]))
+&nbsp;&nbsp;/ <span class="c">sum by</span> (pod) (<span class="c">rate</span>(http_requests_total[<span class="y">5m</span>])) &gt; <span class="y">0.05</span></div>
+<h3 class="sec">🪵 LogQL — same shape, logs</h3>
+<div class="term"><span class="g"># selector (LABELS ONLY — CH 10) then line filters then parse:</span>
+{namespace=<span class="m">"shop"</span>, pod=~<span class="m">"web-.*"</span>}
+&nbsp;&nbsp;<span class="y">|=</span> <span class="m">"ERROR"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># line contains</span>
+&nbsp;&nbsp;<span class="y">!=</span> <span class="m">"health"</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># exclude noise</span>
+<span class="g"># metrics FROM logs — count matches per minute:</span>
+<span class="c">sum by</span> (pod) (<span class="c">rate</span>({namespace=<span class="m">"shop"</span>} <span class="y">|=</span> <span class="m">"Timeout"</span> [<span class="y">5m</span>]))
+<span class="g"># and the correlation close (CH 11):</span>
+<span class="g"># panel 1: rate(http_requests_total{pod=~"web-.*"}[5m])</span>
+<span class="g"># panel 2: {pod=~"web-.*"} |= "ERROR"   ← same pod regex!</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Counter law:</b> counters only go up (restarts reset them) — <b>always</b> wrap them in <code>rate()</code> over a window; the raw value is meaningless across restarts. Gauges (memory, queue depth) you query raw. This one rule separates useful dashboards from lying ones.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> both languages are <b>select → (rate) → aggregate → condition</b> — learn it once on metrics, reuse the shape on logs, and let shared labels stitch the two into one investigation. Lab 4 runs these live.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part V: the operational paper trail — <a href="#ch13" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 13: Events &amp; Audit</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch13">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ CH13 ═══ -->
+<div class="page" id="ch13"><div class="pghead"><span class="chip">CH 13</span><h2 class="t">📋 Events &amp; Audit Logging</h2><span class="dbadge">🟢 5 MIN</span></div>
+<p class="lead">Two different diaries. <b>Events</b>: what the controllers did to your objects (you've read them in every <code>describe</code> since Book 01). <b>Audit log</b>: what <i>humans and clients</i> did to the API — the who-did-what record.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #f59e0b;">
+<div class="zlabel" style="text-align:left;">📋 Events — the controller chronicle</div>
+<div class="term mini" style="margin:0;"><span class="p">$</span> kubectl get events --sort-by=<span class="y">.lastTimestamp</span>
+<span class="y">LAST SEEN&nbsp;&nbsp;TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REASON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OBJECT</span>
+12s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="r">Warning</span>&nbsp;&nbsp;BackOff&nbsp;&nbsp;&nbsp;&nbsp;pod/web-x7k2
+4m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Normal</span>&nbsp;&nbsp;&nbsp;Scheduled&nbsp;&nbsp;pod/web-x7k2
+<span class="g"># Normal = information · Warning = attention
+# TTL ~1 hour — they EXPIRE. not an archive.
+# per-namespace scope (Book 01 scoping!)</span></div>
+<p class="small" style="margin:6px 0 0;">Every debugging chapter used them — now you know their lifecycle: generated by controllers/kubelet, aggregated per object, <b>ephemeral</b>. For incident forensics, ship them (EventExporter → Loki) or lose them.</p></div>
+<div class="card" style="border-top:3.5px solid #6366f1;">
+<div class="zlabel" style="text-align:left;">🪪 Audit log — the API dashcam</div>
+<div class="term mini" style="margin:0;"><span class="g"># apiserver feature — OFF by default.
+# you supply a policy (stages):</span>
+<span class="c">who</span>:    user / serviceaccount  <span class="g">(Book 02!)</span>
+<span class="c">what</span>:   verb + resource       <span class="g">delete secrets…</span>
+<span class="c">when</span>:   timestamp + source IP
+<span class="c">result</span>: allowed / denied      <span class="g">(RBAC verdicts)</span>
+<span class="g"># policy levels: None → Metadata →
+# Request → RequestResponse (noisy!)</span></div>
+<p class="small" style="margin:6px 0 0;">The record that answers "who deleted the production namespace?" — RBAC says who <i>may</i>; audit says who <i>did</i>. Compliance surveys live here. Concept-level for us; enablement is cluster-lifecycle work (Book 09).</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Triage pairing:</b> something's wrong → <code>kubectl get events --sort-by=.lastTimestamp</code> (what did the <i>system</i> do) + audit log (what did the <i>humans</i> do right before). Between the two diaries, almost every "nobody changed anything" mystery resolves — <i>somebody</i> did, and the dashcam has the plate number.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> events are the <b>system's own short-term diary</b> (1-hour TTL — read them fast), audit logging the <b>opt-in API dashcam</b> recording every identity, verb, and verdict — together they cover both "what happened to my workload" and "who touched my cluster."</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Everything assembled — <a href="#ch14" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 14: The Failure Playbook</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch12">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch14">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ CH14 ═══ -->
+<div class="page" id="ch14"><div class="pghead"><span class="chip">CH 14</span><h2 class="t">🚑 The Cluster-Scope Failure Playbook</h2><span class="dbadge">🟡 6 MIN · FINALE</span></div>
+<p class="lead">Books 01–06 debugged <i>one Pod</i>. Real incidents are cluster-shaped: whole namespaces Pending, every DNS lookup dying, a node evacuating itself. The playbook — first move for each signature (every row is a callback):</p>
+<table class="tb">
+<tr><th>Signature</th><th>Probable cause</th><th>First move</th></tr>
+<tr><td><b>Everything in one ns → Pending</b></td><td>ResourceQuota exhausted (B02) or no node fits (B04 funnel)</td><td><code>kubectl describe quota -n ns</code> · read a Pod's events</td></tr>
+<tr><td><b>All pods ImagePullBackOff, one ns</b></td><td>imagePullSecrets missing/wrong (B02 · CH 06)</td><td><code>kubectl get sa default -o yaml</code> → check secret</td></tr>
+<tr><td><b>One node NotReady, pods evacuating</b></td><td>kubelet/heartbeat lost → NoExecute taints (B04 · CH 05)</td><td><code>kubectl describe node N</code> → conditions + taints</td></tr>
+<tr><td><b>ALL DNS failing cluster-wide</b></td><td>CoreDNS pods down (B03 · CH 11–12)</td><td><code>kubectl get pods -n kube-system -l k8s-app=kube-dns</code></td></tr>
+<tr><td><b>Ingress: everything 404/timeout</b></td><td>controller Pod down, or rulebook orphaned (B03 · CH 04)</td><td><code>kubectl get pods -n ingress-nginx</code> · <code>get ingress</code> → ADDRESS?</td></tr>
+<tr><td><b>Random OOMKills across teams</b></td><td>node memory pressure → eviction by QoS (B02 · CH 15)</td><td><code>kubectl top nodes</code> · check node <code>memory-pressure</code> taint</td></tr>
+<tr><td><b>API slow/5xx for everyone</b></td><td>etcd struggling / quorum at risk (B01 · CH 08)</td><td>check static-pod etcd on CP nodes (B04 · CH 11) · <code>events</code></td></tr>
+<tr><td><b>PVs stuck Pending cluster-wide</b></td><td>provisioner/sc issues (B05 · CH 04/07)</td><td><code>kubectl get sc</code> → default present? · check CSI pods</td></tr>
+</table>
+<div class="mtree"><b>The universal triage reflex</b> <span class="g">(before any of the rows above):</span>
+1 · <u>kubectl get nodes</u>            <span class="g">is the fleet itself healthy?</span>
+2 · <u>kubectl get pods -A</u>           <span class="g">which scope? one ns / one node / everywhere?</span>
+3 · <u>kubectl get events -A --sort-by=.lastTimestamp</u>  <span class="g">the chronicle (CH 13)</span>
+<span class="g">scope FIRST — "one namespace" and "one node" are different books of the same incident.</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Scope is the diagnosis:</b> one Pod → Book 01's toolbox. One namespace → quota/secrets/RBAC. One node → taints/kubelet/disk. Everything → control plane, DNS, or the network fabric. Nine books of knowledge, organized by blast radius.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> cluster incidents resolve by <b>scope-first triage</b> — nodes, then pods -A, then events — and the playbook above turns each signature into the exact chapter of this series that owns it. Lab 2 drills the reflex.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Prove all of it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part VI: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch13">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Probes That Bite</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · A pod whose health is a file — liveness</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Pod
+<span class="c">metadata</span>: { <span class="c">name</span>: probe-lab }
+<span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: c
+    <span class="c">image</span>: busybox:1.36
+    <span class="c">command</span>: [<span class="m">sh</span>,<span class="m">-c</span>,<span class="m">'touch /tmp/healthy; sleep 9999'</span>]
+    <span class="c">livenessProbe</span>:
+      <span class="c">exec</span>: { <span class="c">command</span>: [<span class="m">cat</span>, <span class="m">/tmp/healthy</span>] }
+      <span class="c">periodSeconds</span>: <span class="y">5</span>
+      <span class="c">failureThreshold</span>: <span class="y">2</span>
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get pod probe-lab&nbsp;&nbsp;<span class="g"># Running, READY 1/1, 0 restarts</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Break it — the kubelet fights back</div>
+<div class="term mini"><span class="p">$</span> kubectl exec probe-lab -- rm /tmp/healthy
+<span class="p">$</span> kubectl get pod probe-lab -w
+<span class="y">probe-lab&nbsp;&nbsp;Running&nbsp;&nbsp;0</span>
+probe-lab&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="r">1</span>&nbsp;&nbsp;<span class="g"># 2 fails → KILLED & restarted (fresh file! CH 02)</span>
+<span class="p">$</span> kubectl describe pod probe-lab | <span class="c">grep</span> -A2 Events | <span class="c">tail</span> -2
+<span class="y">Container c failed liveness probe, will be restarted</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 READINESS — THE GATE</div><div class="tabbody"><span class="p">$</span> kubectl patch pod probe-lab \
+&nbsp;&nbsp;<span class="y">--type</span>=merge <span class="y">-p</span> <span class="m">'{"metadata":{"labels":{"app":"g"}}}'</span>
+<span class="p">$</span> kubectl expose pod probe-lab \
+&nbsp;&nbsp;--port=80 --name=gate
+<span class="p">$</span> kubectl get endpoints gate
+<span class="y">gate&nbsp;&nbsp;<span class="p">10.244.0.5:80</span></span>
+<span class="g"># remove the health file again →
+# readiness (same probe) fails →</span>
+<span class="p">$</span> kubectl get endpoints gate
+<span class="y">gate&nbsp;&nbsp;<span class="r">&lt;none&gt;</span>&nbsp;&nbsp;<span class="g"># GATED — pod still
+# Running, zero restarts!
+# (readiness ≠ liveness, CH 03)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 READ THE RESTART STORY</div><div class="tabbody"><span class="p">$</span> kubectl get pod probe-lab
+<span class="y">READY&nbsp;&nbsp;RESTARTS</span>
+1/1&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">2</span>&nbsp;&nbsp;<span class="g"># each restart =
+# the reflex working.
+# RESTARTS ≠ broken —
+# it's the cure being
+# applied (CH 01!)</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> liveness kills the undead; readiness gates traffic without touching the process. <b>Teardown:</b> <code>kubectl delete pod probe-lab svc/gate</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#ch14">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔬 Top &amp; Events Triage</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · The pulse — metrics-server</div>
+<div class="term mini"><span class="p">$</span> minikube addons enable metrics-server
+<span class="p">$</span> kubectl top nodes&nbsp;&nbsp;<span class="g"># give it ~60s after enabling</span>
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CPU(cores)&nbsp;&nbsp;CPU%&nbsp;&nbsp;&nbsp;MEMORY(bytes)&nbsp;&nbsp;MEMORY%</span>
+minikube&nbsp;&nbsp;350m&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;17%&nbsp;&nbsp;&nbsp;&nbsp;1800Mi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;46%
+<span class="p">$</span> kubectl top pods -A --sort-by=memory | <span class="c">head</span> -5
+<span class="g"># the whole cluster, ranked by appetite —
+# your right-sizing shortlist (Book 06 · CH 08)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Cause a failure, then read the chronicle</div>
+<div class="term mini"><span class="p">$</span> kubectl create deploy ghost --image=nginx:<span class="y">1.999</span>
+<span class="p">$</span> kubectl get events --sort-by=<span class="y">.lastTimestamp</span> | <span class="c">grep</span> -i ghost
+<span class="r">Warning&nbsp;&nbsp;Failed&nbsp;&nbsp;Failed to pull image "nginx:1.999"</span>
+<span class="r">Warning&nbsp;&nbsp;BackOff&nbsp;&nbsp;Back-off pulling image</span>
+<span class="g"># the incident wrote its own report —
+# BEFORE you ran a single describe (CH 13)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · The scope-first reflex (CH 14)</div>
+<div class="term mini"><span class="p">$</span> kubectl get nodes&nbsp;&nbsp;<span class="g"># 1 · fleet healthy?</span>
+<span class="p">$</span> kubectl get pods -A | <span class="c">grep</span> -v Running&nbsp;&nbsp;<span class="g"># 2 · blast radius?</span>
+<span class="p">$</span> kubectl get events -A --sort-by=.lastTimestamp | <span class="c">head</span> -8&nbsp;<span class="g"># 3 · chronicle</span>
+<span class="g"># three commands, scope identified, playbook row selected —
+# the CH 14 reflex, now muscle memory</span></div></div>
+<p class="small"><b>Proved:</b> live usage via top, self-writing incident chronicles via events, and the universal triage reflex. <b>Teardown:</b> <code>kubectl delete deploy ghost</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 07 · Observability &amp; Operations</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🔬 Install the Stack (Helm Preview)</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="callout co-tip" style="margin-top:0;"><span class="ico">💡</span><div><b>Honesty first:</b> the stack ships as <b>Helm charts</b> — Book 08's subject. Today you run four commands as a <i>preview</i>; Book 08 explains what every flag did. Needs ~3GB free in minikube: <code>minikube start --memory=6144</code> if tight.</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Metrics + logs + pane — four commands</div>
+<div class="term mini"><span class="p">$</span> curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+<span class="p">$</span> helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+<span class="p">$</span> helm repo add grafana https://grafana.github.io/helm-charts &amp;&amp; helm repo update
+<span class="p">$</span> helm install mon prometheus-community/kube-prometheus-stack
+<span class="p">$</span> helm install loki grafana/loki-stack \
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">--set</span> promtail.enabled=<span class="y">true</span>&nbsp;&nbsp;<span class="g"># ← the CH 09 DaemonSet agent!</span>
+<span class="p">$

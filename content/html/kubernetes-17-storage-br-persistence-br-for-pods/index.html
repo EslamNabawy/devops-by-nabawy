@@ -1,0 +1,1031 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Storage — Kubernetes Book 05</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm; background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.road{position:relative; margin:14px 0 6px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 11px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:9px 13px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch02 h3.sec{margin:10px 0 6px}
+#ch02 .callout,#ch02 .cka{margin:7px 0;padding:8px 11px}
+#ch02 .term,#ch02 .mtree,#ch02 table.tb{margin:8px 0}
+#ch02 .term,#ch02 .mtree{padding:9px 12px}
+#ch02 p.lead{margin:0 0 7px}
+#ch02 .grid2,#ch02 .grid3{margin:8px 0;gap:10px}
+#ch02 .card,#ch02 .zone,#ch02 .labstep{padding:9px 11px}
+#ch02 .qz{margin:6px 0;padding:6px 9px}
+#ch02 .gl{margin:3px 0;padding:4px 8px}
+#ch02 .rowc{margin:7px 0}
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+#ch05 h3.sec{margin:10px 0 6px}
+#ch05 .callout,#ch05 .cka{margin:7px 0;padding:8px 11px}
+#ch05 .term,#ch05 .mtree,#ch05 table.tb{margin:8px 0}
+#ch05 .term,#ch05 .mtree{padding:9px 12px}
+#ch05 p.lead{margin:0 0 7px}
+#ch05 .grid2,#ch05 .grid3{margin:8px 0;gap:10px}
+#ch05 .card,#ch05 .zone,#ch05 .labstep{padding:9px 11px}
+#ch05 .qz{margin:6px 0;padding:6px 9px}
+#ch05 .gl{margin:3px 0;padding:4px 8px}
+#ch05 .rowc{margin:7px 0}
+#ch06 h3.sec{margin:10px 0 6px}
+#ch06 .callout,#ch06 .cka{margin:7px 0;padding:8px 11px}
+#ch06 .term,#ch06 .mtree,#ch06 table.tb{margin:8px 0}
+#ch06 .term,#ch06 .mtree{padding:9px 12px}
+#ch06 p.lead{margin:0 0 7px}
+#ch06 .grid2,#ch06 .grid3{margin:8px 0;gap:10px}
+#ch06 .card,#ch06 .zone,#ch06 .labstep{padding:9px 11px}
+#ch06 .qz{margin:6px 0;padding:6px 9px}
+#ch06 .gl{margin:3px 0;padding:4px 8px}
+#ch06 .rowc{margin:7px 0}
+#ch07 h3.sec{margin:10px 0 6px}
+#ch07 .callout,#ch07 .cka{margin:7px 0;padding:8px 11px}
+#ch07 .term,#ch07 .mtree,#ch07 table.tb{margin:8px 0}
+#ch07 .term,#ch07 .mtree{padding:9px 12px}
+#ch07 p.lead{margin:0 0 7px}
+#ch07 .grid2,#ch07 .grid3{margin:8px 0;gap:10px}
+#ch07 .card,#ch07 .zone,#ch07 .labstep{padding:9px 11px}
+#ch07 .qz{margin:6px 0;padding:6px 9px}
+#ch07 .gl{margin:3px 0;padding:4px 8px}
+#ch07 .rowc{margin:7px 0}
+#ch08 h3.sec{margin:10px 0 6px}
+#ch08 .callout,#ch08 .cka{margin:7px 0;padding:8px 11px}
+#ch08 .term,#ch08 .mtree,#ch08 table.tb{margin:8px 0}
+#ch08 .term,#ch08 .mtree{padding:9px 12px}
+#ch08 p.lead{margin:0 0 7px}
+#ch08 .grid2,#ch08 .grid3{margin:8px 0;gap:10px}
+#ch08 .card,#ch08 .zone,#ch08 .labstep{padding:9px 11px}
+#ch08 .qz{margin:6px 0;padding:6px 9px}
+#ch08 .gl{margin:3px 0;padding:4px 8px}
+#ch08 .rowc{margin:7px 0}
+#ch10 h3.sec{margin:10px 0 6px}
+#ch10 .callout,#ch10 .cka{margin:7px 0;padding:8px 11px}
+#ch10 .term,#ch10 .mtree,#ch10 table.tb{margin:8px 0}
+#ch10 .term,#ch10 .mtree{padding:9px 12px}
+#ch10 p.lead{margin:0 0 7px}
+#ch10 .grid2,#ch10 .grid3{margin:8px 0;gap:10px}
+#ch10 .card,#ch10 .zone,#ch10 .labstep{padding:9px 11px}
+#ch10 .qz{margin:6px 0;padding:6px 9px}
+#ch10 .gl{margin:3px 0;padding:4px 8px}
+#ch10 .rowc{margin:7px 0}
+#lab1 h3.sec{margin:10px 0 6px}
+#lab1 .callout,#lab1 .cka{margin:7px 0;padding:8px 11px}
+#lab1 .term,#lab1 .mtree,#lab1 table.tb{margin:8px 0}
+#lab1 .term,#lab1 .mtree{padding:9px 12px}
+#lab1 p.lead{margin:0 0 7px}
+#lab1 .grid2,#lab1 .grid3{margin:8px 0;gap:10px}
+#lab1 .card,#lab1 .zone,#lab1 .labstep{padding:9px 11px}
+#lab1 .qz{margin:6px 0;padding:6px 9px}
+#lab1 .gl{margin:3px 0;padding:4px 8px}
+#lab1 .rowc{margin:7px 0}
+#lab3 h3.sec{margin:10px 0 6px}
+#lab3 .callout,#lab3 .cka{margin:7px 0;padding:8px 11px}
+#lab3 .term,#lab3 .mtree,#lab3 table.tb{margin:8px 0}
+#lab3 .term,#lab3 .mtree{padding:9px 12px}
+#lab3 p.lead{margin:0 0 7px}
+#lab3 .grid2,#lab3 .grid3{margin:8px 0;gap:10px}
+#lab3 .card,#lab3 .zone,#lab3 .labstep{padding:9px 11px}
+#lab3 .qz{margin:6px 0;padding:6px 9px}
+#lab3 .gl{margin:3px 0;padding:4px 8px}
+#lab3 .rowc{margin:7px 0}
+#cheat h3.sec{margin:10px 0 6px}
+#cheat .callout,#cheat .cka{margin:7px 0;padding:8px 11px}
+#cheat .term,#cheat .mtree,#cheat table.tb{margin:8px 0}
+#cheat .term,#cheat .mtree{padding:9px 12px}
+#cheat p.lead{margin:0 0 7px}
+#cheat .grid2,#cheat .grid3{margin:8px 0;gap:10px}
+#cheat .card,#cheat .zone,#cheat .labstep{padding:9px 11px}
+#cheat .qz{margin:6px 0;padding:6px 9px}
+#cheat .gl{margin:3px 0;padding:4px 8px}
+#cheat .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#ch07 p.small,#ch07 li{font-size:12.2px;line-height:1.42}
+#ch07 .callout,#ch07 .cka{font-size:12.2px;line-height:1.44}
+#ch07 .qz{font-size:11.3px;line-height:1.42}
+#ch07 .gl{font-size:10.8px;line-height:1.36}
+#ch07 .term{font-size:11.6px;line-height:1.55}
+#ch07 .mtree{font-size:11.8px;line-height:1.6}
+#ch07 table.tb{font-size:11.7px} #ch07 .tb td{padding:5px 8px}
+#ch10 p.small,#ch10 li{font-size:12.2px;line-height:1.42}
+#ch10 .callout,#ch10 .cka{font-size:12.2px;line-height:1.44}
+#ch10 .qz{font-size:11.3px;line-height:1.42}
+#ch10 .gl{font-size:10.8px;line-height:1.36}
+#ch10 .term{font-size:11.6px;line-height:1.55}
+#ch10 .mtree{font-size:11.8px;line-height:1.6}
+#ch10 table.tb{font-size:11.7px} #ch10 .tb td{padding:5px 8px}
+#lab3 p.small,#lab3 li{font-size:12.2px;line-height:1.42}
+#lab3 .callout,#lab3 .cka{font-size:12.2px;line-height:1.44}
+#lab3 .qz{font-size:11.3px;line-height:1.42}
+#lab3 .gl{font-size:10.8px;line-height:1.36}
+#lab3 .term{font-size:11.6px;line-height:1.55}
+#lab3 .mtree{font-size:11.8px;line-height:1.6}
+#lab3 table.tb{font-size:11.7px} #lab3 .tb td{padding:5px 8px}
+/* MICRO nudge for borderline pages (L2-insufficient, pre-split attempt) */
+#ch07 .callout,#ch07 .cka{margin:6px 0;padding:7px 10px}
+#ch07 .labstep{padding:7px 10px;margin:8px 0}
+#ch07 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch07 .tabbody{font-size:11px;padding:8px 11px}
+#ch07 .zone{padding:7px 9px}
+#ch07 .rowc{margin:5px 0;gap:7px}
+#ch07 .grid2,#ch07 .grid3{gap:8px}
+#ch07 .kchip{padding:4px 10px}
+#ch07 ul.tick li{padding:3px 0 3px 2px}
+#ch10 .callout,#ch10 .cka{margin:6px 0;padding:7px 10px}
+#ch10 .labstep{padding:7px 10px;margin:8px 0}
+#ch10 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch10 .tabbody{font-size:11px;padding:8px 11px}
+#ch10 .zone{padding:7px 9px}
+#ch10 .rowc{margin:5px 0;gap:7px}
+#ch10 .grid2,#ch10 .grid3{gap:8px}
+#ch10 .kchip{padding:4px 10px}
+#ch10 ul.tick li{padding:3px 0 3px 2px}
+/* MICRO-2 final nudge ch07/ch10 */
+#ch07 table.tb{margin:6px 0} #ch07 .tb td{padding:4px 8px}
+#ch07 .callout{margin:5px 0}
+#ch10 .grid2{margin:6px 0} #ch10 table.tb{margin:6px 0} #ch10 .callout{margin:5px 0}
+/* MICRO-3 ch10 feather */
+#ch10 p.small{margin:4px 0} #ch10 .grid2{margin:4px 0}
+#ch10 .card{padding:8px 10px} #ch10 .mtree{margin:6px 0}
+/* WIDTH-FIX wrap pre lines (horizontal chop) */
+#cheat .term{white-space:pre-wrap;overflow-wrap:anywhere}
+/* WIDTH-followup 5:cheat (wrap added height) */
+#cheat .term.mini{font-size:10.5px}
+#cheat .card{padding:8px 10px}
+#cheat .grid2{margin:6px 0;gap:8px}
+#cheat table.tb{margin:6px 0} #cheat .tb td{padding:4px 8px}
+#cheat ul.tick li{padding:3px 0 3px 2px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">💾</div>
+<h1>STORAGE<br>PERSISTENCE<br>FOR PODS</h1>
+<div class="sub">Book 05 of the series — giving data a life of its own: Volumes, the PV/PVC divorce of supply and demand, access modes decoded (RWO ≠ one Pod!), reclaim policies, StorageClasses &amp; dynamic provisioning, StatefulSet per-replica storage, and the CSI universal plug.</div>
+<div class="row">
+<div class="glass">💾 Volumes<small>pod attachments</small></div>
+<div class="glass">📦 PV<small>cluster supply</small></div>
+<div class="glass">📝 PVC<small>the request</small></div>
+<div class="glass">🔀 RWO·ROX·RWX<small>decoded</small></div>
+</div>
+<div class="row">
+<div class="glass">♻️ Reclaim<small>Retain · Delete</small></div>
+<div class="glass">🏭 StorageClass<small>build on demand</small></div>
+<div class="glass">🪪 StatefulSet<small>storage per replica</small></div>
+<div class="glass">🔌 CSI<small>universal plug</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 05 · CONTINUES BOOKS 01–04 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">7 parts · 20 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · The Persistence Problem</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>Why Storage Is Different<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>Volumes — The Pod's Attachments<span class="dots"></span><span class="tp">p.4</span></a>
+<div class="tocpart">Part II · PV &amp; PVC</div>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>PV &amp; PVC — Supply Meets Demand<span class="dots"></span><span class="tp">p.5</span></a>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>The Binding Process<span class="dots"></span><span class="tp">p.6</span></a>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Access Modes — RWO·ROX·RWX Decoded<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Reclaim Policies &amp; the PV Lifecycle<span class="dots"></span><span class="tp">p.8</span></a>
+<div class="tocpart">Part III · Dynamic Provisioning</div>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>StorageClasses — Build on Demand<span class="dots"></span><span class="tp">p.9</span></a>
+<a class="tocrow" href="#ch07b"><span class="cb"></span><span class="tnum">CH 07·b</span>StorageClasses (cont.)<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>Class Tuning — Binding Modes &amp; Expansion<span class="dots"></span><span class="tp">p.10</span></a>
+<div class="tocpart">Part IV · Stateful Storage</div>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>StatefulSets — Why Identity Matters<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>volumeClaimTemplates — Storage Per Replica<span class="dots"></span><span class="tp">p.12</span></a>
+<div class="tocpart">Part V · Under the Hood</div>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>CSI — The Universal Plug<span class="dots"></span><span class="tp">p.13</span></a>
+<div class="tocpart">Part VI · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>Manual PV ↔ PVC Binding<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Dynamic Provisioning + Reclaim Proof<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>StatefulSet — Identity &amp; Per-Replica Data<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#lab3b"><span class="cb"></span><span class="tnum">LAB 3·b</span>StatefulSet (cont.)<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>The Data-Survival Gauntlet<span class="dots"></span><span class="tp">p.17</span></a>
+<div class="tocpart">Part VII · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.21</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 06<span class="dots"></span><span class="tp">p.22</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–04.</b> Book 01 · CH 11 already told you PVs are <b>cluster-scoped</b> — now you'll see why. Book 04 · CH 10's <code>--delete-emptydir-data</code> flag was this book knocking: <i>emptyDir dies with the Pod, and drain makes you choose</i>. Book 02's Secrets return as CSI credentials (CH 11).</div></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">🕳️ Why Storage Is Different</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">Everything so far assumed Pods are expendable — and their <b>filesystem is too</b>. A container's writable layer is built fresh from the image every time the container is replaced. Data written "inside the container" has a death wish.</p>
+<div class="zone" style="border-color:#fca5a5;background:rgba(254,242,242,.6);">
+<div class="zlabel">The three lives of data — how long does it survive?</div>
+<div class="mtree">1 · <b>Container writable layer</b>   <span class="r">dies with the CONTAINER</span>
+    <span class="g">crash → kubelet restarts → fresh layer → your writes GONE</span>
+2 · <b>emptyDir volume</b>              <span class="y">dies with the POD</span>
+    <span class="g">survives container restarts — deleted when the Pod leaves the node</span>
+3 · <b>PersistentVolumes</b>             <span class="p">outlives EVERYTHING</span>
+    <span class="g">pods, nodes, even the cluster's opinion — data remains</span></div>
+</div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">❌ Fine without persistence</div>
+<ul class="tick" style="margin:0;"><li>Stateless APIs (state lives in a DB <i>elsewhere</i>)</li><li>Static sites, proxies, workers</li><li>Scratch space, temp files (emptyDir!)</li></ul></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">💀 Dies without persistence</div>
+<ul class="tick" style="margin:0;"><li>Databases (MySQL, Postgres — Book 01's YAML wrote nothing durable!)</li><li>User uploads, sessions</li><li>Message queues, ML models, indexes</li></ul></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Book 04 foreshadowed this:</b> <code>drain --delete-emptydir-data</code> exists precisely because emptyDir data dies with the Pod — drain makes you <i>admit</i> it. And Book 01's MySQL lab ran on the container layer: that database was one crash away from amnesia.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Kubernetes treats Pods as cattle — so anything that must <b>outlive a Pod</b> needs to live <i>outside</i> the container layer, declared as a Volume at minimum and a PersistentVolume at best. This book is the ladder from scratch space to real persistence.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Step one of the ladder — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: Volumes — The Pod's Attachments</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">🎒 Volumes — The Pod's Attachments</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A Volume is a <b>directory, declared at Pod level, mounted into containers</b>. It outlives the containers in the Pod — but its lifespan depends on its <b>type</b>.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: app
+    <span class="c">image</span>: myapp:2.0
+    <span class="c">volumeMounts</span>:
+    - { <span class="c">name</span>: scratch, <span class="c">mountPath</span>: <span class="m">/tmp/cache</span> }
+  <span class="c">volumes</span>:                      <span class="g"># declared at POD level — shared by containers</span>
+  - <span class="c">name</span>: scratch
+    <span class="c">emptyDir</span>: {}</div>
+<table class="tb">
+<tr><th>Type</th><th>Backing</th><th>Lifespan</th><th>Use for</th></tr>
+<tr><td><code>emptyDir</code></td><td>node disk / RAM (<code>medium: Memory</code>)</td><td>Pod's life</td><td>scratch, multi-container share, checkpointing</td></tr>
+<tr><td><code>hostPath</code></td><td>a path <b>on the node</b></td><td>survives the Pod — <b>tied to the node</b></td><td>⚠️ node agents, privileged daemons only</td></tr>
+<tr><td><code>configMap</code> / <code>secret</code></td><td>API objects (Book 02 · CH 02/06)</td><td>Pod's life, kubelet-synced</td><td>config &amp; credentials as files</td></tr>
+<tr><td><code>nfs</code></td><td>an NFS share</td><td>independent of Pod</td><td>shared file storage</td></tr>
+<tr><td><code>persistentVolumeClaim</code></td><td>a PV via binding</td><td><b>independent</b> — the star ⭐</td><td>real persistence (Part II)</td></tr>
+<tr><td><code>csi</code></td><td>any CSI driver (CH 11)</td><td>driver-defined</td><td>ephemeral CSI volumes</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>hostPath is a loaded weapon:</b> it hard-couples your Pod to <i>a specific path on whatever node it lands on</i> — rescheduling to another node = "where did my data go?" It can also read <b>any path on the node</b> (including <code>/</code>) — a container-escape classic. Legit uses: kubelet-adjacent daemons (log shippers, CNI). Everything else: use a PVC.</div></div>
+<ul class="tick">
+<li>🤝 <b>Shared fate, shared files:</b> two containers in one Pod mounting the same Volume = the Book 01 · CH 19 sidecar pattern's backbone (the log-shipper read the app's file from one)</li>
+<li>📏 <code>emptyDir.sizeLimit</code> caps growth — beyond it, eviction (kubelet treats it like disk pressure)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a Volume is a <b>Pod-scoped directory</b> whose <i>backing</i> (and lifespan) is chosen by its type — from RAM-speed scratch (emptyDir) to node-coupled files (hostPath) to the fully independent PVC, which is where the rest of this book lives.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The star of the ladder — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: PV &amp; PVC — Supply Meets Demand</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">🤝 PV &amp; PVC — Supply Meets Demand</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The genius of Kubernetes storage is a <b>divorce of concerns</b>: the people who <i>provision</i> storage (ops, storage admins) and the people who <i>consume</i> it (developers) never talk to each other. They meet through two objects.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #c4b5fd;">
+<div class="zlabel" style="text-align:left;">📦 PersistentVolume — the SUPPLY</div>
+<div class="term mini"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: PersistentVolume
+<span class="c">metadata</span>: { <span class="c">name</span>: pv-warehouse-1 }
+<span class="c">spec</span>:
+  <span class="c">capacity</span>:
+    <span class="c">storage</span>: <span class="y">5Gi</span>
+  <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+  <span class="c">persistentVolumeReclaimPolicy</span>: <span class="y">Retain</span>
+  <span class="c">hostPath</span>: { <span class="c">path</span>: <span class="m">/data/pv1</span> }</div>
+<p class="small" style="margin:6px 0 0;"><b>Cluster-scoped</b> (Book 01 · CH 11 promised!). Real storage: NFS, cloud disk, hostPath. No namespace, owned by admins.</p></div>
+<div class="card" style="border-top:3.5px solid #34d399;">
+<div class="zlabel" style="text-align:left;">📝 PersistentVolumeClaim — the DEMAND</div>
+<div class="term mini"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: PersistentVolumeClaim
+<span class="c">metadata</span>: { <span class="c">name</span>: db-data, <span class="c">namespace</span>: shop }
+<span class="c">spec</span>:
+  <span class="c">resources</span>:
+    <span class="c">requests</span>:
+      <span class="c">storage</span>: <span class="y">3Gi</span>
+  <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+  <span class="c">storageClassName</span>: <span class="m">""</span>   <span class="g"># "" = manual binding only (CH 07)</span></div>
+<p class="small" style="margin:6px 0 0;"><b>Namespaced</b>. Not storage — a <i>wish</i>: "I need 3Gi, RWO." The developer's entire vocabulary of storage.</p></div>
+</div>
+<div class="zone zone-store" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">The meeting — binding turns two wishes into a contract</div>
+<div class="rowc">
+<div class="nb c-slate" style="min-width:130px;">👷 Ops<small>provisions PVs</small></div>
+<span class="harr">──►</span>
+<div class="nb c-violet" style="min-width:110px;">📦 PV<small>cluster supply</small></div>
+<span class="harr">⇄</span>
+<div class="nb c-emerald" style="min-width:110px;">📝 PVC<small>ns: shop</small></div>
+<span class="harr">◄──</span>
+<div class="nb c-slate" style="min-width:130px;">👩‍💻 Dev<small>writes a claim</small></div>
+</div>
+<p class="dnote">PVC bound → Pods mount the <i>claim</i>, never the volume: <code>volumes: [{name: data, persistentVolumeClaim: {claimName: db-data}}]</code></p>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The apartment analogy, upgraded:</b> the PV is the <b>warehouse in the building's basement</b> (building-wide, managed by the landlord). The PVC is your <b>lease application</b> ("3Gi storage, I need to write to it"). You never touch the warehouse — you mount your <i>lease</i>.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <i>PV = cluster-scoped real storage (supply) · PVC = namespaced request (demand) · binding = the matchmaking</i> — and Pods only ever reference the PVC, keeping consumers and infrastructure permanently decoupled.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ How the matchmaker works — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: The Binding Process</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🔗 The Binding Process</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A controller (the <b>PV controller</b>, inside kube-controller-manager) continuously matches Pending claims to Available volumes. Four checks, all must pass:</p>
+<div class="zone zone-cp" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">The matcher's four questions</div>
+<div class="rowc">
+<div class="kchip">1 · Capacity<small>&nbsp;PV ≥ request?</small></div>
+<div class="kchip">2 · Access modes<small>&nbsp;PV ⊇ requested?</small></div>
+<div class="kchip">3 · storageClassName<small>&nbsp;exact match?</small></div>
+<div class="kchip">4 · selector<small>&nbsp;labels match?</small></div>
+</div>
+<p class="dnote">smallest PV that fits wins · binding is 1:1 — a bound PV is spoken for</p>
+</div>
+<table class="tb">
+<tr><th>Check</th><th>Rule</th><th>Gotcha</th></tr>
+<tr><td><b>Capacity</b></td><td>PV's <code>storage</code> ≥ PVC's request</td><td>you get the <i>whole</i> PV, not a slice — a 3Gi claim on a 5Gi PV wastes 2Gi</td></tr>
+<tr><td><b>Access modes</b></td><td>PV offers <i>at least</i> what the claim asks</td><td>claim <code>[RWO]</code> can bind a PV offering <code>[RWO, RWX]</code></td></tr>
+<tr><td><b>StorageClass</b></td><td><b>exact string match</b> — including <code>""</code></td><td>claim with <code>className: ""</code> binds <i>only</i> PVs also stamped <code>""</code>; a claim with <i>no</i> field uses the default class (CH 07)</td></tr>
+<tr><td><b>Selector</b></td><td>claim's <code>selector.matchLabels</code> ⊆ PV labels</td><td>ops tags PVs (<code>tier: gold</code>), devs target the tag</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubectl get pvc db-data
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;VOLUME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CAPACITY&nbsp;&nbsp;ACCESS MODES</span>
+db-data&nbsp;&nbsp;<span class="r">Pending</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># nobody fits — check the 4 questions</span>
+db-data&nbsp;&nbsp;<span class="p">Bound</span>&nbsp;&nbsp;&nbsp;&nbsp;pv-warehouse-1&nbsp;&nbsp;5Gi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RWO</div>
+<ul class="tick">
+<li>🎯 <b>Pre-binding:</b> a PV can name its soulmate in <code>spec.claimRef</code> — skips the matchmaking entirely (migrations, DR drills)</li>
+<li>🔒 <b>Binding is exclusive:</b> one PV ↔ one PVC, period. Sharing storage between Pods happens <i>through the same claim</i>, not through multiple bindings</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Pending PVC triage:</b> 90% of stuck claims are the <b>storageClassName mismatch</b> — claim says <code>""</code> but only classed PVs exist, or vice versa. The other 10%: capacity too small, access-mode subset missing, or selector pointing at labels nobody has.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> binding = <i>capacity ≥, modes ⊇, class ==, labels match — smallest fitting PV wins, exactly one claim per PV</i>. Every Pending PVC is one of those four questions answered wrong.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The matching criterion with the most lies attached — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: Access Modes Decoded</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🔀 Access Modes — RWO·ROX·RWX Decoded</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The names are honest about read/write but <b>lying about the unit</b>. The unit is <b>NODES</b>, not Pods — and that one fact explains half of all storage tickets.</p>
+<table class="tb">
+<tr><th>Mode</th><th>Name says</th><th><b>Really means</b></th><th>Typical backing</th></tr>
+<tr><td><code>ReadWriteOnce</code></td><td>one writer</td><td>read-write mounted by <b>ONE NODE</b></td><td>cloud block disks: EBS, PD, Azure Disk</td></tr>
+<tr><td><code>ReadOnlyMany</code></td><td>many readers</td><td>read-only on <b>MANY nodes</b></td><td>NFS, EFS (ro), pre-staged datasets</td></tr>
+<tr><td><code>ReadWriteMany</code></td><td>shared write</td><td>read-write on <b>MANY nodes</b></td><td>NFS, EFS, Azure Files, CephFS</td></tr>
+<tr><td><code>ReadWriteOncePod</code> <span class="stbadge st-comp">newer</span></td><td>one writer</td><td>read-write by <b>ONE POD</b> — truly exclusive (GA 1.29)</td><td>block disks, with the strictest semantics</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The interview trap:</b> <b>RWO ≠ one Pod.</b> It's one <i>node</i> — so <b>three Pods on the same node can all mount one RWO volume simultaneously</b>, while the same three Pods spread across three nodes cannot. When your scaled Deployment mysteriously wedges, this is why: replicas scattered across nodes fight over one RWO claim.</div></div>
+<div class="zone zone-store" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">Multi-Attach — the classic failure</div>
+<div class="term mini"><span class="p">$</span> kubectl describe pod db-2 | tail -2
+&nbsp;&nbsp;<span class="y">Events:</span>
+<span class="r">&nbsp;&nbsp;Multi-Attach error for volume "pvc-abc":
+&nbsp;&nbsp;Volume is already exclusively attached to one node
+&nbsp;&nbsp;and can't be attached to another</span>
+<span class="g"># Pod B (other node) wants the RWO volume Pod A's node holds.
+# The volume driver physically can't attach a block disk twice.</span></div>
+</div>
+<ul class="tick">
+<li>🧱 <b>Block storage = RWO-only:</b> a cloud disk plugs into one machine — RWX demands a <i>shared filesystem</i> (NFS/EFS/Ceph) or an in-cluster one (NFS provisioner, Longhorn, EFS CSI)</li>
+<li>🔍 <b>Check reality, not hopes:</b> <code>kubectl get pv</code> shows the PV's ACCESS MODES — a claim asking RWX will sit <b>Pending forever</b> against an RWO-only fleet</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> access modes are promises about <b>node-level attach</b> — RWO = one node (not one Pod!), RWX = needs genuinely shared backing — and <code>Multi-Attach error</code> in events is the sound of a block disk refusing to be in two places at once.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ What happens when the love ends — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: Reclaim Policies</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">♻️ Reclaim Policies &amp; the PV Lifecycle</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A PV has a whole life <i>after</i> its claim dies. The <b>reclaim policy</b> decides what that afterlife looks like — and whether your data survives it.</p>
+<div class="mtree"><b>Available</b> <span class="g">→</span> <b>Bound</b> <span class="g">→ PVC deleted →</span> <b>Released</b> <span class="g">→ policy decides →</span>
+      │                                              │
+<span class="u">Retain:</span>  stays <b>Released</b> forever — data intact, <span class="y">ADMIN must intervene</span>
+<span class="u">Delete:</span>  PV object + <b>backing storage</b> both destroyed  <span class="g">← dynamic default</span>
+<span class="u">Recycle:</span> <s>scrub &amp; re-offer</s> — <b>REMOVED</b> from the API (dynamic provisioning replaced it)</div>
+<table class="tb">
+<tr><th>Policy</th><th>PVC deleted →</th><th>Data</th><th>Use when</th></tr>
+<tr><td><span class="stbadge st-comp">Retain</span></td><td>PV → <b>Released</b>, never auto-reused</td><td><span class="ok">kept</span> — hostage until an admin acts</td><td>databases, anything you'd cry over</td></tr>
+<tr><td><span class="stbadge st-run">Delete</span></td><td>PV + cloud disk <b>annihilated</b></td><td><span class="bad">gone</span></td><td>truly ephemeral state, CI scratch</td></tr>
+</table>
+<div class="term mini"><span class="g"># the Released hostage situation — and the escape:</span>
+<span class="p">$</span> kubectl get pv
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;CAPACITY&nbsp;&nbsp;CLAIM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECLAIM&nbsp;&nbsp;STATUS</span>
+pv-db&nbsp;&nbsp;&nbsp;5Gi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shop/db-data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retain&nbsp;&nbsp;&nbsp;<span class="r">Released</span>
+<span class="g"># reuse it manually: clear the claimRef → back to Available
+# (data intact! next binding re-attaches the same disk)</span>
+<span class="p">$</span> kubectl patch pv pv-db <span class="y">-p</span> <span class="m">'{"spec":{"claimRef": null}}'</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Two honest warnings:</b> (1) the <b>pvc-protection finalizer</b> — a PVC in use by a Pod shows <span class="stbadge st-term">Terminating</span> indefinitely; Kubernetes refuses to yank storage from a running Pod. (2) <b>Default is Delete for dynamic volumes</b> — an innocent <code>kubectl delete pvc</code> on a Delete-class volume is a production data-loss event. Patch the PV (or the class, CH 08) to <code>Retain</code> for anything real.</div></div>
+<ul class="tick">
+<li>🔁 <b>Released ≠ Available:</b> Released PVs are NOT re-matchable — that's the point of Retain (no accidental rebinding of dirty state)</li>
+<li>🧾 <b>Audit trick:</b> <code>kubectl get pv -o custom-columns=NAME:.metadata.name,POLICY:.spec.persistentVolumeReclaimPolicy,STATUS:.status.phase</code> — one glance, whole estate</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the PV lifecycle is <i>Available → Bound → Released → {Retain: wait for admin | Delete: erase everything}</i> — and the difference between "I deleted a claim" and "I deleted the company's data" is one policy field.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ What if you never write a PV at all? — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: StorageClasses</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🏭 StorageClasses — Build on Demand</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Writing PVs by hand doesn't scale — it's the landlord hand-building a warehouse per lease. A <b>StorageClass</b> is the <b>construction company</b>: PVCs name it, and it builds the warehouse automatically.</p>
+<div class="term"><span class="c">apiVersion</span>: storage.k8s.io/v1
+<span class="c">kind</span>: StorageClass
+<span class="c">metadata</span>:
+  <span class="c">name</span>: fast
+  <span class="c">annotations</span>:
+    <span class="y">storageclass.kubernetes.io/is-default-class</span>: <span class="m">"true"</span>  <span class="g"># THE default</span>
+<span class="c">provisioner</span>: <span class="m">ebs.csi.aws.com</span>      <span class="g"># WHO builds (CSI driver — CH 11)</span>
+<span class="c">parameters</span>:                        <span class="g"># the build spec, vendor-specific</span>
+  <span class="c">type</span>: <span class="m">gp3</span>
+  <span class="c">encrypted</span>: <span class="m">"true"</span>
+<span class="c">reclaimPolicy</span>: <span class="y">Delete</span>             <span class="g"># default for dynamic volumes</span>
+<span class="c">allowVolumeExpansion</span>: <span class="y">true</span>        <span class="g"># grow later (CH 08)</span>
+<span class="c">volumeBindingMode</span>: <span class="y">WaitForFirstConsumer</span>  <span class="g"># smart timing (CH 08)</span></div>
+<div class="zone zone-store" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">Dynamic provisioning — the whole dance, automated</div>
+<div class="rowc">
+<div class="kchip">📝 PVC<small>className: fast</small></div><span class="harr">──►</span>
+<div class="nb c-violet" style="min-width:120px;">🏭 SC<small>"fast"</small></div><span class="harr">──►</span>
+<div class="nb c-indigo" style="min-width:140px;">🔌 Provisioner<small>CSI driver</small></div>
+</div>
+<div class="dn">▼ builds real storage (EBS volume etc.)</div>
+<div class="rowc">
+<div class="nb c-slate" style="min-width:150px;">📦 PV auto-created<small>cap · modes · policy</small></div><span class="harr">──►</span>
+<div class="nb c-emerald" style="min-width:110px;">📝 PVC<small>Bound ✓</small></div><span class="harr">──►</span>
+<div class="pod">🫛 Pod mounts it</div>
+</div>
+<p class="dnote">zero PVs hand-written · the SC name in the claim is the only thing a developer must know</p>
+</div>
+<table class="tb">
+<tr><th>PVC's storageClassName</th><th>Result</th></tr>
+<tr><td>names a class (<code>fast</code>)</td><td>dynamic provisioning <b>from that class</b> — manual PVs of the same name are bypassed unless matching perfectly</td></tr>
+<tr><td><i>field omitted</i> + a default class exists</td><td>uses the <b>default class</b> — <code>standard</code> on minikube/kind</td></tr>
+<tr><td><i>field omitted</i> + <b>no</b> default</td><td>old-school manual binding only — usually <span class="bad">Pending forever</span></td></tr>
+<tr><td><code>""</code> (empty string)</td><td><b>explicitly opts OUT</b> of dynamic — manual PVs only (CH 04's matcher)</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Classes are also a menu:</b> <code>fast</code> (NVMe), <code>cheap</code> (HDD), <code>shared</code> (NFS/RWX) — the same cluster offers different storage <i>tiers</i>, and the developer picks by writing one name. Multi-cloud? One class per backend, one field per claim.</div></div>
+
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- CH07 continued -->
+<div class="page" id="ch07b"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🏭 StorageClasses — continued</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a StorageClass is a <b>named recipe — provisioner + parameters + policy — that builds PVs on demand</b>; claims name the recipe, the default class catches the lazy, and <code>""</code> is the explicit "I brought my own warehouse."</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The two settings that separate toy classes from production ones — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: Class Tuning</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">⚙️ Class Tuning — Binding Modes &amp; Expansion</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<h3 class="sec">⏱️ volumeBindingMode — WHEN to bind</h3>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #f59e0b;">
+<div class="zlabel" style="text-align:left;">Immediate (default)</div>
+<p class="small" style="margin:0;">Bind the instant the PVC exists — <b>before any Pod exists</b>. Simple, but with zoned storage the disk may be born in <b>zone A while your Pod later schedules to zone C</b> → attach impossible → Pod wedged.</p>
+<div class="term mini"><span class="r">0/1 nodes available:
+volume node affinity conflict</span>&nbsp;<span class="g"># ← this error = bound to the wrong zone</span></div></div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">WaitForFirstConsumer ✅</div>
+<p class="small" style="margin:0;">The PVC waits in <span class="stbadge st-pend">Pending</span> until a <b>Pod that uses it is scheduled</b> — then provisions the disk <b>in the Pod's zone</b>. Topology-correct by construction. Production default for zoned clouds.</p>
+<div class="term mini"><span class="g"># PVC waits… pod schedules to zone-c…
+# disk born IN zone-c — attach just works</span></div></div>
+</div>
+<h3 class="sec">📈 allowVolumeExpansion — grow, never shrink</h3>
+<div class="term mini"><span class="c"># class must allow it (CH 07)… then just edit the claim:</span>
+<span class="p">$</span> kubectl patch pvc db-data <span class="y">-p</span> <span class="m">'{"spec":{"resources":{"requests":{"storage":"10Gi"}}}}'</span>
+<span class="p">$</span> kubectl get pvc db-data
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CAPACITY&nbsp;&nbsp;STATUS</span>
+db-data&nbsp;&nbsp;10Gi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Bound</span>&nbsp;&nbsp;<span class="g"># filesystem resized online (most drivers)</span>
+<span class="g"># SHRINKING IS IMPOSSIBLE — storage can only ever grow. plan headroom.</span></div>
+<table class="tb">
+<tr><th>Setting</th><th>Recommended</th><th>Why</th></tr>
+<tr><td><code>volumeBindingMode</code></td><td><b>WaitForFirstConsumer</b> (zoned clouds)</td><td>disk and Pod land in the same zone, always</td></tr>
+<tr><td><code>allowVolumeExpansion</code></td><td><b>true</b></td><td>DBs outgrow their bids; growing online beats migrating</td></tr>
+<tr><td><code>reclaimPolicy</code></td><td><b>Retain</b> for real data classes</td><td>CH 06: default Delete is a loaded foot-gun</td></tr>
+<tr><td><code>parameters</code></td><td>vendor-specific (<code>type: gp3</code>…)</td><td>the tier definition itself</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Debugging zoned wedges:</b> the PV inherits the zone as a <b>nodeAffinity</b> (<code>kubectl describe pv</code> → <code>Node Affinity</code> section) — the Scheduler literally cannot place Pods elsewhere. Wrong-zone = delete PVC + Pod, recreate with WaitForFirstConsumer. (Topologies from Book 04 · CH 08 pay off here.)</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> production classes set <b>WaitForFirstConsumer</b> (zone-correct disks), <b>allowVolumeExpansion: true</b> (grow-only flexibility), and <b>Retain</b> for anything with a pulse — Immediate binding on zoned storage is how disks get born in the wrong ZIP code.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Now the workload that truly needs all this — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: StatefulSets</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🪪 StatefulSets — Why Identity Matters</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A Deployment's Pods are <b>interchangeable cattle</b> — random names, any replica can serve any request. Databases are <b>not cattle</b>: replica 0 is the primary, replica 1 is its follower, and each owns <i>its own</i> data. Enter the StatefulSet.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #94a3b8;">
+<div class="zlabel" style="text-align:left;">🐄 Deployment identity</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">web-<em>7d9f-x7k2p</em>  <span class="g">random</span>
+web-<em>7d9f-bbbba</em>  <span class="g">random</span>
+<span class="g">die → replaced by NEW random names
+any pod can serve anything
+no "which one owns the data?"</span></div></div>
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">🐕 StatefulSet identity</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">db-<b>0</b>  <span class="g">PRIMARY — born first</span>
+db-<b>1</b>  <span class="g">follower — waits for 0</span>
+db-<b>2</b>  <span class="g">follower — waits for 1</span>
+<span class="g">die → RESURRECTED WITH THE SAME NAME
++ same storage (CH 10) + same DNS</span></div></div>
+</div>
+<h3 class="sec">📮 The headless service — per-Pod DNS</h3>
+<div class="term mini"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Service
+<span class="c">metadata</span>: { <span class="c">name</span>: db }
+<span class="c">spec</span>:
+  <span class="c">clusterIP</span>: <span class="y">None</span>            <span class="g"># HEADLESS — no VIP, no balancing</span>
+  <span class="c">selector</span>: { <span class="c">app</span>: db }
+  <span class="c">ports</span>: [{ <span class="c">port</span>: <span class="y">5432</span> }]
+<span class="g"># instead of one VIP, DNS returns EACH POD's address:</span>
+<span class="g">#   db-0.db.shop.svc.cluster.local → db-0's IP  (the primary!)</span>
+<span class="g">#   followers find the primary BY NAME — no IPs in any config</span></div>
+<ul class="tick">
+<li>🔢 <b>Ordered by default:</b> 0 → Ready → then 1 → Ready → then 2; deletion runs in reverse (2 → 1 → 0). The bootstrap sequence a database needs, built in</li>
+<li>🏷️ <b>Name = contract:</b> replication configs say "follow <code>db-0</code>" — and it's true forever, across rescheduling and crashes</li>
+</ul>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Scope note:</b> this chapter covers identity + storage — the <i>reason</i> StatefulSets exist for data. The full lifecycle (rolling updates, <code>partition</code> canaries, OnDelete) is Book 06's territory.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> StatefulSets give each replica a <b>stable name, stable DNS, and ordered startup</b> — the preconditions for "replica 0 owns the data" to mean anything; next chapter attaches the storage that makes the promise complete.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The storage half of the contract — <a href="#ch10" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 10: volumeClaimTemplates</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🗄️ volumeClaimTemplates — Storage Per Replica</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The StatefulSet's killer storage feature: instead of one shared claim, you embed a <b>template</b> — and each replica gets its <b>own PVC stamped from it</b>, named after the Pod it belongs to.</p>
+<div class="term"><span class="c">apiVersion</span>: apps/v1
+<span class="c">kind</span>: StatefulSet
+<span class="c">metadata</span>: { <span class="c">name</span>: db }
+<span class="c">spec</span>:
+  <span class="c">serviceName</span>: db               <span class="g"># the headless service (CH 09)</span>
+  <span class="c">replicas</span>: <span class="y">3</span>
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: db } }
+  <span class="c">template</span>:                      <span class="g"># the pod stamp</span>
+    <span class="c">metadata</span>: { <span class="c">labels</span>: { <span class="c">app</span>: db } }
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - <span class="c">name</span>: db
+        <span class="c">image</span>: postgres:16
+        <span class="c">volumeMounts</span>:
+        - { <span class="c">name</span>: data, <span class="c">mountPath</span>: <span class="m">/var/lib/postgresql/data</span> }
+  <span class="c">volumeClaimTemplates</span>:          <span class="g"># ★ THE COOKIE CUTTER FOR CLAIMS</span>
+  - <span class="c">metadata</span>: { <span class="c">name</span>: data }
+    <span class="c">spec</span>:
+      <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+      <span class="c">resources</span>: { <span class="c">requests</span>: { <span class="c">storage</span>: <span class="y">10Gi</span> } }
+      <span class="c">storageClassName</span>: fast</div>
+<div class="mtree" style="font-size:12px;"><b>StatefulSet db (replicas: 3)</b>
+├── pod <u>db-0</u>  ⇄ PVC <u>data-db-0</u> ⇄ PV (own disk)
+├── pod <u>db-1</u>  ⇄ PVC <u>data-db-1</u> ⇄ PV (own disk)
+└── pod <u>db-2</u>  ⇄ PVC <u>data-db-2</u> ⇄ PV (own disk)
+<span class="g">naming law:  &lt;template-name&gt;-&lt;statefulset&gt;-&lt;ordinal&gt;</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Scale UP → claims born</div>
+<p class="small" style="margin:0;">3 → 4 replicas: <code>data-db-3</code> dynamically provisioned (CH 07!), mounted by <code>db-3</code>. Fresh disk, zero setup.</p></div>
+<div class="card" style="border-top:3.5px solid #f59e0b;"><div class="zlabel" style="text-align:left;">⚠️ Scale DOWN → claims RETAINED</div>
+<p class="small" style="margin:0;">4 → 2: Pods <code>db-3</code>, <code>db-2</code> die — but <b>their PVCs stay</b> (data-safety by design). Scale back up and the same replicas <b>reunite with their old disks</b>.</p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Deleting the StatefulSet deletes NOTHING storage-wise</b> — every <code>data-db-N</code> survives (Retain-like behavior, baked in). Cleanup is manual: <code>kubectl delete pvc data-db-0 data-db-1 …</code> This is the storage counterpart of Book 01's cascade lesson — <i>some deletes cascade (namespaces), some deliberately don't (STS claims)</i>.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <code>volumeClaimTemplates</code> = <b>one PVC per replica, named for its Pod, born on scale-up, kept on scale-down</b> — the mechanism that lets <code>db-0</code> mean "the primary <i>and its exact disk</i>" forever.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Who builds the disks behind it all — <a href="#ch11" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 11: CSI</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">🔌 CSI — The Universal Plug</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">Every provisioner you've met (<code>ebs.csi.aws.com</code>, minikube's <code>hostpath</code>, Ceph…) speaks <b>CSI — the Container Storage Interface</b>: a vendor-neutral gRPC contract that lets <i>any</i> storage backend plug into <i>any</i> Kubernetes.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">🏺 Before CSI (in-tree era)</div>
+<ul class="tick" style="margin:0;"><li>Driver code lived <b>inside the k8s source tree</b></li><li>Vendors begged SIGs for inclusion; releases tied to k8s cycles</li><li>k8s shipped hundreds of drivers it couldn't all test</li></ul></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">🔌 After CSI</div>
+<ul class="tick" style="margin:0;"><li>Drivers are <b>containers you install</b> (Helm charts)</li><li>Vendors release on <b>their</b> schedule, any k8s version</li><li>In-tree drivers: <b>frozen &amp; deprecated</b> — CSI is the only growth path</li></ul></div>
+</div>
+<div class="mtree" style="font-size:12px;"><b>Pod</b> ⇄ <u>PVC</u> ⇄ <u>StorageClass.provisioner</u> = <b>"ebs.csi.aws.com"</b>
+        │
+        ▼
+<b>CSI driver</b> — two halves, both just Pods:
+├── <u>Controller plugin</u> <span class="g">(Deployment)</span> — CreateVolume, DeleteVolume, Expand
+└── <u>Node plugin</u>      <span class="g">(DaemonSet — one per node, Book 04 CH 10 skips these!)</span>
+     └── NodeStageVolume / NodePublishVolume → the disk appears at the mountPath</div>
+<ul class="tick">
+<li>🔐 <b>Credentials, of course, are Secrets</b> (Book 02 · CH 05–06): the driver's chart consumes a Secret holding cloud API keys / backend tokens</li>
+<li>🧩 <b>volumeMode:</b> <code>Filesystem</code> (default — a formatted dir) vs <code>Block</code> (raw device handed to the Pod — databases that manage their own formatting love it)</li>
+<li>🌍 Examples in the wild: <code>ebs.csi.aws.com</code> · <code>pd.csi.storage.gke.io</code> · <code>disk.csi.azure.com</code> · <code>rbd.csi.ceph.com</code> · <code>driver.longhorn.io</code></li>
+</ul>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Reading a class like a pro:</b> the <code>provisioner</code> field is a CSI driver identity. If a class says <code>kubernetes.io/aws-ebs</code> (old in-tree name) on a modern cluster — that's a legacy class on migration watch.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> CSI is the <b>USB standard of storage</b> — a stable plug spec that turned storage drivers from kernel-adjacent k8s features into ordinary installable containers, which is why every class you'll ever write ends in a <code>…csi…</code> provisioner.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Prove all of it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part VI: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Manual PV ↔ PVC Binding</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Provision supply by hand</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: PersistentVolume
+<span class="c">metadata</span>: { <span class="c">name</span>: pv-manual-1, <span class="c">labels</span>: { <span class="c">tier</span>: lab } }
+<span class="c">spec</span>:
+  <span class="c">capacity</span>: { <span class="c">storage</span>: <span class="y">1Gi</span> }
+  <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+  <span class="c">persistentVolumeReclaimPolicy</span>: <span class="y">Retain</span>
+  <span class="c">storageClassName</span>: <span class="m">""</span>
+  <span class="c">hostPath</span>: { <span class="c">path</span>: <span class="m">/data/pv-manual-1</span>, <span class="c">type</span>: <span class="y">DirectoryOrCreate</span> }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get pv pv-manual-1&nbsp;&nbsp;<span class="g"># STATUS: Available (2 of the 4 checks pre-passed)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Demand + consume</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: PersistentVolumeClaim
+<span class="c">metadata</span>: { <span class="c">name</span>: lab-claim }
+<span class="c">spec</span>:
+  <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+  <span class="c">resources</span>: { <span class="c">requests</span>: { <span class="c">storage</span>: <span class="y">500Mi</span> } }
+  <span class="c">storageClassName</span>: <span class="m">""</span>          <span class="g"># match the PV's "" — CH 04 rule 3</span>
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">tier</span>: lab } }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get pvc lab-claim&nbsp;&nbsp;&nbsp;<span class="g"># Bound → pv-manual-1 (smallest fitting PV)</span>
+<span class="p">$</span> kubectl run writer --image=busybox:1.36 --restart=Never --rm -it \
+&nbsp;&nbsp;--overrides=<span class="m">'{"spec":{"containers":[{"name":"w","image":"busybox:1.36",
+  "command":["sh","-c","echo persistent rocks &gt; /data/hello.txt; sleep 5"],
+  "volumeMounts":[{"name":"d","mountPath":"/data"}]}],
+  "volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"lab-claim"}}]}}'</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 PROVE IT'S THE WAREHOUSE</div><div class="tabbody"><span class="p">$</span> minikube ssh "cat /data/pv-manual-1/hello.txt"
+<span class="p">persistent rocks</span>
+<span class="g"># the file lives on the NODE's disk,
+# inside the PV's hostPath —
+# not in any container</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 THE 4 CHECKS, VERIFIED</div><div class="tabbody"><span class="g">capacity:  1Gi ≥ 500Mi  ✓
+modes:     RWO ⊇ RWO    ✓
+class:     "" == ""     ✓
+selector:  tier=lab     ✓
+→ smallest-fitting win, 1:1 bound</span></div></div>
+</div>
+<p class="small"><b>Teardown:</b> <code>kubectl delete pvc lab-claim</code> → PV goes <span class="stbadge st-term">Released</span> (Retain! CH 06) → <code>kubectl delete pv pv-manual-1</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🏭 Dynamic Provisioning + Reclaim Proof</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Zero PVs — just a claim</div>
+<div class="term mini"><span class="p">$</span> kubectl get storageclass
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PROVISIONER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RECLAIMPOLICY&nbsp;&nbsp;BINDINGMODE</span>
+standard&nbsp;&nbsp;k8s.io/minikube-hostpath&nbsp;<span class="r">Delete</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Immediate&nbsp;&nbsp;<span class="g"># default ✓</span>
+<span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: PersistentVolumeClaim
+<span class="c">metadata</span>: { <span class="c">name</span>: dyn-claim }   <span class="g"># no className → default class (CH 07)</span>
+<span class="c">spec</span>:
+  <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>]
+  <span class="c">resources</span>: { <span class="c">requests</span>: { <span class="c">storage</span>: <span class="y">1Gi</span> } }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get pvc dyn-claim&nbsp;&nbsp;<span class="g"># Bound — and NOBODY wrote a PV:</span>
+<span class="p">$</span> kubectl get pv | <span class="c">grep</span> dyn-claim&nbsp;&nbsp;<span class="g"># pvc-xxxx… auto-created by the provisioner!</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Feel the Delete policy bite</div>
+<div class="term mini"><span class="p">$</span> kubectl patch pv <span class="y">&lt;auto-pv-name&gt;</span> \
+&nbsp;&nbsp;<span class="y">-p</span> <span class="m">'{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'</span>&nbsp;<span class="g"># arm the trap first</span>
+<span class="p">$</span> kubectl delete pvc dyn-claim
+<span class="p">$</span> kubectl get pv <span class="y">&lt;auto-pv-name&gt;</span>
+<span class="y">STATUS</span>
+<span class="r">Released</span>&nbsp;&nbsp;<span class="g"># Retain: data held hostage (CH 06) — admin must clear claimRef or delete</span>
+<span class="g"># WITHOUT the patch: PV + backing storage would be GONE. Delete is the default.</span></div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Proved:</b> dynamic provisioning needs <b>zero PV authorship</b> — and the default Delete policy is one <code>delete pvc</code> away from data annihilation unless you Retain first.</div></div>
+<p class="small"><b>Teardown:</b> <code>kubectl delete pv &lt;auto-pv-name&gt;</code></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🔬 StatefulSet — Identity &amp; Per-Replica Data</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Headless service + StatefulSet with a claim template</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Service
+<span class="c">metadata</span>: { <span class="c">name</span>: web }
+<span class="c">spec</span>: { <span class="c">clusterIP</span>: <span class="y">None</span>, <span class="c">selector</span>: { <span class="c">app</span>: webs }, <span class="c">ports</span>: [{ <span class="c">port</span>: <span class="y">80</span> }] }
+---
+<span class="c">apiVersion</span>: apps/v1
+<span class="c">kind</span>: StatefulSet
+<span class="c">metadata</span>: { <span class="c">name</span>: web }
+<span class="c">spec</span>:
+  <span class="c">serviceName</span>: web
+  <span class="c">replicas</span>: <span class="y">2</span>
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: webs } }
+  <span class="c">template</span>:
+    <span class="c">metadata</span>: { <span class="c">labels</span>: { <span class="c">app</span>: webs } }
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - <span class="c">name</span>: nginx
+        <span class="c">image</span>: nginx:1.25
+        <span class="c">volumeMounts</span>: [{ <span class="c">name</span>: data, <span class="c">mountPath</span>: <span class="m">/usr/share/nginx/html</span> }]
+  <span class="c">volumeClaimTemplates</span>:
+  - <span class="c">metadata</span>: { <span class="c">name</span>: data }
+    <span class="c">spec</span>: { <span class="c">accessModes</span>: [<span class="m">ReadWriteOnce</span>],
+            <span class="c">resources</span>: { <span class="c">requests</span>: { <span class="c">storage</span>: <span class="y">100Mi</span> } } }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get pods -w&nbsp;&nbsp;<span class="g"># web-0 Running → THEN web-1 (ordered! CH 09)</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 IDENTITY + STORAGE</div><div class="tabbody"><span class="p">$</span> kubectl get pvc
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;CAPACITY</span>
+<span class="p">data-web-0</span>&nbsp;&nbsp;Bound&nbsp;&nbsp;&nbsp;100Mi&nbsp;&nbsp;<span class="g">← per replica!</span>
+<span class="p">data-web-1</span>&nbsp;&nbsp;Bound&nbsp;&nbsp;&nbsp;100Mi
+<span class="p">$</span> kubectl run d --rm -it --image=busybox:1.36 \
+&nbsp;&nbsp;--restart=Never -- wget -qO- web-0.web
+<span class="g"># per-pod DNS via the HEADLESS svc (CH 09)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">⚙️ WRITE PER-REPLICA DATA</div><div class="tabbody"><span class="p">$</span> kubectl exec web-0 -- sh -c \
+&nbsp;&nbsp;<span class="m">'echo i-am-zero &gt; /usr/share/nginx/html/i.txt'</span>
+<span class="p">$</span> kubectl exec web-1 -- sh -c \
+&nbsp;&nbsp;<span class="m">'echo i-am-one &gt; /usr/share/nginx/html/i.txt'</span>
+<span class="g"># each wrote to ITS OWN disk</span></div></div>
+</div>
+
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- LAB 3 continued -->
+<div class="page" id="lab3b"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🔬 StatefulSet — continued</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Kill web-0 — resurrection, not reincarnation</div>
+<div class="term mini"><span class="p">$</span> kubectl delete pod web-0
+<span class="p">$</span> kubectl get pod web-0&nbsp;&nbsp;<span class="g"># SAME NAME, back after reschedule</span>
+<span class="p">$</span> kubectl exec web-0 -- cat /usr/share/nginx/html/i.txt
+<span class="p">i-am-zero</span>&nbsp;&nbsp;<span class="g"># ← its OWN data survived: data-web-0 reattached</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#f59e0b;">STEP 3 · Scale down — the claims stay behind</div>
+<div class="term mini"><span class="p">$</span> kubectl scale sts web --replicas=1
+<span class="p">$</span> kubectl get pvc&nbsp;&nbsp;<span class="g"># data-web-1 STILL BOUND — retained by design (CH 10)</span></div></div>
+<p class="small"><b>Teardown:</b> <code>kubectl delete sts web && kubectl delete svc web && kubectl delete pvc data-web-0 data-web-1</code> — the PVCs <b>never</b> go with the STS.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ LAB 4 ═══ -->
+<div class="page" id="lab4"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">🧪 The Data-Survival Gauntlet</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<p class="lead" style="margin-bottom:6px;">One claim, three disasters. Which data survives? Run each round and predict <i>before</i> looking:</p>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">SETUP · Claim + writer (reuse Lab 1's PV or Lab 2's dynamic claim)</div>
+<div class="term mini"><span class="p">$</span> kubectl run g1 --image=busybox:1.36 --restart=Never -- \
+&nbsp;&nbsp;sh -c <span class="m">'echo round-one &gt; /data/state.txt; sleep 9999'</span>
+<span class="p">$</span> kubectl patch pod g1 <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"surv"}}]}}'</span> 2&gt;/dev/null \
+&nbsp;&nbsp;|| kubectl run g1 --image=busybox:1.36 --restart=Never \
+&nbsp;&nbsp;--overrides=<span class="m">'{"spec":{"containers":[{"name":"g","image":"busybox:1.36",
+  "command":["sh","-c","echo round-one &gt; /data/state.txt; sleep 9999"],
+  "volumeMounts":[{"name":"d","mountPath":"/data"}]}],
+  "volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"surv"}}]}}'</span></div></div>
+<table class="tb">
+<tr><th>Round</th><th>Disaster</th><th>Prediction</th><th>Verdict</th></tr>
+<tr><td><b>1</b></td><td><code>kubectl delete pod g1</code></td><td>data…?</td><td><span class="ok">SURVIVES</span> — it lives in the PV, not the Pod (Lab 3 proved the pattern)</td></tr>
+<tr><td><b>2</b></td><td><code>kubectl delete pvc surv</code> — while a Pod uses it</td><td>instant gone?</td><td><span class="stbadge st-term">Terminating…</span> hangs — the <b>pvc-protection finalizer</b> (CH 06). Delete the Pod first, then it proceeds</td></tr>
+<tr><td><b>3</b></td><td>PVC gone + PV policy…</td><td>data…?</td><td><b>Retain</b> → <span class="stbadge st-comp">Released</span>, bytes intact on the node (<code>minikube ssh ls /data/…</code>) · <b>Delete</b> → <span class="bad">erased with the disk</span></td></tr>
+</table>
+<div class="term mini"><span class="g"># the one-liner verdict after every round:</span>
+<span class="p">$</span> kubectl run chk --rm -it --image=busybox:1.36 --restart=Never \
+&nbsp;&nbsp;--overrides=<span class="m">'{"spec":{"containers":[{"name":"c","image":"busybox:1.36",
+  "command":["cat","/data/state.txt"],
+  "volumeMounts":[{"name":"d","mountPath":"/data"}]}],
+  "volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"surv"}}]}}'</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The gauntlet's law:</b> data survives <b>Pod death</b> (always, once it's on a PVC), survives <b>slowly</b> through PVC death (finalizer + policy), and survives <b>PV death only under Retain</b>. Every storage SRE story is one of these three rounds.</div></div>
+<p class="small"><b>Teardown:</b> <code>kubectl delete pod g1 chk --ignore-not-found; kubectl delete pvc surv; kubectl delete pv pv-manual-1 --ignore-not-found</code></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>A container crashes and is restarted inside its Pod. Data written to an <code>emptyDir</code> volume…<br><b>A.</b> survives — emptyDir lives with the Pod &nbsp; <b>B.</b> is lost with the container layer &nbsp; <b>C.</b> moves to another node &nbsp; <b>D.</b> becomes read-only</div>
+<div class="qz"><span class="qn">Q2.</span>Which object is <b>cluster-scoped</b>?<br><b>A.</b> PersistentVolumeClaim &nbsp; <b>B.</b> StatefulSet &nbsp; <b>C.</b> PersistentVolume &nbsp; <b>D.</b> Service</div>
+<div class="qz"><span class="qn">Q3.</span><code>ReadWriteOnce</code> actually restricts mounting to…<br><b>A.</b> one Pod &nbsp; <b>B.</b> one NODE (any number of its Pods may share) &nbsp; <b>C.</b> one container &nbsp; <b>D.</b> one namespace</div>
+<div class="qz"><span class="qn">Q4.</span>Which is <b>NOT</b> a criterion the PV controller uses to match a claim?<br><b>A.</b> capacity ≥ request &nbsp; <b>B.</b> access modes ⊇ requested &nbsp; <b>C.</b> storageClassName equality &nbsp; <b>D.</b> the claiming Pod's name</div>
+<div class="qz"><span class="qn">Q5.</span>Retain policy, PVC deleted. The PV…<br><b>A.</b> enters <b>Released</b> — data kept until an admin intervenes &nbsp; <b>B.</b> is deleted with its backing disk &nbsp; <b>C.</b> immediately becomes Available for reuse &nbsp; <b>D.</b> enters Failed</div>
+<div class="qz"><span class="qn">Q6.</span>A PVC omits <code>storageClassName</code>; a default class exists. Result?<br><b>A.</b> Pending until a manual PV matches &nbsp; <b>B.</b> validation error &nbsp; <b>C.</b> dynamically provisioned from the default class &nbsp; <b>D.</b> binds only PVs labeled default</div>
+<div class="qz"><span class="qn">Q7.</span><code>volumeBindingMode: WaitForFirstConsumer</code> exists to…<br><b>A.</b> slow down provisioning for safety &nbsp; <b>B.</b> delay binding until a consuming Pod is scheduled — so zoned disks are born in the right zone &nbsp; <b>C.</b> require admin approval &nbsp; <b>D.</b> apply only to RWX volumes</div>
+<div class="qz"><span class="qn">Q8.</span>A StatefulSet scales 3 → 2 replicas. The removed replica's PVC…<br><b>A.</b> is deleted immediately &nbsp; <b>B.</b> is renamed &nbsp; <b>C.</b> is transferred to a surviving replica &nbsp; <b>D.</b> is retained by default — delete it manually if truly unwanted</div>
+<div class="qz"><span class="qn">Q9.</span><code>volumeClaimTemplates</code> means…<br><b>A.</b> all replicas share one claim &nbsp; <b>B.</b> admins must pre-create one PVC per replica &nbsp; <b>C.</b> each replica gets its own PVC stamped from the template, named after its Pod &nbsp; <b>D.</b> claims are optional</div>
+<div class="qz"><span class="qn">Q10.</span>CSI's core achievement is…<br><b>A.</b> storage drivers hard-coded in the k8s tree &nbsp; <b>B.</b> vendors ship storage drivers as out-of-tree containers against a standard interface &nbsp; <b>C.</b> eliminating PVs entirely &nbsp; <b>D.</b> automatic encryption of all volumes</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#lab4">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>A</b></td><td>emptyDir outlives containers, dies with the Pod — the whole three-lives ladder (CH 01–02)</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>PV = supply = cluster-wide; PVC/StatefulSet/Service are namespaced — Book 01 · CH 11 (CH 03)</td></tr>
+<tr><td>3</td><td><b>B</b></td><td>The unit is NODES — same-node Pods may share one RWO volume (CH 05)</td></tr>
+<tr><td>4</td><td><b>D</b></td><td>Pod names never enter matching: capacity, modes, class, selector only (CH 04)</td></tr>
+<tr><td>5</td><td><b>A</b></td><td>Retain = Released, data hostage; clearing claimRef re-opens it (CH 06)</td></tr>
+<tr><td>6</td><td><b>C</b></td><td>Omitted field + default class = dynamic provisioning; "" would opt out (CH 07)</td></tr>
+<tr><td>7</td><td><b>B</b></td><td>Wait for the consumer → disk born in the Pod's zone; fixes node-affinity conflict wedges (CH 08)</td></tr>
+<tr><td>8</td><td><b>D</b></td><td>Data-safety by design: claims outlive scaled-down replicas (CH 10, Lab 3)</td></tr>
+<tr><td>9</td><td><b>C</b></td><td>Template = cookie cutter: data-&lt;sts&gt;-&lt;ordinal&gt; per replica (CH 10)</td></tr>
+<tr><td>10</td><td><b>B</b></td><td>Standard interface + installable driver containers; in-tree frozen (CH 11)</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 06</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–4, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q3?</b> The RWO-is-a-node lie is the most common storage misconception in interviews — drill it. Missed Q8 or Q9? StatefulSet storage behavior (claims outlive scale-down) is exactly what "stateful" <i>means</i>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>Volume</b> — a Pod-level directory mounted into containers; lifespan set by its type (emptyDir, hostPath, configMap, PVC…).</div>
+<div class="gl"><b>emptyDir</b> — scratch volume sharing the Pod's life; survives container restarts, dies with the Pod; optional sizeLimit.</div>
+<div class="gl"><b>hostPath</b> — node-local path; couples Pods to nodes and can expose the whole filesystem — daemon-only territory.</div>
+<div class="gl"><b>PersistentVolume (PV)</b> — cluster-scoped piece of real storage with capacity, accessModes, reclaimPolicy; the supply.</div>
+<div class="gl"><b>PersistentVolumeClaim (PVC)</b> — namespaced request (capacity + modes + class + selector); the only thing Pods mount.</div>
+<div class="gl"><b>Binding</b> — 1:1 PV↔PVC match: capacity ≥, modes ⊇, class ==, selector match; smallest fitting PV wins.</div>
+<div class="gl"><b>Access modes</b> — RWO (one NODE!), ROX, RWX (many nodes, shared filesystem), RWOP (one Pod, GA 1.29).</div>
+<div class="gl"><b>Multi-Attach error</b> — a block volume refusing simultaneous attach to two nodes; the RWO-wedge signature.</div>
+<div class="gl"><b>PV phases</b> — Available → Bound → Released (Retain holds here) → Failed; Released never auto-rebinds.</div>
+<div class="gl"><b>Reclaim policy</b> — Retain (keep data, admin intervenes) / Delete (PV + backing storage destroyed; dynamic default) / Recycle (removed).</div>
+<div class="gl"><b>pvc-protection finalizer</b> — keeps a PVC Terminating while a Pod still uses it.</div>
+<div class="gl"><b>StorageClass</b> — named provisioning recipe: provisioner + parameters + reclaimPolicy + bindingMode + expansion flag.</div>
+<div class="gl"><b>Dynamic provisioning</b> — claim names a class → provisioner builds storage + PV automatically; default class serves omitted fields; "" opts out.</div>
+<div class="gl"><b>volumeBindingMode</b> — Immediate (bind now) vs WaitForFirstConsumer (bind when a Pod schedules — zone-correct).</div>
+<div class="gl"><b>allowVolumeExpansion</b> — permits PVC growth (never shrink); filesystem resize online.</div>
+<div class="gl"><b>StatefulSet</b> — workload controller giving replicas stable names (web-0…), per-Pod DNS via a headless Service, and ordered lifecycle.</div>
+<div class="gl"><b>Headless Service</b> — clusterIP: None; DNS resolves each Pod individually — how followers find the primary by name.</div>
+<div class="gl"><b>volumeClaimTemplates</b> — per-replica claim cookie-cutter: data-&lt;sts&gt;-&lt;ordinal&gt;; born on scale-up, retained on scale-down and on STS deletion.</div>
+<div class="gl"><b>CSI</b> — Container Storage Interface: standard gRPC contract; drivers ship as controller (Deployment) + node (DaemonSet) plugins, out-of-tree.</div>
+<div class="gl"><b>volumeMode</b> — Filesystem (formatted dir, default) vs Block (raw device passed to the Pod).</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">💾 Storage — commands</div><div class="term mini"><span class="p">$</span> kubectl get pv,pvc,sc
+<span class="p">$</span> kubectl get pvc&nbsp;&nbsp;<span class="g"># Pending? check 4 match rules</span>
+<span class="p">$</span> kubectl describe pv X&nbsp;&nbsp;<span class="g"># node affinity = its zone</span>
+<span class="p">$</span> kubectl patch pv X -p \
+&nbsp;&nbsp;'{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+<span class="p">$</span> kubectl patch pv X -p '{"spec":{"claimRef":null}}'<span class="g">&nbsp;# Released→Available</span>
+<span class="p">$</span> kubectl patch pvc P -p \
+&nbsp;&nbsp;'{"spec":{"resources":{"requests":{"storage":"10Gi"}}}}'<span class="g">&nbsp;# grow only</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🏭 Production StorageClass</div><div class="term mini"><span class="c">provisioner</span>: ebs.csi.aws.com
+<span class="c">parameters</span>: {type: gp3}
+<span class="c">reclaimPolicy</span>: <span class="y">Retain</span>&nbsp;&nbsp;<span class="g"># not Delete!</span>
+<span class="c">allowVolumeExpansion</span>: <span class="y">true</span>
+<span class="c">volumeBindingMode</span>: <span class="y">WaitForFirstConsumer</span>
+<span class="g"># default class annotation:
+storageclass.kubernetes.io/is-default-class: "true"</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🪪 StatefulSet storage skeleton</div><div class="term mini"><span class="c">serviceName</span>: db&nbsp;&nbsp;<span class="g"># headless: clusterIP None</span>
+<span class="c">volumeClaimTemplates</span>:
+- <span class="c">metadata</span>: {name: data}
+  <span class="c">spec</span>: {accessModes: [ReadWriteOnce],
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; resources: {requests: {storage: 10Gi}}}
+<span class="g"># → data-db-0, data-db-1 …
+# scale-up: born · scale-down: RETAINED
+# delete STS: claims survive — manual cleanup</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🚑 Triage table</div><table class="tb" style="margin:0;"><tr><th>Symptom</th><th>Meaning</th></tr><tr><td>PVC Pending</td><td>class/capacity/mode/selector mismatch</td></tr><tr><td>Pod Pending + node affinity conflict</td><td>disk in wrong zone → WaitForFirstConsumer</td></tr><tr><td>Multi-Attach error</td><td>RWO volume wanted on 2 nodes</td></tr><tr><td>PVC Terminating forever</td><td>pvc-protection: Pod still using it</td></tr><tr><td>PV Released</td><td>Retain after claim death — admin's move</td></tr></table></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>Three lives of data: container layer (dies with container) → emptyDir (dies with Pod) → PV (outlives everything)</li>
+<li>PV = cluster-scoped supply · PVC = namespaced demand · Pods mount the claim, never the volume</li>
+<li>RWO = one NODE, not one Pod — same-node Pods share it; RWX needs shared backing (NFS/EFS/Ceph)</li>
+<li>Retain keeps Released data hostage; Delete (dynamic default) erases PV + disk — patch before you delete</li>
+<li>WaitForFirstConsumer = disks born in the Pod's zone; storage grows but never shrinks</li>
+<li>StatefulSet claims: one per replica, named after the Pod, kept on scale-down and STS deletion</li>
+<li>CSI = the universal plug: drivers are containers (Deployment + DaemonSet), out-of-tree, independent releases</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 21</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 05 complete</span></div>
+<p class="lead">Book 01 built the machine, 02 dressed it, 03 connected it, 04 placed it — Book 05 gave it <b>memory that survives death</b>.</p>
+<div class="mtree"><b>💾 STORAGE — fully mapped:</b>
+├── <u>Ladder</u>          <span class="g">container layer → emptyDir → PV (three lives of data)</span>
+├── <u>PV / PVC</u>        <span class="g">cluster supply ⇄ namespaced demand · 4-rule binding</span>
+├── <u>Access modes</u>    <span class="g">RWO = one NODE · RWX needs shared backing</span>
+├── <u>Reclaim</u>         <span class="g">Available→Bound→Released→{Retain | Delete}</span>
+├── <u>StorageClass</u>    <span class="g">dynamic recipes · WaitForFirstConsumer · grow-only</span>
+├── <u>StatefulSets</u>    <span class="g">identity + per-replica claims that outlive scale-down</span>
+└── <u>CSI</u>             <span class="g">drivers as containers — the universal plug</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Trace any byte of cluster data through its three lives and say exactly which disaster erases it</li>
+<li>Bind claims by hand AND provision dynamically — and explain the four matching rules when a PVC goes Pending</li>
+<li>Decode RWO/RWX correctly, diagnose Multi-Attach wedges, and pick the right backing per workload</li>
+<li>Write production StorageClasses: Retain policy, zone-correct binding, grow-only expansion</li>
+<li>Run a StatefulSet knowing precisely which disks belong to which replica — and what survives scale-down</li>
+<li>Read any <code>provisioner: …csi…</code> line and know the whole machinery behind it</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 06 · Higher-Level Workloads:</b> you've met Deployments and tasted StatefulSets — Book 06 completes the zoo: <b>DaemonSets</b> (one Pod per node — you've seen them skip drains!), <b>Jobs &amp; CronJobs</b> (run-to-completion), <b>StatefulSets in full</b> (rolling updates, partition canaries), and the autoscaling trio <b>HPA/VPA/Cluster Autoscaler</b>. Your workloads can persist — now they learn to run themselves.</div></div>
+<div class="center" style="margin-top:18px;font-size:20px;">— End of Book 05 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 05 · Storage</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 22</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

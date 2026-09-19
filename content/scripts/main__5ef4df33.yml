@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: ansible
+  description: Generic package installer - install any package (nginx, apache2, redis, etc.)
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions: [focal, jammy]
+    - name: Debian
+      versions: [bullseye, bookworm]
+  galaxy_tags: [package, system, generic]
+
+dependencies: []

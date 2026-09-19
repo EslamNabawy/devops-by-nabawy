@@ -1,0 +1,10 @@
+# Build deps (reinstall with `npm install`). Refresh needs Node 18+.
+node_modules/
+# Local QA evidence (screenshots + harness JSON). Rebuild with browser-qa.
+qa/
+# Inbox originals after ingest (copies live in content/pdf/). Safe to drop.
+content/_inbox/_processed/
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

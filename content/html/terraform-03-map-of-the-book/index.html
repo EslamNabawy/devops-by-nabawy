@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraform Level 2 · Vol 2 · INK &amp; AMBER</title>
+<style>
+:root{
+  --paper:#faf7f1;
+  --ink:#26201a;
+  --amber:#c8893a;
+  --amber-d:#9a6722;
+  --rule:#d8cdb5;
+  --card:#fff9eb;
+  --muted:#6e5f4d;
+  --accent:#5e3b16;
+  --t-green:#1b6e3a;
+  --t-rose:#9f1239;
+  --t-stone:#78716c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#e9e2d6;color:var(--ink);
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif}
+body{padding:0}
+.sheet{width:210mm;height:297mm;background:var(--paper);margin:0 auto 9mm;padding:10mm 12mm 14mm;
+  position:relative;box-shadow:0 6px 22px rgba(38,32,26,.22);page-break-after:always;
+  page-break-inside:avoid;overflow:hidden;box-sizing:border-box}
+.sheet::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--amber),var(--amber-d))}
+.cover{background:var(--paper);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:20mm}
+.pghead{margin:0 0 10px;border-bottom:2px solid var(--ink);padding-bottom:7px}
+.pghead .hrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.kick{font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-d);margin-bottom:2px}
+.t{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;margin:0;line-height:1.15}
+.t-sm{font-size:17px}
+.hmeta{margin-left:auto;align-self:flex-start;font-size:10.5px;font-weight:800;
+  border:2px solid var(--ink);border-radius:8px;padding:3px 10px;background:var(--card)}
+.lead{font-size:11.4px;line-height:1.4;margin:0 0 8px}
+.small{font-size:10.4px;line-height:1.4;margin:0 0 5px}
+.mb{font-family:'SF Mono','Consolas',monospace;font-size:9.4px;line-height:1.4}
+.s{font-family:'SF Mono','Consolas',monospace;font-size:8.8px;line-height:1.4;color:var(--accent)}
+.mark{border-radius:0 10px 10px 0;border-left:5px solid;padding:6px 10px;margin:6px 0;font-size:11.2px;line-height:1.4}
+.m-key{background:#fff2c7;border-color:#d4a017}
+.m-tip{background:#e7f3ff;border-color:#3b82f6}
+.m-warn{background:#ffe7e7;border-color:#dc2626}
+.m-exam{background:#e6f4ea;border-color:#16a34a}
+.m-ok{background:#e6f4ea;border-color:#16a34a}
+.mark .tag{display:block;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.mark b{color:var(--ink)}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;margin:6px 0}
+.ptitle{font-family:Georgia,serif;font-size:13px;font-weight:700;margin:0 0 5px}
+.sec{font-family:Georgia,serif;font-size:13px;font-weight:700;margin:5px 0 4px;color:var(--ink)}
+.sec .n{color:var(--amber-d);margin-right:6px}
+.code{background:#211d19;color:#efe9dd;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;font:9.2px/1.35 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden;margin:5px 0}
+.tree{background:#211d19;color:#e7e0d2;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 10px;font:9.2px/1.35 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden;margin:5px 0}
+.mini{font-size:8.6px;padding:6px 8px;line-height:1.3}
+.tb{width:100%;border-collapse:separate;border-spacing:0;border:2px solid var(--ink);border-radius:10px;overflow:hidden;font-size:9.6px;box-shadow:3px 3px 0 rgba(38,32,26,.85);margin:5px 0}
+.tb th,.tb td{padding:4px 6px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.tb th{background:var(--accent);color:#fffdf8;font-weight:800;font-size:9.4px}
+.tb tr:last-child td{border-bottom:none}
+.tb tr:nth-child(even) td{background:var(--card)}
+.tb code{font:8.6px/1.2 'Consolas','SF Mono',monospace;color:var(--ink);background:#f3eddb;padding:0 3px;border-radius:3px}
+.tb .ok{color:var(--t-green);font-weight:700}
+.tb .bad{color:var(--t-rose);font-weight:700}
+.tick{list-style:none;padding:0;margin:4px 0}
+.tick li{padding:2px 0 2px 14px;position:relative;font-size:10.4px;line-height:1.35}
+.tick li::before{content:"✓";position:absolute;left:0;color:var(--t-green);font-weight:800}
+.tick.warn li::before{content:"⚠";color:#d97706}
+.tick.bad li::before{content:"✗";color:var(--t-rose)}
+.dnote{margin:4px 0;font-size:10.2px;line-height:1.4;color:var(--muted);font-style:italic}
+.darr{text-align:center;font-size:10.5px;margin:1px 0;color:var(--ink)}
+.harrow{color:var(--ink);font-size:11px;align-self:center}
+.frow{display:flex;align-items:center;gap:6px;margin:5px 0}
+.fstem{width:2.5px;height:14px;background:var(--ink);margin:0 auto}
+.fcol{flex:1;padding:0 4px;display:flex;flex-direction:column;align-items:center;text-align:center;font-size:9.2px;line-height:1.25}
+.fcol b{font-size:9.6px;display:block;margin-bottom:2px}
+.zone{border:2.5px solid var(--ink);border-radius:12px;padding:7px 9px;background:var(--card);box-shadow:3px 3px 0 rgba(38,32,26,.85);margin:5px 0}
+.zlabel{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);text-align:center;margin-bottom:5px}
+.glos{border-left:4px solid var(--amber);background:var(--card);border-radius:0 8px 8px 0;padding:4px 8px;font-size:9.6px;line-height:1.3;margin:3px 0}
+.glos b{color:var(--ink)}
+.qz{border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:4px 8px;margin:3px 0;background:var(--card);font-size:9.6px;line-height:1.35}
+.qz .qn{font-weight:900;color:var(--amber-d);margin-right:4px}
+.qz .ans{color:var(--t-green);font-weight:700;font-size:8.6px;margin-top:2px}
+.stepitem{display:flex;gap:8px;align-items:flex-start;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);background:var(--card);padding:6px 8px;margin:4px 0}
+.stepnum{min-width:22px;height:22px;background:var(--ink);color:var(--paper);border-radius:6px;font-weight:900;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+.stepbody{flex:1;font-size:10px;line-height:1.3}
+.termhead{padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.08em;color:#fffdf8;background:var(--accent);border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center}
+.termhead .out{font-size:9px;font-weight:600;background:var(--amber);color:#fffdf8;padding:1px 6px;border-radius:3px}
+.termbody{background:#211d19;color:#efe9dd;font:8.8px/1.35 'Consolas','SF Mono',monospace;padding:6px 10px;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden;border-radius:0 0 8px 8px;margin:0 0 4px 0}
+.stamp{border:3px solid var(--ink);border-radius:14px;box-shadow:5px 5px 0 var(--amber);padding:12px 18px;font-size:30px;line-height:1;transform:rotate(-2deg);background:var(--card);text-align:center;display:inline-block;font-weight:800;letter-spacing:-.02em}
+.ambrule{width:80px;border-top:5px solid var(--amber);margin:12px auto}
+.cver{position:absolute;bottom:8mm;left:0;right:0;text-align:center;font-size:9.5px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.dots{flex:1;border-bottom:1.5px dotted #c9bfa9;margin:0 6px 2px}
+.cb{width:10px;height:10px;border:1.5px solid var(--ink);border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px;flex:none}
+.lgd{display:flex;flex-wrap:wrap;gap:5px 12px;margin:5px 0}
+.tocrow{display:flex;align-items:baseline;gap:6px;padding:3px 0;font-size:11.5px}
+.tocn{font-family:Georgia,serif;font-weight:700;width:24px;text-align:right;color:var(--amber-d);flex:none}
+.tlink{color:var(--ink);text-decoration:none;font-weight:600;flex:1}
+.tlink:hover{color:var(--amber-d);text-decoration:underline}
+.tocp{color:var(--muted);font-size:10.2px;flex:none}
+.dcol{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:5px 0}
+.dcol3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:5px 0}
+.drow{display:flex;gap:9px;margin:5px 0;align-items:stretch}
+.drow > *{flex:1}
+.tlink{color:var(--ink);text-decoration:none;font-weight:600}
+a.tlink:hover{color:var(--amber-d);text-decoration:underline}
+.folio{position:absolute;bottom:4mm;left:8mm;right:8mm;display:flex;align-items:center;gap:8px;font-size:8.5px;letter-spacing:.06em;color:var(--muted)}
+.backtoc{color:var(--muted);text-decoration:none;border:1.2px solid var(--ink);border-radius:4px;padding:1px 5px;font-weight:800;font-size:8px;box-shadow:1.5px 1.5px 0 var(--ink);background:var(--card);color:var(--ink)}
+.resbox{border:2px solid var(--ink);border-radius:10px;background:var(--card);box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:8px 11px;font-size:9.6px;line-height:1.4;margin:4px 0}
+.resbox b{color:var(--ink)}
+.bignum{font-family:Georgia,serif;font-size:64px;font-weight:800;color:var(--amber);line-height:1;letter-spacing:-.04em}
+.cover-wrap{display:flex;flex-direction:column;align-items:center;gap:6mm}
+.cover-title{font-family:Georgia,'Times New Roman',serif;font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1;max-width:170mm;color:var(--ink)}
+.cover-sub{font-size:14px;color:var(--ink);max-width:160mm;line-height:1.5;font-style:italic}
+.credits{font-size:9.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4mm}
+.kpills{display:flex;gap:5px;flex-wrap:wrap;margin-top:5mm;justify-content:center}
+.kpill{background:var(--card);border:1.5px solid var(--ink);border-radius:999px;padding:3px 10px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;box-shadow:1.5px 1.5px 0 var(--ink)}
+.kpill.amber{background:var(--amber);color:#fffdf8}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--amber);display:inline-block;margin:0 4px 2px 0;vertical-align:middle}
+ul.ul-tight{margin:4px 0;padding-left:16px}
+ul.ul-tight li{margin:1px 0;font-size:10.4px;line-height:1.35}
+table.tb-mini{width:100%;font-size:9.4px;border-collapse:collapse;margin:4px 0}
+table.tb-mini th,table.tb-mini td{padding:3px 5px;border:1px solid var(--rule);text-align:left}
+table.tb-mini th{background:var(--accent);color:#fffdf8}
+table.tb-mini tr:nth-child(even) td{background:var(--card)}
+hr.amber{border:none;border-top:2px solid var(--amber);margin:6px 0}
+.cite{font-size:9px;color:var(--muted);font-style:italic}
+@media print{
+  body{background:#fff}
+  .sheet{box-shadow:none;margin:0;page-break-after:always}
+}
+
+#summary .panel{padding:6px 9px}#summary .dcol{gap:7px;margin:4px 0}
+</style>
+</head>
+<body>
+<div class="sheet cover" id="cover">
+  <div class="cover-wrap">
+    <div class="kick" style="font-size:11px;letter-spacing:.34em">TERRAFORM STUDY SERIES · VOLUME TWO</div>
+    <div class="cover-title" style="margin-top:8mm">Level 2 — Advanced IaC</div>
+    <div class="stamp" style="margin-top:8mm">Variables · Outputs · Workspaces · Multi-VPC</div>
+    <div class="cover-sub" style="margin-top:8mm">From one config, many environments. Every variable-passing mechanism, the networking model behind every <code>aws_security_group</code>, workspaces vs folders, count vs for_each, the secrets/outputs contract, and a full end-to-end walkthrough.</div>
+    <div class="ambrule"></div>
+    <div class="credits">A Technical Book · INK &amp; AMBER Series<br>Course material by <b>Eng. Mohamed Magdy</b><br>Volume I = Level 1 · Volume II = Level 2</div>
+    <div class="kpills"><span class="kpill">DAY 1</span><span class="kpill amber">DAY 2 · 3</span><span class="kpill">CAPSTONE</span></div>
+    <div class="cver">PRINT-READY · A4 · INTERNAL NAVIGATION</div>
+  </div>
+</div>
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">CONTENTS</div><h1 class="t">🗺️ Map of the Book</h1></div><span class="hmeta">📖 17 SHEETS</span></div></div>
+  <p class="lead">Three parts, eight chapters, one capstone. Click any chapter to jump; every page has a <span class="backtoc">TOC</span> badge to come back.</p>
+  <div class="sec"><span class="n">I</span>FRONT MATTER</div>
+  <div class="tocrow"><span class="tocn">01</span><a class="tlink" href="#cover">Cover &amp; Title</a><span class="tocp">read first</span></div>
+  <div class="tocrow"><span class="tocn">02</span><a class="tlink" href="#toc">Contents (this page)</a><span class="tocp">you are here</span></div>
+  <div class="tocrow"><span class="tocn">03</span><a class="tlink" href="#summary">Executive Summary</a><span class="tocp">5 min</span></div>
+  <div class="sec"><span class="n">II</span>PART I — DAY 1: THE DEEP STACK</div>
+  <div class="tocrow"><span class="tocn">04</span><a class="tlink" href="#ch-01a">📦 Variables — precedence, types, validation</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">05</span><a class="tlink" href="#ch-01b">🔧 Functions, dynamic blocks, secrets</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">06</span><a class="tlink" href="#ch-02a">🌐 Networking — protocols, CIDR, routing</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">07</span><a class="tlink" href="#ch-02b">🛡️ SG vs NACL, DNS, endpoints, peering</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">08</span><a class="tlink" href="#ch-03a">🗂️ Workspaces — CLI, patterns, proof</a><span class="tocp">⏱ 7 min</span></div>
+  <div class="tocrow"><span class="tocn">09</span><a class="tlink" href="#ch-03b">🏭 Workspaces — CI, sharing, gotchas</a><span class="tocp">⏱ 7 min</span></div>
+  <div class="sec"><span class="n">III</span>PART II — DAY 2: SCALING UP</div>
+  <div class="tocrow"><span class="tocn">10</span><a class="tlink" href="#ch-04a">🌍 Multi-Env — workspaces vs folders</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">11</span><a class="tlink" href="#ch-04b">🏗️ Multi-VPC — the 3-VPC layout</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">12</span><a class="tlink" href="#ch-05">🔁 count vs for_each — the rename trap</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="tocrow"><span class="tocn">13</span><a class="tlink" href="#ch-06">📤 Outputs — the production contract</a><span class="tocp">⏱ 8 min</span></div>
+  <div class="sec"><span class="n">IV</span>PART III — DAY 3 &amp; CAPSTONE</div>
+  <div class="tocrow"><span class="tocn">15</span><a class="tlink" href="#ch-08">⚖️ ALB Walkthrough — two tiers, one codebase</a><span class="tocp">⏱ 10 min</span></div>
+  <div class="tocrow"><span class="tocn">14</span><a class="tlink" href="#ch-07">🚀 End-to-End Project Walkthrough</a><span class="tocp">⏱ 10 min</span></div>
+  <div class="tocrow"><span class="tocn">16</span><a class="tlink" href="#lab-1">⭐ Lab 1 — Multi-Env &amp; Multi-VPC Build</a><span class="tocp">⏱ 15 min</span></div>
+  <div class="sec"><span class="n">V</span>FINALE</div>
+  <div class="tocrow"><span class="tocn">17</span><a class="tlink" href="#cheat">📋 Cheat · Quiz · Glossary · Resources</a><span class="tocp">🏁 end</span></div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 2 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | <a class="tlink" href="#summary">next</a></span></div>
+</div>
+<div class="sheet" id="summary">
+  <div class="pghead"><div class="hrow"><div><div class="kick">EXECUTIVE SUMMARY</div><h1 class="t">The Route — One Page, Whole Book</h1></div><span class="hmeta">📖 5 MIN</span></div></div>
+  <p class="lead"><b>Level 2</b> takes working single-env code and makes it <b>multi-env, multi-VPC, production-shaped</b>. Prereq: Level 1; everything runs on the local emulator.</p>
+  <div class="drow">
+    <div class="mark m-key"><span class="tag">🔑 PROBLEM 1</span><b>One code, many envs</b><br>Same HCL drives dev / staging / prod — per-env state, sizing, CIDRs that never overlap.</div>
+    <div class="mark m-key"><span class="tag">🔑 PROBLEM 2</span><b>Variables done right</b><br>7-mechanism precedence ladder, type system, validation, sensitive vs ephemeral, 20 key functions.</div>
+  </div>
+  <div class="drow" style="margin-top:7px">
+    <div class="mark m-key"><span class="tag">🔑 PROBLEM 3</span><b>Networking that works</b><br>TCP/UDP, CIDR math, route tables, stateful vs stateless, peering, endpoints.</div>
+    <div class="mark m-key"><span class="tag">🔑 PROBLEM 4</span><b>Outputs as contract</b><br>Module → stack, stack → stack, sensitive vs ephemeral vs Vault, CI playbook.</div>
+  </div>
+  <div class="sec"><span class="n">▣</span>One sentence per chapter</div>
+  <div class="dcol">
+    <div class="panel"><div class="ptitle">📦 Variables</div>Every way to pass a value in — the 7-step ladder, types, validation.</div>
+    <div class="panel"><div class="ptitle">🔧 Functions &amp; secrets</div>The 20 functions you'll call, dynamic blocks, Vault/SSM over tfvars secrets.</div>
+    <div class="panel"><div class="ptitle">🌐 Networking I</div>TCP/UDP, handshake failures, CIDR math, reserved IPs, routing, tiers.</div>
+    <div class="panel"><div class="ptitle">🛡️ Networking II</div>SG vs NACL, DNS flags, endpoints, peering + the silent DNS bug.</div>
+    <div class="panel"><div class="ptitle">🗂️ Workspaces</div>One folder, one backend, many state files — CLI, patterns, isolation proof.</div>
+    <div class="panel"><div class="ptitle">🏭 Workspaces in prod</div>Decision table, CI with TF_WORKSPACE, sharing, gotchas.</div>
+    <div class="panel"><div class="ptitle">🌍 Multi-Env</div>Workspaces vs folders vs buckets — pick by blast radius.</div>
+    <div class="panel"><div class="ptitle">🏗️ Multi-VPC</div>The 3-VPC shared/data/apps layout, peering, module scaling.</div>
+    <div class="panel"><div class="ptitle">🔁 count vs for_each</div>The rename trap; stable keys win identity; 5 copy-ready patterns.</div>
+    <div class="panel"><div class="ptitle">📤 Outputs</div>5 types, sensitive vs ephemeral vs Vault, cross-stack pipelines.</div>
+    <div class="panel"><div class="ptitle">🚀 Walkthrough</div>5 files, 3 workspaces, isolation proof, lab checklist.</div>
+    <div class="panel"><div class="ptitle">⚖️ ALB Walkthrough</div>Public + internal ALBs, quartet per tier, SG chaining.</div>
+    <div class="panel"><div class="ptitle">⭐ Capstone</div>Full multi-env/multi-VPC build, end to end, ready to run.</div>
+  </div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 3 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#cover">prev</a> | <a class="tlink" href="#ch-01a">next</a></span></div>
+</div>
+<div class="sheet" id="ch-01a">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 01A</div><h1 class="t">📦 Variables — Precedence, Types, Validation</h1></div><span class="hmeta">⏱ 8 MIN · VARS</span></div></div>
+  <p class="lead">Variables are how values get <i>in</i>. Seven mechanisms feed one declaration — later wins. Memorize the ladder, then the types, then validation. Everything downstream consumes this.</p>
+  <div class="mark m-key"><span class="tag">🔑 THE LADDER (lowest → highest)</span><b>TF_VAR_* env &lt; terraform.tfvars &lt; *.auto.tfvars (lexical) &lt; -var-file &lt; -var.</b> <code>default</code> is the fallback when nothing provides a value. Prove it once: set all four to different values, plan with <code>-var</code> — CLI wins.</div>
+  <div class="sec"><span class="n">§1</span>Passing mechanisms — when each earns its place</div>
+  <div class="code"># CLI flags (highest) — envs + one-off tests
+terraform apply -var="env=prod" -var="count=3"
+terraform apply -var-file=env/prod.tfvars
+terraform plan -var="env=dev" -out=tfplan &amp;&amp; terraform apply tfplan
+
+# Env vars (CI's favorite) — no files, no mounts
+export TF_VAR_env="prod" TF_VAR_count=5
+# complex types need HCL syntax: TF_VAR_tags='{"Env":"prod"}'
+# quoting mistakes here are the #1 CI variable bug
+
+# terraform.tfvars (auto-loaded) — single-dev laptop only
+env = "dev"   count = 2   region = "us-east-1"
+# multi-dev? rename per person + -var-file. NEVER commit secrets:
+# commit terraform.tfvars.example, gitignore the real one.
+
+# *.auto.tfvars (lexical overlay) — base + per-dev layers, no flags
+# env/base.auto.tfvars → env/override.auto.tfvars (o wins per key)
+# trap: a forgotten *.auto.tfvars silently beats your -var-file</div>
+  <div class="sec"><span class="n">§2</span>Type system — declare shape, catch errors at plan</div>
+  <div class="code">variable "env"     { type = string; default = "dev" }
+variable "count"   { type = number; default = 1 }
+variable "enabled" { type = bool;   default = true }
+variable "tags"    { type = map(string);  default = {} }  # NEVER null for maps
+variable "azs"     { type = list(string); default = ["us-east-1a"] }
+variable "items"   { type = set(string);  default = [] }  # for_each, never count
+variable "server"  { type = object({ name=string, size=number }) }
+variable "pair"    { type = tuple([string, number]) }</div>
+  <p class="small">Three underused attributes: <b>sensitive</b> hides CLI output (state still plaintext); <b>nullable = false</b> makes explicit null fall back to default (saves <code>merge()</code>); <b>ephemeral</b> never persists to state — one-shot secrets only.</p>
+  <div class="sec"><span class="n">§3</span>Validation — fail at plan, not at 2 AM</div>
+  <div class="code">variable "env" {
+  type = string
+  validation { condition = contains(["dev","staging","prod"], var.env)
+               error_message = "must be dev/staging/prod" }
+}
+variable "cidr" {
+  type = string
+  validation { condition = can(cidrhost(var.cidr, 0))
+               error_message = "must be a valid CIDR" }
+}</div>
+  <p class="small">Multiple <code>validation</code> blocks allowed — all must pass. Split complex rules so the error names the exact problem. Prod rule: required vars (no default) + strict validation; secrets from Vault/SSM, never files.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 4 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#summary">prev</a> | <a class="tlink" href="#ch-01b">next</a></span></div>
+</div>
+<div class="sheet" id="ch-01b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 01B</div><h1 class="t">🔧 Functions, Dynamic Blocks, Secrets</h1></div><span class="hmeta">⏱ 8 MIN · VARS II</span></div></div>
+  <p class="lead">Declarations get values in; <b>functions shape them</b>, <b>dynamic blocks repeat them</b>, and <b>data sources keep secrets out of variables entirely</b>. Test anything here instantly: <code>echo 'format("vpc-%s", var.env)' | terraform console</code>.</p>
+  <div class="sec"><span class="n">§1</span>The 20 functions you'll actually call</div>
+  <div class="dcol3">
+    <div class="panel"><div class="ptitle">String</div><div class="code">format("node-%02d-%s",3,var.env)
+join(",", var.azs)
+split(",", "a,b,c")
+upper(var.env) / lower(var.env)
+substr(var.project, 0, 8)
+replace(var.name, "_", "-")
+trimspace(var.input)</div></div>
+    <div class="panel"><div class="ptitle">Collection</div><div class="code">merge(var.tags,{Env=var.env})
+concat(var.a, var.b)
+distinct(concat(var.a,var.b))
+flatten([["a","b"],["c"]])
+keys(var.amis)/values(var.amis)
+lookup(var.amis,var.region,"fb")
+contains(var.azs,"us-east-1a")
+length(var.azs)</div></div>
+    <div class="panel"><div class="ptitle">CIDR &amp; safe</div><div class="code">cidrsubnet("10.0.0.0/16",8,k)
+cidrhost("10.0.1.0/24",5)
+max(var.min,2)/min(var.max,10)
+try(var.opt.attr,"default")
+can(regex("^t[23]\.",var.type))
+coalesce(var.a,var.b,"fb")
+one(aws_x.maybe[*].id)</div></div>
+  </div>
+  <p class="small">Prefer <code>length()</code> / <code>contains()</code> / <code>lookup()</code> with a default over <code>try()</code> — cheaper to read. <code>merge()</code> is shallow (top-level keys only). <code>try()</code> never hides errors outside validation — don't use it to paper over real bugs.</p>
+  <div class="sec"><span class="n">§2</span>Dynamic blocks — N rules from one variable</div>
+  <div class="code">variable "ingress_rules" {
+  type = list(object({ desc=string from=number to=number
+                       proto=string cidrs=list(string) }))
+  default = [
+    { desc="http",  from=80,  to=80,  proto="tcp", cidrs=["0.0.0.0/0"] },
+    { desc="https", from=443, to=443, proto="tcp", cidrs=["0.0.0.0/0"] } ]
+}
+resource "aws_security_group" "web" {
+  vpc_id = aws_vpc.main.id
+  dynamic "ingress" {
+    for_each = var.ingress_rules
+    content {
+      description = ingress.value.desc
+      from_port = ingress.value.from   to_port = ingress.value.to
+      protocol = ingress.value.proto   cidr_blocks = ingress.value.cidrs
+    }
+  }
+}</div>
+  <p class="small">Add a rule = append one object to tfvars, zero HCL edits. Same shape drives ALB listener actions and IAM policy statements.</p>
+  <div class="sec"><span class="n">§3</span>Secrets — variables carry the path, never the value</div>
+  <div class="code"># SSM (AWS-native, no extra infra)
+data "aws_ssm_parameter" "db_pw" {
+  name = "/${var.env}/db/password"   with_decryption = true }
+variable "db_pw_path" { default = "/dev/db/password" }  # path only!
+
+# Secrets Manager (rotation-friendly)
+data "aws_secretsmanager_secret_version" "db" { secret_id = "prod/db" }
+locals { db = jsondecode(data.aws_secretsmanager_secret_version.db.secret_string) }
+
+# Vault (multi-cloud) — same idea via data "vault_kv_secret_v2"</div>
+  <div class="mark m-warn"><span class="tag">⚠</span>State holds plaintext regardless — bucket SSE + tight IAM is non-negotiable. CI: pass the secret's <b>path/ARN</b> as the variable; let Terraform read the value at apply time.</div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 5 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-01a">prev</a> | <a class="tlink" href="#ch-02a">next</a></span></div>
+</div>
+<div class="sheet" id="ch-02a">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 02A</div><h1 class="t">🌐 Networking — Protocols, CIDR, Routing</h1></div><span class="hmeta">⏱ 8 MIN · NET I</span></div></div>
+  <p class="lead">Every AWS resource that takes a CIDR uses one format. Learn TCP/UDP, the handshake failures, CIDR math, and routing once — then every <code>aws_security_group</code> and <code>aws_route_table</code> is syntax.</p>
+  <div class="mark m-key"><span class="tag">🔑 DEBUG ORDER</span><b>Route table → SG → NACL.</b> "Can't reach the internet" is the route table 80% of the time. Memorize this order before §4.</div>
+  <div class="sec"><span class="n">§1</span>TCP vs UDP + the handshake that explains every error</div>
+  <table class="tb"><tr><th></th><th>TCP</th><th>UDP</th></tr>
+  <tr><td>Style</td><td>Connection-oriented, reliable, ordered</td><td>Fire-and-forget, fast, lossy</td></tr>
+  <tr><td>Uses</td><td>HTTP/SSH/DB/file transfer</td><td>DNS, video, gaming, VoIP</td></tr>
+  <tr><td>Broken</td><td>"refused" / timeout / RST</td><td>Silent loss</td></tr>
+  <tr><td>Terraform</td><td><code>protocol="tcp"</code></td><td><code>protocol="udp"</code></td></tr></table>
+  <div class="tree">SYN ──&gt; │ &lt;── SYN-ACK │ ACK ──&gt; │ DATA flows
+RST = reached, nothing listening (wrong port / app down)
+TIMEOUT = packet dropped (SG deny, NACL deny, route missing)</div>
+  <p class="small">Top bug: opening TCP/80 when the server listens on UDP (custom metrics endpoint). Mismatched protocol = silent "no connection".</p>
+  <div class="sec"><span class="n">§2</span>CIDR math — the only operation that matters</div>
+  <div class="code">/32 = 1 IP · /24 = 256 (251 usable) · /16 = 65,536 · /8 = 16M
+/16 + 8 newbits = /24 → 2^8 = 256 subnets
+/16 + 4 newbits = /20 → 2^4 = 16 subnets
+locals {
+  pub  = [for k in range(3) : cidrsubnet("10.0.0.0/16", 8, k)]        # .0 .1 .2
+  priv = [for k in range(3) : cidrsubnet("10.0.0.0/16", 8, k + 10)]   # .10 .11 .12
+  db   = [for k in range(3) : cidrsubnet("10.0.0.0/16", 8, k + 20)]   # gaps = growth
+}</div>
+  <p class="small">Reserved per subnet (5): <code>.0</code> network, <code>.1</code> router, <code>.2</code> DNS, <code>.3</code> future, last = broadcast. Pick <code>10.x.0.0/16</code> per env so peered VPCs never overlap.</p>
+  <div class="sec"><span class="n">§3</span>Routing — what actually delivers the packet</div>
+  <div class="code"># public: everything else → IGW
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  route { cidr_block = "0.0.0.0/0"
+          gateway_id = aws_internet_gateway.igw.id }
+}
+# private: everything else → NAT (outbound only)
+resource "aws_route" "priv_nat" {
+  route_table_id = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id = aws_nat_gateway.main.id
+}</div>
+  <p class="small">Longest-prefix match wins. Every subnet uses exactly one route table (explicit or main). SG allows port 80 but no <code>0.0.0.0/0 → igw</code>? Packets go nowhere. Tiers are code, not magic: public = igw route + <code>map_public_ip_on_launch</code>; private = nat route; database = local-only, no default route.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 6 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-01b">prev</a> | <a class="tlink" href="#ch-02b">next</a></span></div>
+</div>
+<div class="sheet" id="ch-02b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 02B</div><h1 class="t">🛡️ SG vs NACL, DNS, Endpoints, Peering</h1></div><span class="hmeta">⏱ 8 MIN · NET II</span></div></div>
+  <p class="lead">The #1 interview question lives here: <b>stateful vs stateless</b>. SGs auto-allow return traffic; NACLs need both directions explicit. Then DNS flags, endpoints that skip NAT, and peering's silent DNS bug.</p>
+  <div class="sec"><span class="n">§1</span>SG vs NACL — the table to memorize</div>
+  <table class="tb"><tr><th></th><th>Security Group</th><th>Network ACL</th></tr>
+  <tr><td>Level</td><td>Instance / ENI</td><td>Subnet</td></tr>
+  <tr><td>Stateful?</td><td><b>Yes</b> — return auto-allowed</td><td><b>No</b> — both directions explicit</td></tr>
+  <tr><td>Rules</td><td>Allow only</td><td>Allow + deny (numbered 1–32766)</td></tr>
+  <tr><td>Default</td><td>Allow out, deny in</td><td>Allow all both ways</td></tr>
+  <tr><td>Use</td><td>Default for everything</td><td>Block a bad IP range; rare</td></tr></table>
+  <div class="code"># NACL: HTTPS in + EPHEMERAL return (1024-65535) — SG never needs this
+resource "aws_network_acl_rule" "https_in" {
+  network_acl_id = aws_network_acl.main.id  rule_number = 100
+  egress = false  protocol = "tcp"  rule_action = "allow"
+  cidr_block = "0.0.0.0/0"  from_port = 443  to_port = 443
+}
+resource "aws_network_acl_rule" "ephemeral_out" {
+  network_acl_id = aws_network_acl.main.id  rule_number = 110
+  egress = true  protocol = "tcp"  rule_action = "allow"
+  cidr_block = "0.0.0.0/0"  from_port = 1024  to_port = 65535
+}</div>
+  <div class="sec"><span class="n">§2</span>DNS flags + endpoints that skip NAT</div>
+  <div class="code">resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support   = true   # .2 resolver in every subnet
+  enable_dns_hostnames = true   # public IPs get public DNS names
+}
+# Gateway endpoint for S3 — FREE, keeps traffic on AWS backbone
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id = aws_vpc.main.id
+  service_name = "com.amazonaws.us-east-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids = [aws_route_table.private.id]
+}</div>
+  <p class="small">DNS off = no discovery, no Route 53 private zones, no <code>nslookup</code> between instances. Endpoints: add lines, save NAT charges, gain latency. Format: <code>com.amazonaws.&lt;region&gt;.&lt;service&gt;</code>.</p>
+  <div class="sec"><span class="n">§3</span>Peering + the silent DNS bug</div>
+  <div class="code">resource "aws_vpc_peering_connection" "a_to_b" {
+  vpc_id = aws_vpc.a.id  peer_vpc_id = aws_vpc.b.id }
+# routes in BOTH tables — peering never auto-propagates
+resource "aws_route" "a_to_b" {
+  route_table_id = aws_route_table.a_private.id
+  destination_cidr_block = aws_vpc.b.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.a_to_b.id }
+# THE SILENT BUG — DNS does NOT cross peering by default:
+resource "aws_vpc_peering_connection_options" "a" {
+  vpc_peering_connection_id = aws_vpc_peering_connection.a_to_b.id
+  requester { allow_remote_vpc_dns_resolution = true } }
+# + mirror block with accepter { ... } on side B</div>
+  <div class="mark m-warn"><span class="tag">⚠</span>Without the flag on <b>both</b> sides: app in A can't resolve private hostnames in B — timeout while SG/route checks pass. Peering is 1:1, no transitive routing; past 3–4 VPCs use Transit Gateway.</div>
+  <div class="sec"><span class="n">§4</span>Interview answers</div>
+  <ul class="ul-tight">
+    <li><b>Public vs private — actual difference?</b> Route table (igw vs nat) + <code>map_public_ip_on_launch</code>. Nothing else.</li>
+    <li><b>Endpoint vs NAT?</b> NAT = generic egress (paid). Endpoint = one AWS service, cheaper, faster. S3/DynamoDB always via endpoint.</li>
+    <li><b>Reserved IPs?</b> 5 per subnet (.0 .1 .2 .3 broadcast). /24 = 251 usable.</li>
+  </ul>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 7 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-02a">prev</a> | <a class="tlink" href="#ch-03a">next</a></span></div>
+</div>
+<div class="sheet" id="ch-03a">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 03A</div><h1 class="t">🗂️ Workspaces — CLI, Patterns, Proof</h1></div><span class="hmeta">⏱ 7 MIN · WS I</span></div></div>
+  <p class="lead">Workspaces are <b>named sub-folders inside one state backend</b>. Same code, same backend, one state file per env. The <code>default</code> workspace is free and implicit — create named ones <b>before the first apply</b>.</p>
+  <div class="sec"><span class="n">§1</span>Command reference</div>
+  <div class="code">terraform workspace list        # * marks active
+terraform workspace new dev     # create + switch (errors if exists)
+terraform workspace select prod # switch
+terraform workspace show        # prints name only
+terraform workspace delete dev  # safe only when state empty
+terraform workspace delete dev -force
+# → label gone, STATE FILE INTACT on backend. rm the S3 object yourself.
+# names: letters digits - _ · no spaces/slashes · default is reserved</div>
+  <div class="sec"><span class="n">§2</span>Three in-code patterns via <code>terraform.workspace</code></div>
+  <div class="code"># A — sizing per workspace (textbook)
+locals {
+  sizing  = { default={count=1,type="t3.micro"} dev={count=1,type="t3.micro"}
+              staging={count=2,type="t3.small"} prod={count=3,type="t3.small"} }
+  current = local.sizing[terraform.workspace]
+}
+resource "aws_instance" "cluster" {
+  count = local.current.count   instance_type = local.current.type
+  tags  = { Env = terraform.workspace }
+}
+
+# B — common + per-env overlay (lookup default defeats KeyError)
+locals {
+  tags = merge({ManagedBy="terraform"},
+    lookup({dev={Env="dev"} prod={Env="prod"}}, terraform.workspace,
+           {Env=terraform.workspace}))
+}
+
+# C — toggle per workspace
+resource "aws_cloudwatch_log_group" "verbose" {
+  count = contains(["dev","staging"], terraform.workspace) ? 1 : 0
+  retention_in_days = terraform.workspace == "dev" ? 1 : 14
+}</div>
+  <div class="sec"><span class="n">§3</span>Isolation proof — run once, win every argument</div>
+  <div class="code">terraform init
+terraform workspace new dev     &amp;&amp; terraform apply -auto-approve  # 1×
+terraform workspace new staging &amp;&amp; terraform apply -auto-approve  # 2×
+terraform workspace new prod    &amp;&amp; terraform apply -auto-approve  # 3×
+aws s3api list-objects-v2 --bucket tfstate --prefix env/ --query 'Contents[].Key'
+# env/dev/terraform.tfstate · env/staging/terraform.tfstate · env/prod/...
+terraform workspace select dev &amp;&amp; terraform plan   # → 0/0/0, own state only</div>
+  <p class="small">Each workspace's graph knows only its resources. Cross-workspace reads need <code>terraform_remote_state</code> (legacy) or module outputs — workspaces alone share nothing.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 8 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-02b">prev</a> | <a class="tlink" href="#ch-03b">next</a></span></div>
+</div>
+<div class="sheet" id="ch-03b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 03B</div><h1 class="t">🏭 Workspaces in Production — CI, Sharing, Gotchas</h1></div><span class="hmeta">⏱ 7 MIN · WS II</span></div></div>
+  <p class="lead">Workspaces are easy to learn, easy to misuse. This page: the decision table, the CI shape that removes human error, cross-workspace sharing, and the 3 gotchas that bite first.</p>
+  <div class="sec"><span class="n">§1</span>Workspaces vs folders vs -var-file</div>
+  <table class="tb"><tr><th></th><th>Workspaces</th><th>Separate folders</th><th>Single -var-file</th></tr>
+  <tr><td>State isolation</td><td><span class="ok">Yes, per env</span></td><td><span class="ok">Yes, full blast-radius</span></td><td><span class="bad">No — DANGEROUS</span></td></tr>
+  <tr><td>Per-env backends</td><td>No</td><td><span class="ok">Yes (accounts/regions)</span></td><td>N/A</td></tr>
+  <tr><td>"Which env?"</td><td>Hidden (workspace show)</td><td><span class="ok">Visible (cwd)</span></td><td><span class="ok">Visible (in command)</span></td></tr>
+  <tr><td>Locking</td><td>One lock, all envs</td><td>One lock per state</td><td>One lock, all</td></tr>
+  <tr><td>Best for</td><td>Solo/small, one account</td><td>Large/regulated, per-account</td><td>Throwaway only</td></tr></table>
+  <div class="sec"><span class="n">§2</span>CI — never let a human type <code>select prod</code></div>
+  <div class="code"># plan dev+staging in parallel on PR; prod only after merge to main
+env: { TF_WORKSPACE: ${{ matrix.env }} }   # pipeline sets it, not fingers
+run: terraform plan -var-file=envs/${{ matrix.env }}.tfvars -out=tfplan
+# apply-prod: environment: production (repo approval gate)
+env: { TF_WORKSPACE: prod }
+run: terraform apply -var-file=envs/prod.tfvars tfplan</div>
+  <div class="sec"><span class="n">§3</span>Sharing across workspaces</div>
+  <div class="drow">
+    <div class="panel"><div class="ptitle">A — remote_state (legacy)</div><div class="code">data "terraform_remote_state" "net" {
+  backend = "s3"
+  config = { bucket="tfstate"
+    key="env/prod/network/terraform.tfstate"
+    region="us-east-1" } }</div><p class="small">Workspace baked into key; needs bucket IAM. Works, marked legacy.</p></div>
+    <div class="panel"><div class="ptitle">B — module output (modern)</div><div class="code">module "network" {
+  source="terraform-aws-modules/vpc/aws"
+  version="5.1.0"  name="prod"
+  cidr="10.0.0.0/16" }</div><p class="small">Each workspace provisions its own copy. No cross-state reads.</p></div>
+  </div>
+  <div class="sec"><span class="n">§4</span>The 3 gotchas</div>
+  <div class="dcol">
+    <div class="qz"><span class="qn">G1.</span><b>default workspace.</b> First init+apply lands there, unprefixed key. <span class="ans">Fix: workspace new before first apply.</span></div>
+    <div class="qz"><span class="qn">G2.</span><b>Shared lock.</b> One table locks all states in the bucket — no parallel applies. <span class="ans">Fix: separate buckets per env.</span></div>
+    <div class="qz"><span class="qn">G3.</span><b>Delete keeps state.</b> Label gone, S3 object stays. <span class="ans">Fix: aws s3 rm the key yourself.</span></div>
+  </div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 9 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-03a">prev</a> | <a class="tlink" href="#ch-04a">next</a></span></div>
+</div>
+<div class="sheet" id="ch-04a">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 04A</div><h1 class="t">🌍 Multi-Env — Workspaces vs Folders vs Buckets</h1></div><span class="hmeta">⏱ 8 MIN · MENV</span></div></div>
+  <p class="lead">Three layouts for N envs, one VPC each. Pick by blast radius: solo → workspaces, team → folders, regulated → separate buckets. CIDRs must never overlap — enforce with a matrix in code.</p>
+  <div class="sec"><span class="n">§1</span>Layout B1 — workspaces (1 folder, 1 backend, many states)</div>
+  <div class="code">locals {
+  cidrs = { dev="10.0.0.0/16" staging="10.10.0.0/16" prod="10.20.0.0/16" }
+}
+resource "aws_vpc" "main" {
+  cidr_block = local.cidrs[terraform.workspace]
+  tags = { Env = terraform.workspace }
+}
+# terraform workspace new dev &amp;&amp; terraform apply  (×3 envs, 3 states, 3 CIDRs)</div>
+  <p class="small">Best for solo, single account. Same-bucket blast radius is the price of simplicity.</p>
+  <div class="sec"><span class="n">§2</span>Layout B2 — separate folders (1 folder per env)</div>
+  <div class="code">envs/dev/main.tf            # no env logic: cidr 10.0.0.0/16, Env=dev
+envs/dev/backend-dev.hcl    # bucket=tfstate key=env/dev/terraform.tfstate
+envs/staging/...  envs/prod/...
+cd envs/dev &amp;&amp; terraform init -backend-config=backend-dev.hcl &amp;&amp; terraform apply</div>
+  <p class="small">Best for teams: per-env lock, per-env IAM, CI matrix over dirs. A local module kills the duplication (see ch-04b §4).</p>
+  <div class="sec"><span class="n">§3</span>Layout B3 — separate buckets (production grade)</div>
+  <div class="code"># envs/dev/backend-dev.hcl    → bucket = "tfstate-dev"
+# envs/prod/backend-prod.hcl  → bucket = "tfstate-prod"  (different account)
+# Dev apply CANNOT touch the prod bucket (different IAM). Survives audits.</div>
+  <div class="sec"><span class="n">§4</span>Decision flowchart</div>
+  <div class="tree">1 account · 1 env · study ............ Pattern A (single folder)
+1 account · N envs ................. B1 workspaces / B2 folders
+1 account · N envs · audit ......... B3 separate buckets
+N envs · 2+ VPCs each .............. Pattern C (next page)
+N accounts · N envs ................ C3 one account per env
+5+ envs · shared config ............ Terragrunt</div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 10 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-03b">prev</a> | <a class="tlink" href="#ch-04b">next</a></span></div>
+</div>
+<div class="sheet" id="ch-04b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 04B</div><h1 class="t">🏗️ Multi-VPC — The 3-VPC Layout</h1></div><span class="hmeta">⏱ 8 MIN · MVPC</span></div></div>
+  <p class="lead">Real orgs run <b>shared + data + apps</b> VPCs per env: ALB/NAT live in shared, RDS/cache in data (no internet), compute in apps. Peered together, isolated at the SG level.</p>
+  <div class="sec"><span class="n">§1</span>CIDR matrix — overlap is a plan-time error, not a runtime surprise</div>
+  <div class="code">locals {
+  cidr_matrix = {
+    dev     = { shared="10.0.0.0/16"  data="10.1.0.0/16"  apps="10.2.0.0/16"  }
+    staging = { shared="10.10.0.0/16" data="10.11.0.0/16" apps="10.12.0.0/16" }
+    prod    = { shared="10.20.0.0/16" data="10.21.0.0/16" apps="10.22.0.0/16" }
+  }
+  my = local.cidr_matrix[terraform.workspace][var.vpc_role]  # role: shared/data/apps
+}
+resource "aws_vpc" "this" {
+  cidr_block = local.my_cidr
+  tags = { Env = terraform.workspace  Role = var.vpc_role }
+}</div>
+  <div class="sec"><span class="n">§2</span>Peering + routes — explicit on both sides, no transitive</div>
+  <div class="code">resource "aws_vpc_peering_connection" "shared_apps" {
+  vpc_id = aws_vpc.shared.id  peer_vpc_id = aws_vpc.apps.id
+  auto_accept = true   # same account; cross-account needs accept_request
+  tags = { Pair = "shared-apps" }
+}
+resource "aws_route" "apps_to_shared" {
+  route_table_id = aws_vpc.apps.main_route_table_id
+  destination_cidr_block = aws_vpc.shared.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.shared_apps.id
+}
+# SGs chain by REFERENCE inside a VPC, by CIDR across VPCs:
+# apps_ec2 ingress: source = shared_alb.id  (same VPC — never 0.0.0.0/0)</div>
+  <div class="sec"><span class="n">§3</span>Scale with a module — 9 lines for the full pattern</div>
+  <div class="code"># envs/prod/main.tf — one module block per role, different CIDRs
+module "shared" { source="../../modules/vpc-with-peering"
+  cidr="10.0.0.0/16"  role="shared"  az_count=3 }
+module "data"   { source="../../modules/vpc-with-peering"
+  cidr="10.10.0.0/16" role="data"    az_count=3 }
+module "apps"   { source="../../modules/vpc-with-peering"
+  cidr="10.20.0.0/16" role="apps"    az_count=3 }</div>
+  <p class="small">Change the module → every env re-applies (per-state tracking, no cross-env pollution). State layout: <code>s3://tfstate-prod/shared|data|apps/terraform.tfstate</code> — one bad <code>eks/</code> change can't touch <code>data/</code>.</p>
+  <div class="sec"><span class="n">§4</span>Gotchas interviews test</div>
+  <ul class="ul-tight">
+    <li><b>Transitive routing doesn't exist.</b> apps→shared→data needs a direct apps→data peering, or TGW.</li>
+    <li><b>DNS over peering:</b> <code>allow_remote_vpc_dns_resolution</code> on both sides (ch-02b §3).</li>
+    <li><b>SG refs die across VPCs</b> — use CIDR sources cross-VPC, SG refs inside.</li>
+    <li><b>State in default workspace</b> — <code>workspace new</code> before first apply, always.</li>
+  </ul>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 11 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-04a">prev</a> | <a class="tlink" href="#ch-05">next</a></span></div>
+</div>
+<div class="sheet" id="ch-05">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 05</div><h1 class="t">🔁 count vs for_each — The Rename Trap</h1></div><span class="hmeta">⏱ 8 MIN · META</span></div></div>
+  <p class="lead">Both copy a resource N times. <b>count = index identity, for_each = key identity.</b> Remove from the middle and count shifts every later copy; for_each kills only the removed key. That's the whole chapter in two sentences — the rest is proof.</p>
+  <div class="mark m-key"><span class="tag">🔑 THE RULE</span><b>for_each</b> for anything with a meaningful identity (servers by name, subnets by AZ). <b>count</b> for "N identical copies" or 0/1 toggles. Never mix both in one block.</div>
+  <div class="sec"><span class="n">§1</span>The difference, demonstrated</div>
+  <div class="drow">
+    <div class="panel"><div class="ptitle">count — index-based</div><div class="code">resource "aws_instance" "web" {
+  count = 3
+  tags = { Name = "web-${count.index}" }
+}
+# → web[0] web[1] web[2]
+# count 3→2 destroys web[2].
+# Remove the MIDDLE? Later indexes
+# SHIFT — downstream refs break.</div></div>
+    <div class="panel"><div class="ptitle">for_each — key-based</div><div class="code">resource "aws_instance" "web" {
+  for_each = toset(["web-a","web-b"])
+  tags = { Name = each.key }
+}
+# → web["web-a"] web["web-b"]
+# Remove "web-c": ONLY it dies.
+# Rename: old key dies, new key
+# born, everything else untouched.</div></div>
+  </div>
+  <div class="sec"><span class="n">§2</span>5 copy-ready patterns</div>
+  <div class="code"># 1 — subnets per AZ (map: AZ → netnum, best of both)
+resource "aws_subnet" "public" {
+  for_each = { for i, az in var.azs : az => i }
+  cidr_block = cidrsubnet("10.0.0.0/16", 8, each.value)
+  availability_zone = each.key
+}
+# 2 — IAM users from a list (set: stable identity)
+resource "aws_iam_user" "team" {
+  for_each = toset(var.users)   # add "noor" → only noor created
+  name = each.key
+}
+# 3 — N identical workers (count earns it here)
+resource "aws_instance" "worker" {
+  count = 5
+  tags = { Name = "worker-${count.index}" }   # 4 destroys worker[4]
+}
+# 4 — conditional 0/1 + safe read
+resource "aws_cloudwatch_log_group" "v" {
+  count = var.enable_monitoring ? 1 : 0 }
+output "log_group" { value = one(aws_cloudwatch_log_group.v[*].arn) }
+# 5 — for_each needs set/map, never a bare list:
+# for_each = toset(var.list)  or  { for x in var.list : x =&gt; x }</div>
+  <div class="sec"><span class="n">§3</span>Indexing without the Invalid-index error</div>
+  <div class="code">output "ip_or_null" { value = try(aws_instance.web[0].public_ip, null) }
+output "by_name"     { value = lookup(aws_instance.team, "ahmed", null) }</div>
+  <p class="small"><b>for_each on unknown-at-plan values fails</b> — use count there, or refactor. <code>one()</code> returns the single element or null — perfect for 0/1 resources.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 12 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-04b">prev</a> | <a class="tlink" href="#ch-06">next</a></span></div>
+</div>
+<div class="sheet" id="ch-06">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 06</div><h1 class="t">📤 Outputs — The Production Contract</h1></div><span class="hmeta">⏱ 8 MIN · OUT</span></div></div>
+  <p class="lead">An <code>output</code> is a <b>named export from state</b> — to modules, other stacks, CI, humans. <code>outputs.tf</code> is the public interface reviewers read first. Five types, one security model, three consumption patterns.</p>
+  <div class="sec"><span class="n">§1</span>Anatomy + the 5 types</div>
+  <div class="code">output "vpc_id" { value = aws_vpc.main.id }   # 1 · scalar
+output "public_ips" { value = aws_instance.web[*].public_ip }   # 2 · list
+output "by_name" {   # 3 · map (friendliest for curl + downstream)
+  value = { for k, inst in aws_instance.web : k =&gt; inst.public_ip } }
+output "db_password" {   # 4 · sensitive (CLI-masked, state PLAINTEXT)
+  value = aws_db_instance.main.password   sensitive = true }
+output "deploy_token" {  # 5 · ephemeral (never in state; same-apply read only)
+  value = aws_secretsmanager_secret_version.cur.secret_string
+  ephemeral = true }
+# + description (always set it) · depends_on (rare) · precondition (underused §3)</div>
+  <div class="sec"><span class="n">§2</span>Security model — the interview answer</div>
+  <table class="tb"><tr><th></th><th>CLI hidden?</th><th>In state?</th><th>Real secrecy?</th></tr>
+  <tr><td>Plain</td><td>No</td><td>Yes</td><td><span class="bad">No</span></td></tr>
+  <tr><td>sensitive</td><td>Yes (masked)</td><td>Yes, plaintext</td><td><span class="bad">No — masking only</span></td></tr>
+  <tr><td>ephemeral</td><td>Yes</td><td>No</td><td>One-shot only</td></tr>
+  <tr><td>Vault/SSM/SM</td><td>Via provider</td><td>Encrypted at rest</td><td><span class="ok">Yes — the true story</span></td></tr></table>
+  <div class="sec"><span class="n">§3</span>Consumption — module, stack, CI</div>
+  <div class="code"># module → module (standard):  module.vpc.private_subnets[0]
+# stack → stack (legacy remote_state):
+data "terraform_remote_state" "network" {
+  backend = "s3"
+  config = { bucket="tfstate-prod" key="network/terraform.tfstate" } }
+# → data.terraform_remote_state.network.outputs.private_subnet_ids[0]
+# source stack MUST run first — CI job graph enforces it.
+# CI: terraform output -json | jq -r .vpc_id.value   (mask secrets!)
+# plan archaeology: terraform show -json tfplan | jq '.output_changes'</div>
+  <div class="sec"><span class="n">§4</span>Guardrails — precondition + naming</div>
+  <div class="code">output "cluster_size" {
+  value = length(aws_instance.cluster)
+  precondition { condition = length(aws_instance.cluster) &gt;= 2
+    error_message = "Need ≥2 instances for HA" }
+}</div>
+  <p class="small">Name outputs <code>web_instance_ips</code>, not <code>ips</code> — consumers shouldn't guess. Never <code>echo</code> a sensitive output; pipe to a secret store.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 13 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-05">prev</a> | <a class="tlink" href="#ch-07">next</a></span></div>
+</div>
+<div class="sheet" id="ch-07">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART III · DAY 3 · CH 07</div><h1 class="t">🚀 End-to-End Project Walkthrough</h1></div><span class="hmeta">⏱ 10 MIN · E2E</span></div></div>
+  <p class="lead">Scaffold → code → 3 workspaces → isolation proof. A tiny real cluster: 1 VPC/env, public+private subnets, N instances serving <code>Hello from &lt;env&gt;-&lt;index&gt;</code>. 30 min on the emulator.</p>
+  <div class="sec"><span class="n">§1</span>Layout — 5 files, resources apart from providers</div>
+  <div class="tree">study-cluster/
+├── versions.tf    # pins: TF ≥1.6, aws ~&gt; 5.0 (+ lock file, COMMIT it)
+├── variables.tf   # env_override · sizing map · cidrs map (non-overlapping!)
+├── providers.tf   # provider blocks, one per cloud
+├── main.tf        # VPC → subnets → SG → AMI → instances
+└── outputs.tf     # vpc_id · subnets · ips-by-name · count · env</div>
+  <div class="sec"><span class="n">§2</span>The core trick — env from workspace, guarded</div>
+  <div class="code">locals {
+  env_name = var.env_override != "" ? var.env_override : terraform.workspace
+  effective_env = local.env_name == "default" ? "dev" : local.env_name
+  effective     = var.sizing[local.effective_env]   # {count, type}
+  vpc_cidr      = var.cidrs[local.effective_env]    # 10.0 / 10.10 / 10.20
+  azs = { for i, az in slice(data.aws_availability_zones.av.names,0,3) : az =&gt; i }
+  node_names = [for i in range(local.effective.count) :
+                format("%s-node-%02d", local.effective_env, i)]
+}
+resource "aws_subnet" "public" {
+  for_each = local.azs   # stable identity per AZ
+  cidr_block = cidrsubnet(aws_vpc.this.cidr_block, 8, each.value)
+  availability_zone = each.key   map_public_ip_on_launch = true
+}
+resource "aws_instance" "node" {
+  for_each = toset(local.node_names)
+  subnet_id = values(aws_subnet.public)[0]   # simplified; prod balances 3
+  user_data = &lt;&lt;-EOT
+    #!/bin/bash
+    apt-get install -y nginx
+    echo "Hello from ${each.key}" &gt; /var/www/html/index.html
+  EOT
+}</div>
+  <div class="sec"><span class="n">§3</span>Run it — init once, workspace per env, prove isolation</div>
+  <div class="code">terraform init   # providers + .terraform.lock.hcl
+terraform workspace new dev staging prod   # one command each
+terraform workspace select dev &amp;&amp; terraform apply   # 1× → curl: Hello from dev-node-00
+terraform workspace select staging &amp;&amp; terraform apply -auto-approve  # 2×
+terraform workspace select prod &amp;&amp; terraform apply -auto-approve     # 3×
+# PROOF: each env plans clean against its own state:
+terraform workspace select dev &amp;&amp; terraform plan  # → 0/0/0
+# destroy one env, others untouched: select staging &amp;&amp; terraform destroy</div>
+  <p class="small">Remote backend for teams: <code>backend "s3"</code> with <code>key = "study-cluster/terraform.tfstate"</code> — workspaces prefix <code>env/&lt;name&gt;/</code> automatically. <code>terraform output -json | jq .instance_count.value</code> per env must read 1 / 2 / 3.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 14 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-06">prev</a> | <a class="tlink" href="#ch-08">next</a></span></div>
+</div>
+<div class="sheet" id="ch-08">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART III · DAY 3 · CH 08</div><h1 class="t">⚖️ ALB Walkthrough — Two Tiers, One Codebase</h1></div><span class="hmeta">⏱ 10 MIN · ALB</span></div></div>
+  <p class="lead">A public ALB in front of two frontend instances, an internal ALB in front of two backend instances — 18 resources, one <code>main.tf</code>, three envs via workspaces. Every ALB stack is the same <b>quartet</b>: load balancer → target group → listener → attachment.</p>
+  <div class="sec"><span class="n">§1</span>The canonical quartet (public tier)</div>
+  <div class="code">resource "aws_lb" "public" {
+  name = "${local.name_prefix}-pub-alb"
+  load_balancer_type = "application"
+  internal = false   # ← internet-facing; true = internal tier
+  security_groups = [aws_security_group.public_alb.id]
+  subnets = aws_subnet.public[*].id
+}
+resource "aws_lb_target_group" "public" {
+  name = "${local.name_prefix}-pub-tg"   port = 80
+  protocol = "HTTP"   target_type = "instance"   vpc_id = aws_vpc.this.id
+  health_check { path = "/"   port = "traffic-port"   matcher = "200"
+    interval = 30   timeout = 5   healthy_threshold = 2   unhealthy_threshold = 3 }
+}
+resource "aws_lb_listener" "public_http" {
+  load_balancer_arn = aws_lb.public.arn   port = 80   protocol = "HTTP"
+  default_action { type = "forward"
+    target_group_arn = aws_lb_target_group.public.arn }
+}
+resource "aws_lb_target_group_attachment" "public" {
+  count = length(aws_instance.frontend)   # 2 + 2, same count as the fleet
+  target_group_arn = aws_lb_target_group.public.arn
+  target_id = aws_instance.frontend[count.index].id   port = 80
+}</div>
+  <p class="small">Internal tier = same quartet with <code>internal = true</code>, swapped SG/subnets/targets. Health-check rule of thumb: <code>interval ≥ 2 × timeout</code>, thresholds summing to 5 for fast convergence.</p>
+  <div class="sec"><span class="n">§2</span>SG chaining — ALB → EC2 by reference, never CIDR</div>
+  <div class="code"># public_alb: TCP 80/443 from 0.0.0.0/0 (internet-facing)
+# frontend_ec2: TCP 80 from public_alb SG ONLY (not 0.0.0.0/0)
+# internal_alb: TCP 80 from frontend_ec2 SG + VPC CIDR (defense in depth)
+# backend_ec2:  TCP 80 from internal_alb SG ONLY (internal traffic only)
+ingress { from_port = 80   to_port = 80   protocol = "tcp"
+  security_groups = [aws_security_group.public_alb.id] }</div>
+  <p class="small">SGs referencing each other form a chain Terraform topologically orders — no <code>depends_on</code> needed.</p>
+  <div class="sec"><span class="n">§3</span>The elbv2 gotcha + workspace naming</div>
+  <div class="mark m-warn"><span class="tag">⚠</span><code>aws_lb</code> needs the <b>elbv2</b> endpoint — classic <code>elb</code> serves CLBs only. Missing <code>elbv2</code> line = ALB calls silently hit real AWS with emulator creds set. Always redirect <code>ec2, elb, elbv2, iam, sts, s3</code> together via <code>dynamic "endpoints"</code> on a null-or-URL variable.</div>
+  <div class="code">locals {
+  name_prefix = "${var.project}-${terraform.workspace}"  # onext-dev-…
+  common_tags = { Project = var.project
+    Environment = terraform.workspace   ManagedBy = "terraform" }
+}
+# run-alb.sh dev → 22 resources in dev state; staging/prod identical, isolated</div>
+  <p class="small">Proof it's correct, not one-shot: re-run <code>plan</code> → <b>No changes</b>. Outputs (<code>public_alb_dns_name</code> + <code>_zone_id</code> for Route53 alias, TG ARNs, instance IDs) feed downstream stacks.</p>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 15 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-07">prev</a> | <a class="tlink" href="#lab-1">next</a></span></div>
+</div>
+<div class="sheet" id="lab-1">
+  <div class="pghead"><div class="hrow"><div><div class="kick">PART III · CAPSTONE</div><h1 class="t">⭐ Lab 1 — Multi-Env &amp; Multi-VPC Build</h1></div><span class="hmeta">⏱ 15 MIN · CAP</span></div></div>
+  <p class="lead">Stitches every chapter: <b>variables → workspaces → 3-VPC layout → for_each → outputs → destroy</b>. Two tabs — Tab 2 builds, Tab 1 observes. Emulator-ready; same code hits real AWS by deleting endpoints + skip_* lines.</p>
+  <div class="sec"><span class="n">▣</span>Build chain (8 resources, one file)</div>
+  <div class="code">terraform {
+  required_providers { aws = { source = "hashicorp/aws", version = "~&gt; 5.0" } }
+}
+provider "aws" {
+  region = "us-east-1"
+  access_key = "test"  secret_key = "test"   # emulator dummy creds
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  endpoints { ec2 = "http://localhost:4566" }   # delete for AWS
+}
+locals {
+  cidrs = { shared="10.0.0.0/16" data="10.10.0.0/16" apps="10.20.0.0/16" }
+}
+resource "aws_vpc" "shared" { cidr_block = local.cidrs.shared
+  tags = { Env=terraform.workspace Role="shared" } }
+resource "aws_vpc" "data" { cidr_block = local.cidrs.data
+  tags = { Env=terraform.workspace Role="data" } }
+resource "aws_subnet" "pub" {
+  for_each = { for i, az in slice(data.aws_availability_zones.av.names,0,2) : az =&gt; i }
+  vpc_id = aws_vpc.shared.id
+  cidr_block = cidrsubnet(aws_vpc.shared.cidr_block, 8, each.value)
+}
+resource "aws_security_group" "web" {
+  vpc_id = aws_vpc.shared.id
+  ingress { from_port=443 to_port=443 protocol="tcp" cidr_blocks=["0.0.0.0/0"] }
+  egress  { from_port=0   to_port=0   protocol="-1"  cidr_blocks=["0.0.0.0/0"] }
+}
+resource "aws_instance" "web" {
+  for_each = toset(["a1","a2","b1","b2"])
+  ami = "ami-0c55b159cbfafe1f0"   instance_type = "t3.micro"
+  subnet_id = values(aws_subnet.pub)[0]
+}
+output "ips" {
+  value = { for k, i in aws_instance.web : k =&gt; i.private_ip } }</div>
+  <div class="sec"><span class="n">▣</span>Two-terminal execution</div>
+  <div class="drow">
+    <div class="panel"><div class="ptitle">👀 TAB 1 · OBSERVE</div><div class="code">floci start
+eval "$(floci env)"
+watch aws ec2 describe-vpcs \
+  --query 'Vpcs[].CidrBlock'</div></div>
+    <div class="panel"><div class="ptitle">⌨️ TAB 2 · BUILD</div><div class="code">terraform init
+terraform workspace new dev
+terraform apply -auto-approve
+terraform output -json | jq .ips
+terraform destroy -auto-approve</div></div>
+  </div>
+  <div class="mark m-exam"><span class="tag">🎓 WHAT THIS PROVED</span>Provider auth → per-workspace CIDRs → for_each identity → SG → outputs → isolated destroy. Repeat for staging/prod with the matrix from ch-04b.</div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 16 —</span><span><a class="backtoc" href="#toc">TOC</a> <a class="tlink" href="#ch-08">prev</a> | <a class="tlink" href="#cheat">next</a></span></div>
+</div>
+<div class="sheet" id="cheat">
+  <div class="pghead"><div class="hrow"><div><div class="kick">FINALE</div><h1 class="t">📋 Cheat · Quiz · Glossary · Resources</h1></div><span class="hmeta">🏁 END</span></div></div>
+  <p class="lead">The story in one page: commands, quiz, glossary, resources. Tear this page out (mentally) and keep it by your terminal.</p>
+  <div class="sec"><span class="n">▣</span>Cheat sheet — the commands</div>
+  <table class="tb"><tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>terraform init</code></td><td>Install providers, init backend, lock versions</td></tr>
+  <tr><td><code>terraform plan -out=tf</code></td><td>Preview + save (reviewed == executed)</td></tr>
+  <tr><td><code>terraform apply tf</code></td><td>Execute exactly the saved plan</td></tr>
+  <tr><td><code>terraform output -json</code></td><td>All exports, CI-shaped (| jq .x.value)</td></tr>
+  <tr><td><code>workspace new/select/show</code></td><td>Create / switch / print active env</td></tr>
+  <tr><td><code>terraform console</code></td><td>REPL — test any function/var instantly</td></tr>
+  <tr><td><code>terraform destroy</code></td><td>Tear down THIS workspace only</td></tr></table>
+  <div class="sec"><span class="n">▣</span>Quiz — 6 questions</div>
+  <div class="dcol">
+    <div class="qz"><span class="qn">1.</span>Order the ladder: -var, auto.tfvars, tfvars, TF_VAR_, default.<br><span class="ans">A: -var &gt; -var-file &gt; auto.tfvars &gt; tfvars &gt; TF_VAR_ &gt; default.</span></div>
+    <div class="qz"><span class="qn">2.</span>Why does removing a middle count item shift identity?<br><span class="ans">A: Index-based — later items renumber. for_each keys don't.</span></div>
+    <div class="qz"><span class="qn">3.</span>SG allows 443 but curl times out. First check?<br><span class="ans">A: Route table (0.0.0.0/0 → igw/nat), then NACL ephemeral ports.</span></div>
+    <div class="qz"><span class="qn">4.</span>Does sensitive=true encrypt state?<br><span class="ans">A: No — CLI masking only. State stays plaintext.</span></div>
+    <div class="qz"><span class="qn">5.</span>Peering up but cross-VPC DNS fails?<br><span class="ans">A: allow_remote_vpc_dns_resolution on BOTH sides.</span></div>
+    <div class="qz"><span class="qn">6.</span>Deleted workspace — is the state gone?<br><span class="ans">A: No — label only. rm the S3 key yourself.</span></div>
+  </div>
+  <div class="sec"><span class="n">▣</span>Glossary — 12 terms</div>
+  <div class="dcol">
+    <div class="glos"><b>workspace</b> — named state scope under one backend.</div>
+    <div class="glos"><b>precedence ladder</b> — CLI &gt; auto.tfvars &gt; tfvars &gt; env &gt; default.</div>
+    <div class="glos"><b>validation</b> — plan-time input guard with error_message.</div>
+    <div class="glos"><b>dynamic block</b> — N nested blocks from one variable.</div>
+    <div class="glos"><b>ephemeral</b> — never persisted; one-shot secrets.</div>
+    <div class="glos"><b>longest-prefix match</b> — most specific route wins.</div>
+    <div class="glos"><b>stateful / stateless</b> — SG auto-returns; NACL needs both ways.</div>
+    <div class="glos"><b>endpoint</b> — private path to one AWS service.</div>
+    <div class="glos"><b>rename trap</b> — count re-indexes; for_each keys hold.</div>
+    <div class="glos"><b>one()</b> — single-or-null reader for 0/1 resources.</div>
+    <div class="glos"><b>precondition</b> — output sanity gate at eval time.</div>
+    <div class="glos"><b>TF_WORKSPACE</b> — CI's non-interactive env switch.</div>
+  </div>
+  <div class="sec"><span class="n">▣</span>Resources — keep these handy</div>
+  <div class="resbox"><b>Course deck (this book is built on it):</b> Eng. Mohamed Magdy — Terraform Level 1 + 2<br><b>Official:</b> <a href="https://registry.terraform.io">registry.terraform.io</a> · <a href="https://developer.hashicorp.com/terraform">developer.hashicorp.com/terraform</a> · <a href="https://github.com/hashicorp/terraform">github.com/hashicorp/terraform</a><br><b>Learn:</b> <a href="https://github.com/hashicorp/learn-terraform">learn-terraform</a> (free labs) · <a href="https://discuss.hashicorp.com/c/terraform-core/">discuss</a> (forum)<br><b>Local emulator:</b> <a href="https://floci.io">floci.io</a> (free MIT, port 4566)<br><b>Exam:</b> HashiCorp Certified — Terraform Associate</div>
+  <div class="folio"><span>Terraform · Vol 2</span><span class="fnum">— Page 17 · The End —</span><span><a class="backtoc" href="#toc">TOC</a></span></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,349 @@
+# CICD BY Nabawy — "Structure Map" View: Orchestration Manifest
+# New feature: a zoomed-out visual map of the whole CI/CD knowledge structure
+# (the "building"), where each block/cube represents a topic area, and
+# clicking one zooms into a detail view of that topic's books/content.
+#
+# This is NEW UI, not a bugfix — unlike a contrast fix, wrong assumptions
+# here are expensive to unwind (wrong metaphor, wrong data mapping, wrong
+# interaction model). So this manifest has ONE hard human gate very early
+# (locking the concept + data mapping) and is fully autonomous after that.
+
+meta:
+  repo: EslamNabawy/cicd-by-nabawy-source
+  root: CI-CD/
+  branch: feature/structure-map-view
+  qc_command: "python scripts/qc-check.py"
+  build_command: "python website/scripts/build.py"
+  feature_name: "Structure Map"
+  feature_route: "/map.html"   # proposed — confirmed in D1
+
+phases:
+  - id: D
+    name: Design lock (human-gated, do this first)
+  - id: B1
+    name: Data model + zoomed-out view
+  - id: B2
+    name: Zoom interaction + detail view
+  - id: B3
+    name: Polish, theme, mobile
+  - id: B4
+    name: Integration, QC, deploy
+
+tasks:
+
+  # ============================================================
+  # PHASE D — DESIGN LOCK (the only phase requiring your sign-off)
+  # ============================================================
+
+  - id: D.1
+    phase: D
+    name: Concept + data-mapping proposal
+    depends_on: []
+    prompt: |
+      Read books.json, TOPIC_INDEX.md, CONTENT_MAP.md, and the category/
+      difficulty structure already used on the homepage (the `.book[data-cat]`
+      accent map in build.py). I want a new page: a zoomed-out visual "map"
+      of the entire CI/CD knowledge base as a structure/building metaphor —
+      each block represents a topic area; clicking a block zooms in to show
+      that topic's books in more depth, arranged spatially rather than as a
+      flat list.
+
+      Propose, in writing, WITHOUT writing any code yet:
+      1. What each "block/cube" maps to in the existing data — one block
+         per category (matching the homepage's existing category groupings),
+         or a different grouping (e.g. by difficulty layer, or by dependency
+         order)? Recommend one, with reasoning tied to what already exists
+         in books.json so this isn't inventing a parallel taxonomy.
+      2. What the zoomed-out view actually shows on each block face — count
+         of books, category name, a representative icon, difficulty spread?
+      3. What "zoom in" reveals — is it the existing shelf/grid for that
+         category (reusing existing homepage card components), or a new
+         layout unique to this view? Recommend reusing existing book-card
+         markup where possible rather than building a parallel content
+         renderer that has to be kept in sync with books.json separately.
+      4. Visual approach given the current constraints: this is a static
+         site (Mintlify-based, dark/light theme, brand #18E299, 12px
+         radius, pill everything) built via build.py with no backend. A
+         literal 3D building is expensive to theme correctly (see the
+         current icon/contrast bug) and hard to make accessible/keyboard-
+         navigable. Propose TWO options:
+           (a) a lightweight pseudo-3D / isometric CSS treatment (blocks as
+               angled cards with depth via box-shadow/transform, cheap to
+               theme, easy fallback to a flat grid on mobile/reduced-motion)
+           (b) a true CSS 3D transform-based structure (more literal
+               "building," more expensive to get right across theme +
+               mobile + reduced-motion + keyboard nav)
+         State the trade-offs plainly and recommend one given this is a
+         static site maintained solo.
+      5. Route/entry point: propose a URL (e.g. /map.html) and where it's
+         linked from (nav bar alongside Roadmap/Glossary?).
+      6. Accessibility and reduced-motion fallback: what happens for a
+         keyboard-only user or someone with prefers-reduced-motion — the
+         zoom interaction must degrade to something still fully usable
+         (e.g. a plain expandable list), not just gracefully missing.
+      7. What does NOT change: confirm the existing homepage/reader/glossary
+         are unaffected — this is an additive new view, not a replacement.
+
+      Write this proposal to STRUCTURE_MAP_PROPOSAL.md at repo root. Do not
+      write any implementation code in this task — this is a design
+      document only, for me to review and approve before anything is built.
+    gate:
+      type: file_exists
+      path: STRUCTURE_MAP_PROPOSAL.md
+    outputs: [STRUCTURE_MAP_PROPOSAL.md]
+
+  - id: D.gate
+    phase: D
+    name: HUMAN APPROVAL — concept, data mapping, visual approach
+    depends_on: [D.1]
+    action: |
+      MANUAL. Human reads STRUCTURE_MAP_PROPOSAL.md and explicitly confirms,
+      in writing, answers to:
+        - Which grouping (category / difficulty / dependency order)?
+        - Option (a) pseudo-3D or (b) true 3D transforms?
+        - Confirmed route (e.g. /map.html) and nav placement?
+        - Any changes to the proposal before build starts?
+      This answer becomes the locked spec for every task in B1-B4. The
+      orchestrator must not improvise past what's approved here.
+    gate:
+      type: manual_approval
+    on_fail: "STOP. Do not begin B1 until this is explicitly answered — the
+      cost of building the wrong metaphor across ~10 CSS/JS tasks is far
+      higher than the cost of one review pass here."
+
+  # ============================================================
+  # PHASE B1 — data model + zoomed-out view (fully autonomous from here)
+  # ============================================================
+
+  - id: B1.1
+    phase: B1
+    name: Extend data layer (no new parallel content source)
+    depends_on: [D.gate]
+    prompt: |
+      Per the approved STRUCTURE_MAP_PROPOSAL.md: extend books.json (or a
+      derived, build-time-generated structure — do NOT hand-author a second
+      manifest that must be kept in sync with books.json manually) with
+      whatever grouping/position metadata the approved design needs (e.g.
+      block position in the map, per-category summary stats). Generate
+      this derived data in website/scripts/build.py at build time from the
+      existing books.json, so there is exactly one source of truth.
+      Do not touch pdf/ or dist/ by hand.
+    gate:
+      type: build_success
+    outputs: [data_layer_diff]
+
+  - id: B1.2
+    phase: B1
+    name: Zoomed-out map view — structure and layout
+    depends_on: [B1.1]
+    prompt: |
+      Build the zoomed-out view per the approved visual approach (pseudo-3D
+      or true 3D per D.gate's answer). One block per group from B1.1's data.
+      Each block shows the count/label/icon per the approved proposal.
+      Use the site's existing CSS variables for color/spacing — no new
+      hardcoded hex values, reuse the existing --brand/#18E299 and
+      dark/light tokens. Keep this in its own template/partial in build.py,
+      not spliced into the homepage template.
+    gate:
+      type: build_and_visual_diff
+      check: "new page renders all category/group blocks with correct
+        counts matching books.json; homepage and reader pages unchanged"
+    outputs: [map_view_diff]
+
+  - id: B1.3
+    phase: B1
+    name: Route + nav integration
+    depends_on: [B1.2]
+    prompt: |
+      Wire up the approved route (e.g. /map.html) and add the nav link at
+      the approved placement (alongside Roadmap/Glossary). Confirm the new
+      page inherits the site's existing header/footer/theme-toggle chrome
+      rather than being a standalone unstyled page.
+    gate:
+      type: build_and_spotcheck
+      spotcheck_pages: ["map.html"]
+    outputs: [route_nav_diff]
+
+  # ============================================================
+  # PHASE B2 — zoom interaction + detail view
+  # ============================================================
+
+  - id: B2.1
+    phase: B2
+    name: Click-to-zoom interaction
+    depends_on: [B1.3]
+    prompt: |
+      Implement the zoom-in interaction: clicking/tapping a block
+      transitions to a detail view for that group. Client-side only (no
+      backend) — CSS transitions/transforms, vanilla JS for state, no new
+      framework dependency given this is a static Mintlify-based site.
+      The transition should feel like "zooming into" the block (scale +
+      fade or scale + position per the approved visual approach), not an
+      abrupt page jump — but must still work with a plain URL/anchor so it
+      is linkable and works with browser back/forward.
+    gate:
+      type: manual_checklist
+      items:
+        - "clicking a block transitions to its detail view"
+        - "browser back returns to the zoomed-out map, not a broken state"
+        - "URL is meaningfully addressable (e.g. /map.html#platforms)"
+    outputs: [zoom_interaction_diff]
+
+  - id: B2.2
+    phase: B2
+    name: Detail view content
+    depends_on: [B2.1]
+    prompt: |
+      Per the approved proposal: populate the zoomed-in detail view by
+      REUSING the existing book-card markup/component from the homepage
+      shelf (not a new parallel renderer), scoped to just the books in the
+      clicked group. Include a clear "back to map" affordance in addition
+      to browser back.
+    gate:
+      type: build_and_link_check
+      check: "every book card in the detail view links to its real reader
+        page; card markup matches homepage's existing card styling"
+    outputs: [detail_view_diff]
+
+  - id: B2.3
+    phase: B2
+    name: Accessibility + reduced-motion fallback
+    depends_on: [B2.1]
+    prompt: |
+      Implement the fallback confirmed in the approved proposal: for
+      prefers-reduced-motion, skip the zoom animation and jump directly to
+      the detail view/state. For keyboard-only users, every block must be
+      focusable and activatable with Enter/Space, with visible focus
+      styling consistent with the rest of the site. Add ARIA labeling so
+      screen readers announce each block's group name and book count.
+    gate:
+      type: manual_checklist
+      items:
+        - "tab reaches every block in order; Enter/Space activates it"
+        - "prefers-reduced-motion: reduce skips the animation, still reaches
+          the detail view"
+        - "screen-reader label present on each block (group name + count)"
+    outputs: [a11y_diff]
+
+  # ============================================================
+  # PHASE B3 — polish, theme, mobile
+  # ============================================================
+
+  - id: B3.1
+    phase: B3
+    name: Theme correctness (dark + light)
+    depends_on: [B2.2]
+    prompt: |
+      Render the new map view and its detail view in BOTH themes. Check
+      every element (blocks, icons, text, transition backgrounds) against
+      its background — report actual color pairs, not just "looks fine."
+      This project has a known history of icons/text breaking across theme
+      (white-only icons invisible in light mode) — explicitly check this
+      new view doesn't repeat that bug: audit any icon used on the map
+      blocks for fill="currentColor" vs hardcoded color before shipping.
+    gate:
+      type: manual_checklist
+      items:
+        - "every block visible with adequate contrast in dark AND light"
+        - "every icon on the map view uses currentColor or is confirmed
+          theme-neutral by design (not accidentally white-only)"
+    outputs: [theme_fix_diff]
+
+  - id: B3.2
+    phase: B3
+    name: Mobile layout
+    depends_on: [B3.1]
+    prompt: |
+      Check the map view at 375px width. A literal spatial/3D block layout
+      may not translate to mobile — per the approved proposal's fallback,
+      implement a mobile-appropriate version (e.g. blocks stack as a
+      simple tappable list/grid instead of an isometric layout) rather than
+      shrinking the desktop layout until it's illegible.
+    gate:
+      type: build_and_spotcheck
+      spotcheck_pages: ["map.html"]
+      viewport: 375px
+    outputs: [mobile_map_diff]
+
+  - id: B3.3
+    phase: B3
+    name: Empty/edge states
+    depends_on: [B3.1]
+    prompt: |
+      Handle: a group with only 1 book (does the block still look
+      intentional, not broken/sparse), and confirm the page still works if
+      books.json's category set changes in the future (no hardcoded count
+      of blocks anywhere — derive from data, per B1.1).
+    gate:
+      type: manual_checklist
+      items:
+        - "single-book group renders sensibly, not visually broken"
+        - "no hardcoded block count anywhere in the new templates"
+    outputs: [edge_case_diff]
+
+  # ============================================================
+  # PHASE B4 — integration, QC, deploy
+  # ============================================================
+
+  - id: B4.1
+    phase: B4
+    name: Full rebuild + QC
+    depends_on: [B3.2, B3.3]
+    action: |
+      python website/scripts/build.py
+      python scripts/qc-check.py
+    gate:
+      type: exit_code_zero_and_output_contains
+      pattern: "ALL GREEN"
+    on_fail: "Fix whatever qc-check flags, rebuild, re-run until ALL GREEN,
+      without asking for approval — this is an automated gate."
+    outputs: []
+
+  - id: B4.2
+    phase: B4
+    name: Regression check on existing pages
+    depends_on: [B4.1]
+    prompt: |
+      Confirm the homepage, glossary, and at least 3 reader pages (across
+      different categories) are visually and functionally unchanged by
+      this feature addition — the new map view must be additive, not
+      disruptive to existing nav/CSS/build output.
+    gate:
+      type: manual_checklist
+      items:
+        - "homepage unchanged"
+        - "glossary unchanged"
+        - "3 spot-checked reader pages unchanged"
+    outputs: []
+
+  - id: B4.3
+    phase: B4
+    name: Commit, merge, deploy
+    depends_on: [B4.2]
+    action: |
+      git add -A && git commit -m "feat: add Structure Map zoomable view"
+      git push origin feature/structure-map-view
+      # merge to main -> triggers .github/workflows/deploy.yml
+      # if automated deploy unavailable, fall back to manual two-push
+      # deploy from PROJECT_HANDOVER.md, without waiting for approval
+    gate:
+      type: build_success
+    outputs: []
+
+  - id: B4.4
+    phase: B4
+    name: Live verification
+    depends_on: [B4.3]
+    action: |
+      Fetch the live map.html route. Confirm: blocks render with correct
+      counts, clicking/activating a block reaches its detail view, theme
+      toggle works correctly on this new page, and the nav link is present
+      site-wide (check it appears on the homepage and a reader page too).
+    gate:
+      type: manual_checklist
+      items:
+        - "live map.html loads and renders all blocks"
+        - "zoom interaction works on the live site"
+        - "nav link visible from homepage and reader pages"
+        - "both themes correct on live site"
+    outputs: []

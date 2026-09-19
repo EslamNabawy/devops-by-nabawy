@@ -1,0 +1,809 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Config · Secrets & Access Control — Kubernetes Book 02</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; min-height:297mm; background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style></head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🔐</div>
+<h1>CONFIG · SECRETS<br>& ACCESS CONTROL</h1>
+<div class="sub">Book 02 of the series — stop baking config into images. ConfigMaps for plain settings, Secrets for sensitive data (and the base64 truth), RBAC for who may do what, ServiceAccounts for workload identity, SecurityContext &amp; Pod Security Standards for hardening, and Requests/Limits + QoS for the resource contract.</div>
+<div class="row">
+<div class="glass">⚙️ ConfigMap<small>plain config</small></div>
+<div class="glass">🔐 Secret<small>sensitive data</small></div>
+<div class="glass">🪪 RBAC<small>who may do what</small></div>
+<div class="glass">👷 ServiceAccount<small>workload identity</small></div>
+</div>
+<div class="row">
+<div class="glass">🛡️ SecurityContext<small>pod hardening</small></div>
+<div class="glass">🚨 PSS<small>three levels</small></div>
+<div class="glass">📊 Requests/Limits<small>the budget</small></div>
+<div class="glass">🎚️ QoS<small>eviction order</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 02 · CONTINUES BOOK 01 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">6 parts · 24 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · Config Injection</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>ConfigMaps — What &amp; Why<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>Creating &amp; Mounting ConfigMaps<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Hot-Reload — What Actually Updates<span class="dots"></span><span class="tp">p.5</span></a>
+<div class="tocpart">Part II · Secrets</div>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Secrets — vs ConfigMaps<span class="dots"></span><span class="tp">p.6</span></a>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Secret Types &amp; Creation<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Mounting Secrets + imagePullSecrets<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Base64 ≠ Encryption — The Truth<span class="dots"></span><span class="tp">p.9</span></a>
+<div class="tocpart">Part III · Access Control (RBAC)</div>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>RBAC — The Big Idea<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>Roles &amp; RoleBindings<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>ClusterRoles &amp; When to Use Which<span class="dots"></span><span class="tp">p.12</span></a>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>ServiceAccounts<span class="dots"></span><span class="tp">p.13</span></a>
+<div class="tocpart">Part IV · Hardening &amp; Resources</div>
+<a class="tocrow" href="#ch12"><span class="cb"></span><span class="tnum">CH 12</span>SecurityContext<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#ch13"><span class="cb"></span><span class="tnum">CH 13</span>Pod Security Standards<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#ch14"><span class="cb"></span><span class="tnum">CH 14</span>Requests &amp; Limits<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#ch15"><span class="cb"></span><span class="tnum">CH 15</span>QoS Classes<span class="dots"></span><span class="tp">p.17</span></a>
+<div class="tocpart">Part V · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>ConfigMap: Prove Env ≠ Hot-Reload<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Secret: Encoded, Not Encrypted<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>RBAC: Can-I as a ServiceAccount<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>Trigger an OOMKill on Purpose<span class="dots"></span><span class="tp">p.21</span></a>
+<div class="tocpart">Part VI · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.22</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.23</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.24</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.25</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 03<span class="dots"></span><span class="tp">p.26</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Book 01 complete.</b> You already know Pods, ReplicaSets, Deployments, self-healing, and NodePort. This book adds the config layer (I–II), the permission layer (III), and the hardening/resource layer (IV) — then proves it all with labs.</div></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">⚙️ ConfigMaps — What &amp; Why</h2><span class="dbadge">🟢 4 MIN</span></div>
+<p class="lead">The problem: bake <code>LOG_LEVEL=debug</code> into your image and every environment change = <b>rebuild, re-push, re-pull</b>. A ConfigMap decouples configuration <b>from</b> the image: one image, many configs.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">❌ Config baked into the image</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">app:v1 + <em>debug</em>  → build → push
+app:v1 + <em>info</em>    → build → push
+app:v1 + <em>prod</em>    → build → push
+<span class="g">3 images, 3 pipelines, 3 chances to drift</span></div></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Config injected at runtime</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">app:v1 <span class="g">(built ONCE)</span>
+  + cfg-debug   <span class="g">→ dev cluster</span>
+  + cfg-staging <span class="g">→ staging</span>
+  + cfg-prod    <span class="g">→ prod</span>
+<span class="g">same image everywhere — only the map differs</span></div></div>
+</div>
+<h3 class="sec">🛠️ Create one — three ways</h3>
+<div class="term"><span class="p">$</span> kubectl create configmap app-config <span class="y">--from-literal</span>=LOG_LEVEL=debug
+<span class="p">$</span> kubectl create configmap app-conf <span class="y">--from-file</span>=app.conf
+<span class="p">$</span> kubectl apply -f configmap.yaml   <span class="g"># the declarative way (CH 02)</span>
+<span class="g">configmap/app-config created</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a ConfigMap is a named bag of key/value pairs (or files) that lives <i>inside a namespace</i> — injected into Pods as <b>env vars</b> or <b>files</b>. It's the Kubernetes take on 12-factor config: <i>config belongs to the environment, not the artifact</i>.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ How do Pods actually consume one? ← <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: Creating &amp; Mounting</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">📥 Creating &amp; Mounting ConfigMaps</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="term"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: ConfigMap
+<span class="c">metadata</span>: { <span class="c">name</span>: app-config }
+<span class="c">data</span>:
+  <span class="y">LOG_LEVEL</span>: <span class="m">"debug"</span>          <span class="g"># simple key → env var</span>
+  <span class="y">app.conf</span>: <span class="m">|</span>                  <span class="g"># whole file as one key</span>
+    listen 8080
+    workers 4</div>
+<h3 class="sec">🔌 Two consumption methods — they behave differently</h3>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: app
+    <span class="c">image</span>: myapp:2.0
+    <span class="c">env</span>:                       <span class="g"># METHOD 1 · single keys as env vars</span>
+    - <span class="c">name</span>: LOG_LEVEL
+      <span class="c">valueFrom</span>:
+        <span class="c">configMapKeyRef</span>: { <span class="c">name</span>: app-config, <span class="c">key</span>: LOG_LEVEL }
+    <span class="c">envFrom</span>:                   <span class="g"># …or import EVERY key as env</span>
+    - <span class="c">configMapRef</span>: { <span class="c">name</span>: app-config }
+    <span class="c">volumeMounts</span>:              <span class="g"># METHOD 2 · keys as FILES</span>
+    - { <span class="c">name</span>: cfg, <span class="c">mountPath</span>: <span class="m">/etc/app</span> }
+  <span class="c">volumes</span>:
+  - <span class="c">name</span>: cfg
+    <span class="c">configMap</span>: { <span class="c">name</span>: app-config }  <span class="g"># each key becomes a file</span></div>
+<table class="tb">
+<tr><th></th><th>📦 As env vars</th><th>📁 As volume files</th></tr>
+<tr><td><b>Shape</b></td><td>flat <code>KEY=value</code></td><td>real files (<code>app.conf</code>, nested keys ok)</td></tr>
+<tr><td><b>Update behavior</b></td><td><span class="bad">never</span> — snapshot at container start</td><td><span class="ok">auto-updated</span> by kubelet (~1 min, CH 03)</td></tr>
+<tr><td><b>Best for</b></td><td>simple toggles, ports, feature flags</td><td>config files, templates, anything the app re-reads</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Rule of thumb:</b> env vars are a <b>snapshot</b>, volume mounts are a <b>live feed</b>. Choose by asking: <i>"does my app re-read its config file, or read the environment once at boot?"</i></div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">🔄 Hot-Reload — What Actually Updates</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The most-Googled ConfigMap question. The answer is a <b>2×2 matrix</b> — and one famous trap.</p>
+<table class="tb">
+<tr><th>Consumed as…</th><th>ConfigMap changes → Pod sees…</th><th>Why</th></tr>
+<tr><td><b>Env var</b></td><td><span class="bad">❌ Never</span></td><td>environment is fixed at container start (Linux process rules, not k8s')</td></tr>
+<tr><td><b>Volume file</b></td><td><span class="ok">✅ Yes</span> — eventually (~1 min)</td><td>kubelet syncs mounted files on its sync period</td></tr>
+<tr><td><b>Volume via <code>subPath</code></b></td><td><span class="bad">❌ Never</span></td><td>subPath mounts a <i>copy</i>; the symlink chain is broken</td></tr>
+<tr><td><b>Env + app restart</b></td><td><span class="ok">✅ Yes</span> (on next start)</td><td>new container = fresh snapshot</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>"Eventually" means eventually:</b> updates ride the kubelet sync period plus the API watch cache — <b>up to ~1 minute of delay</b>, in no guaranteed order. Apps that cache config at startup (Java, many frameworks) still see <b>nothing</b> until they re-read the file. The file changing ≠ your app noticing.</div></div>
+<div class="term mini"><span class="c">volumes</span>:
+- <span class="c">name</span>: cfg
+  <span class="c">configMap</span>: { <span class="c">name</span>: app-config, <span class="c">immutable</span>: <span class="y">true</span> }  <span class="g"># freeze it entirely</span></div>
+<ul class="tick">
+<li>🧊 <code>immutable: true</code> — rejects all updates (and can't be un-set without delete/recreate). Trade-off: <b>zero hot-reload</b> in exchange for protecting against accidental changes + better kubelet performance at scale.</li>
+<li>🔁 Common production pattern: app watches its config file (or a sidecar triggers a reload endpoint) — k8s delivers the file, <i>your app</i> decides to care.</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Exam-grade answer:</b> <i>volume-mounted ConfigMaps auto-update (eventually, ~1 min); env vars and subPath mounts never update — a Pod restart is the only guaranteed way to re-read env config.</i> Lab 1 proves it.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🔐 Secrets — vs ConfigMaps</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Same mechanism, different cargo. A Secret holds data you'd flinch to print in a <code>git log</code>: passwords, tokens, TLS keys, registry credentials.</p>
+<table class="tb">
+<tr><th>Aspect</th><th>⚙️ ConfigMap</th><th>🔐 Secret</th></tr>
+<tr><td><b>Cargo</b></td><td>plain config</td><td>sensitive data (passwords, certs, tokens)</td></tr>
+<tr><td><b>Values on disk</b></td><td>plain text</td><td><b>base64-encoded</b> (<code>data</code>) — CH 07 for what that does and doesn't mean</td></tr>
+<tr><td><b>Value size</b></td><td>~1 MiB</td><td>~1 MiB</td></tr>
+<tr><td><b>Consumed as</b></td><td>env / volume</td><td>env / volume — <b>same two methods</b></td></tr>
+<tr><td><b>Default visibility</b></td><td>anyone who can <code>get</code> it</td><td>gated by <b>RBAC</b> — reading secrets is its own permission (Part III)</td></tr>
+<tr><td><b>Write convenience</b></td><td><code>data</code></td><td><code>data</code> (pre-encoded) <b>or</b> <code>stringData</code> (plain — API encodes for you)</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Do not skip this:</b> base64 is <b>encoding, not encryption</b> — anyone can decode it with one command. By default, Secrets sit in etcd unencrypted. Real protection = etcd encryption-at-rest + tight RBAC (Part III). Full autopsy in CH 07.</div></div>
+<div class="term mini"><span class="p">$</span> kubectl create secret generic db-pass <span class="y">--from-literal</span>=PASSWORD=<span class="m">"s3cr3t"</span>
+<span class="g">secret/db-pass created</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Mental model:</b> ConfigMap = the whiteboard in the apartment (anyone may read). Secret = the safe (base64 = the box it ships in; RBAC = who has the key). Same delivery mechanism, different trust level.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🏷️ Secret Types &amp; Creation</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead"><code>type</code> is a label that tells Kubernetes (and tooling) what shape the keys should take. The default is <code>Opaque</code> — "just key/values".</p>
+<table class="tb">
+<tr><th>Type</th><th>Required keys</th><th>Used by</th></tr>
+<tr><td><code>Opaque</code> <span class="stbadge st-comp">default</span></td><td>anything you like</td><td>app passwords, API keys, generic data</td></tr>
+<tr><td><code>kubernetes.io/dockerconfigjson</code></td><td><code>.dockerconfigjson</code></td><td><b>imagePullSecrets</b> — private registry auth (CH 06)</td></tr>
+<tr><td><code>kubernetes.io/tls</code></td><td><code>tls.crt</code> + <code>tls.key</code></td><td>Ingress TLS termination (Book 03)</td></tr>
+<tr><td><code>kubernetes.io/basic-auth</code></td><td><code>username</code>, <code>password</code></td><td>basic-auth integrations</td></tr>
+<tr><td><code>kubernetes.io/service-account-token</code></td><td>— (API-managed)</td><td>SA tokens — mostly automatic since v1.24 (CH 11)</td></tr>
+</table>
+<h3 class="sec">🛠️ Creation — imperative &amp; declarative</h3>
+<div class="term"><span class="p">$</span> kubectl create secret generic db-pass <span class="y">--from-literal</span>=PASSWORD=<span class="m">"s3cr3t"</span>
+<span class="p">$</span> kubectl create secret docker-registry regcred \
+    <span class="y">--docker-server</span>=registry.example.com <span class="y">--docker-username</span>=ci \
+    <span class="y">--docker-password</span>=<span class="r">$TOKEN</span>
+<span class="p">$</span> kubectl create secret tls web-tls <span class="y">--cert</span>=tls.crt <span class="y">--key</span>=tls.key</div>
+<div class="term mini"><span class="c">apiVersion</span>: v1
+<span class="c">kind</span>: Secret
+<span class="c">metadata</span>: { <span class="c">name</span>: db-pass }
+<span class="c">type</span>: Opaque
+<span class="c">stringData</span>:                 <span class="g"># WRITE-only convenience — plain text in</span>
+  <span class="y">PASSWORD</span>: <span class="m">"s3cr3t"</span>        <span class="g"># the API base64-encodes it into `data`</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><code>stringData</code> never comes back out — <code>kubectl get secret -o yaml</code> always shows <code>data</code> with base64 values. Handy for readable YAML in Git pipelines (with the Git-secrets caveat of CH 07).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Remember the pair:</b> <code>dockerconfigjson</code> → pulling images · <code>tls</code> → serving HTTPS. These two built-in types are the exam's favorites because they have <b>mandatory key names</b>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">📤 Mounting Secrets + imagePullSecrets</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Same two doors as ConfigMaps — env vars (snapshot) and volumes (live feed) — plus a third, special-purpose door for the registry.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: app
+    <span class="c">image</span>: myapp:2.0
+    <span class="c">env</span>:
+    - <span class="c">name</span>: DB_PASSWORD
+      <span class="c">valueFrom</span>:
+        <span class="c">secretKeyRef</span>: { <span class="c">name</span>: db-pass, <span class="c">key</span>: PASSWORD }
+    <span class="c">volumeMounts</span>:
+    - { <span class="c">name</span>: sec, <span class="c">mountPath</span>: <span class="m">/etc/secrets</span>, <span class="c">readOnly</span>: <span class="y">true</span> }
+  <span class="c">volumes</span>:
+  - <span class="c">name</span>: sec
+    <span class="c">secret</span>: { <span class="c">secretName</span>: db-pass }   <span class="g"># keys → files, kubelet-synced</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Prefer the volume door for sensitive data:</b> env vars leak casually — they appear in <code>kubectl describe</code>, crash dumps, child processes (<code>/proc/&lt;pid&gt;/environ</code>), and some error reporters. A read-only file at a known path is easier to contain. (Hot-reload semantics from CH 03 apply identically to Secret volumes.)</div></div>
+<h3 class="sec">🖼️ imagePullSecrets — auth for pulling images</h3>
+<div class="term"><span class="g"># one-time: create the registry credential (CH 05)</span>
+<span class="p">$</span> kubectl create secret docker-registry regcred …
+<span class="g"># then attach it to the ServiceAccount — every Pod in that
+# namespace using this SA inherits it (recommended way)</span>
+<span class="p">$</span> kubectl patch serviceaccount default <span class="y">-p</span> \
+  <span class="m">'{"imagePullSecrets":[{"name":"regcred"}]}'</span>
+<span class="g"># or per-Pod in the spec:</span>
+<span class="c">spec</span>:
+  <span class="c">imagePullSecrets</span>:
+  - { <span class="c">name</span>: regcred }</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Three doors, one rule:</b> env = snapshot · volume = live feed · <code>imagePullSecrets</code> = only for the <b>kubelet pulling images</b> (never appears inside your container). SA-level attachment wins over per-Pod because it covers every Pod the SA runs.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🔓 Base64 ≠ Encryption — The Truth</h2><span class="dbadge">🟡 6 MIN · MUST-KNOW</span></div>
+<p class="lead">The single most common Secrets misconception. Watch it die in one command:</p>
+<div class="termbar"><span style="background:#f87171"></span><span style="background:#fbbf24"></span><span style="background:#34d399"></span></div>
+<div class="term tbr"><span class="p">$</span> kubectl get secret db-pass -o jsonpath=<span class="m">'{.data.PASSWORD}'</span>
+<span class="y">czNjcjN0</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># looks safe… it is not</span>
+<span class="p">$</span> <span class="c">echo</span> czNjcjN0 | <span class="c">base64</span> <span class="y">-d</span>
+s3cr3t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># decoded by anyone, instantly</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Base64 is a transport encoding</b> — it makes binary-ish data YAML-safe. It's a locked box made of cardboard: the point is safe shipping, not safe keeping. <b>Anyone</b> with <code>get secrets</code> permission reads every "hidden" value.</div></div>
+<h3 class="sec">🧅 The four real layers of Secret protection</h3>
+<div class="mtree"><b>Layer 1 · Encoding</b>      base64  <span class="g">NOT protection — just transport</span>
+<b>Layer 2 · Encryption at rest</b>  EncryptionConfiguration on kube-apiserver
+                <span class="g">(aescbc / secretbox / KMS plugin) — encrypts in etcd</span>
+<b>Layer 3 · RBAC</b>           who may <u>get/list</u> secrets at all  <span class="g">← Part III</span>
+<b>Layer 4 · Externalization</b>  External Secrets / Vault — cluster
+                <span class="g">never stores the real value long-term</span></div>
+<ul class="tick">
+<li>🚫 Never commit raw manifests with real values to Git — use <code>stringData</code> + sealed/external secret tooling, or SOPS-style encryption</li>
+<li>✅ Check your cluster: etcd encryption-at-rest is <b>opt-in</b> — many dev clusters run without it</li>
+</ul>
+<div class="cka"><span class="ico">🎓</span><div><b>Exam tip:</b> "Are Secrets encrypted?" — the honest answer is <b>"encoded by default; encrypted only if etcd encryption-at-rest is configured."</b> Questions usually probe exactly this distinction.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">🪪 RBAC — The Big Idea</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Authentication asks <b>"who are you?"</b> — authorization asks <b>"may you do that?"</b>. RBAC is Kubernetes' answer to the second question, and it's one grammatical sentence:</p>
+<div class="rowc">
+<div class="kchip">👤 WHO<small>&nbsp;User · Group · ServiceAccount</small></div>
+<span class="harr">may</span>
+<div class="kchip">🔨 VERB<small>&nbsp;get · list · watch · create · update · patch · delete</small></div>
+<span class="harr">on</span>
+<div class="kchip">🎯 RESOURCE<small>&nbsp;pods · secrets · deployments …</small></div>
+<span class="harr">in</span>
+<div class="kchip">🗂️ SCOPE<small>&nbsp;namespace or cluster</small></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">The four objects</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;"><b>Role</b>            <span class="g">rules, namespaced</span>
+<b>RoleBinding</b>      <span class="g">attaches subjects → Role (ns)</span>
+<b>ClusterRole</b>      <span class="g">rules, cluster-wide</span>
+<b>ClusterRoleBinding</b> <span class="g">subjects → ClusterRole (all)</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">Default posture</div>
+<p class="small">Out of the box, RBAC grants regular users <b>nothing</b> — no Role = no access. Even the <b>default ServiceAccount</b> in each namespace has <b>zero API permissions</b> (a hardening choice since v1.22). Every capability is granted <i>explicitly</i>.</p>
+<div class="term mini"><span class="p">$</span> kubectl auth can-i delete pods -n dev
+<span class="r">no</span>&nbsp;&nbsp;<span class="g"># ← your first authorization question</span></div></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><code>kubectl auth can-i &lt;verb&gt; &lt;resource&gt; [-n ns]</code> is your constant companion — and with <code>--as=…</code> it answers for <i>other</i> identities (CH 09, Lab 3). Admins live in this command.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Carry the sentence:</b> <i>Role = the rules · Binding = who gets them · Scope = where they apply.</i> Everything in the next three chapters is this sentence with different nouns.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">📜 Roles &amp; RoleBindings</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A <b>Role</b> is a namespaced rulebook; a <b>RoleBinding</b> hands that rulebook to people. Worked example — a CI bot that may read pods and manage config, nothing else:</p>
+<div class="term"><span class="c">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="c">kind</span>: Role
+<span class="c">metadata</span>:
+  <span class="c">name</span>: ci-reader
+  <span class="c">namespace</span>: dev          <span class="g"># Roles live IN a namespace</span>
+<span class="c">rules</span>:
+- <span class="c">apiGroups</span>: [<span class="m">""</span>]          <span class="g"># "" = core group (pods, secrets…)</span>
+  <span class="c">resources</span>: [<span class="m">pods</span>, <span class="m">pods/log</span>]
+  <span class="c">verbs</span>: [<span class="m">get</span>, <span class="m">list</span>, <span class="m">watch</span>]
+- <span class="c">apiGroups</span>: [<span class="m">""</span>]
+  <span class="c">resources</span>: [<span class="m">configmaps</span>]
+  <span class="c">verbs</span>: [<span class="m">get</span>, <span class="m">list</span>, <span class="m">create</span>, <span class="m">update</span>, <span class="m">patch</span>]</div>
+<div class="term mini"><span class="c">kind</span>: RoleBinding
+<span class="c">metadata</span>: { <span class="c">name</span>: ci-reader-bind, <span class="c">namespace</span>: dev }
+<span class="c">roleRef</span>:
+  <span class="c">apiGroup</span>: rbac.authorization.k8s.io
+  <span class="c">kind</span>: Role
+  <span class="c">name</span>: ci-reader            <span class="g"># the rulebook</span>
+<span class="c">subjects</span>:                    <span class="g"># WHO receives it</span>
+- <span class="c">kind</span>: ServiceAccount
+  <span class="c">name</span>: ci-bot
+  <span class="c">namespace</span>: dev</div>
+<div class="term mini"><span class="g"># verify — answer FOR the bot without being the bot:</span>
+<span class="p">$</span> kubectl auth can-i list pods -n dev \
+    <span class="y">--as</span>=system:serviceaccount:dev:ci-bot
+<span class="p">yes</span>
+<span class="p">$</span> kubectl auth can-i delete pods -n dev \
+    <span class="y">--as</span>=system:serviceaccount:dev:ci-bot
+<span class="r">no</span>&nbsp;&nbsp;<span class="g"># not in the rulebook → denied</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Bindings are the only on-switch.</b> Creating a Role changes nothing by itself; access exists only when a Binding names a subject. And verbs are literal — <code>list</code> does not imply <code>delete</code>.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🌐 ClusterRoles &amp; When to Use Which</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A <b>ClusterRole</b> is a rulebook that isn't tied to a namespace. Pairing it with the right binding type decides its reach:</p>
+<table class="tb">
+<tr><th>Pairing</th><th>Effective scope</th><th>Use when…</th></tr>
+<tr><td><b>Role + RoleBinding</b></td><td>one namespace</td><td>team/app permissions (the 90% case)</td></tr>
+<tr><td><b>ClusterRole + RoleBinding</b></td><td><b>one namespace</b> per binding</td><td>reuse one rulebook in many namespaces — bind the <i>same</i> ClusterRole to <code>dev</code>, <code>qa</code>, <code>prod</code> teams separately</td></tr>
+<tr><td><b>ClusterRole + ClusterRoleBinding</b></td><td>entire cluster</td><td>platform admins, controllers that watch everything</td></tr>
+<tr><td><s>Role + ClusterRoleBinding</s></td><td colspan="2"><span class="bad">❌ impossible</span> — a cluster-wide binding can't reference a namespaced Role</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The classic trap:</b> some resources are <b>cluster-scoped</b> (Book 01 · CH 11): <i>Nodes, PersistentVolumes, Namespaces, ClusterRoles</i>. They <b>cannot</b> be governed by a namespaced Role — you must use a <b>ClusterRole</b>, even if you only want narrow access to, say, Nodes.</div></div>
+<div class="term mini"><span class="g"># "let the monitoring bot READ nodes" — needs ClusterRole:</span>
+<span class="c">kind</span>: ClusterRole
+<span class="c">metadata</span>: { <span class="c">name</span>: node-reader }   <span class="g"># note: no namespace field</span>
+<span class="c">rules</span>:
+- <span class="c">apiGroups</span>: [<span class="m">""</span>]
+  <span class="c">resources</span>: [<span class="m">nodes</span>]
+  <span class="c">verbs</span>: [<span class="m">get</span>, <span class="m">list</span>, <span class="m">watch</span>]</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why ClusterRole + RoleBinding is the pro move:</b> one canonical rulebook (audited once), namespace-scoped blast radius per binding. ClusterRoleBinding is a big hammer — reserve it for identities that truly need the whole cluster.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Decision in one line:</b> start with <b>Role + RoleBinding</b>; graduate to <b>ClusterRole + RoleBinding</b> for reuse; <b>ClusterRoleBinding</b> only for genuinely cluster-wide identities — and remember cluster-scoped resources <i>force</i> a ClusterRole.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">👷 ServiceAccounts</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Users are for <b>people</b>; a <b>ServiceAccount (SA)</b> is an identity for <b>workloads</b> — the "staff badge" your Pod wears when it talks to the API Server.</p>
+<ul class="tick">
+<li>🏷️ Every namespace ships a <code>default</code> SA — Pods without an explicit <code>serviceAccountName</code> wear it</li>
+<li>🎫 A Pod's SA gets a <b>projected token</b> mounted at <code>/var/run/secrets/kubernetes.io/serviceaccount</code> — that's the credential the app's k8s client uses (auto-discovered in-cluster)</li>
+<li>🚫 Modern RBAC gives the default SA <b>no permissions</b> — a Pod that doesn't call the API should opt out:</li>
+</ul>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">serviceAccountName</span>: ci-bot      <span class="g"># wear THIS badge</span>
+  <span class="c">automountServiceAccountToken</span>: <span class="y">false</span>  <span class="g"># …or wear none</span></div>
+<h3 class="sec">🔗 The full chain — badge → rulebook</h3>
+<div class="mtree" style="font-size:12px;"><b>Pod</b> wears <u>ServiceAccount ci-bot</u>
+        │
+        └── <b>RoleBinding</b> grants <em>ci-reader</em> Role <span class="g">(CH 09)</span>
+                │
+                └── result: <u>list pods ✓</u> · <s>delete pods ✗</s> <span class="g">in ns dev only</span></div>
+<div class="term mini"><span class="p">$</span> kubectl create serviceaccount ci-bot -n dev
+<span class="p">$</span> kubectl set serviceaccount deploy/web ci-bot -n dev
+<span class="p">$</span> kubectl auth can-i get secrets -n dev \
+    <span class="y">--as</span>=system:serviceaccount:dev:ci-bot
+<span class="r">no</span>&nbsp;&nbsp;<span class="g"># ← this is what a stolen Pod token can do. audit it.</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The Pod-token threat model:</b> anyone who can <code>exec</code> into your Pod can read its token and <b>become</b> that SA. Scope each SA's Role to the minimum (Lab 3 audits exactly this) — never run untrusted workloads under an admin-bound SA.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <i>ServiceAccount = workload identity; RoleBinding = its permissions; the mounted token = its key.</i> RBAC + SAs together answer "what damage can this Pod do?"</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch12">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ CH12 ═══ -->
+<div class="page" id="ch12"><div class="pghead"><span class="chip">CH 12</span><h2 class="t">🛡️ SecurityContext</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">RBAC governs your Pod's <i>API</i> permissions; the SecurityContext governs its <i>Linux</i> permissions. Two levels apply:</p>
+<table class="tb">
+<tr><th>Level</th><th>Fields</th><th>Notes</th></tr>
+<tr><td><b>Pod-level</b> <code>spec.securityContext</code></td><td><code>runAsUser</code> · <code>runAsGroup</code> · <code>runAsNonRoot</code> · <code>fsGroup</code></td><td>defaults inherited by every container</td></tr>
+<tr><td><b>Container-level</b> <code>containers[].securityContext</code></td><td>all of the above <b>+</b> <code>readOnlyRootFilesystem</code> · <code>allowPrivilegeEscalation</code> · <code>capabilities</code> · <code>privileged</code></td><td>overrides pod-level per container</td></tr>
+</table>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">securityContext</span>:            <span class="g"># POD level</span>
+    <span class="c">runAsNonRoot</span>: <span class="y">true</span>        <span class="g"># refuse to start as uid 0</span>
+    <span class="c">runAsUser</span>: <span class="y">1000</span>
+    <span class="c">fsGroup</span>: <span class="y">2000</span>             <span class="g"># group ownership for volumes</span>
+  <span class="c">containers</span>:
+  - <span class="c">name</span>: app
+    <span class="c">image</span>: myapp:2.0
+    <span class="c">securityContext</span>:          <span class="g"># CONTAINER level</span>
+      <span class="c">readOnlyRootFilesystem</span>: <span class="y">true</span>   <span class="g"># tamper-proof image FS</span>
+      <span class="c">allowPrivilegeEscalation</span>: <span class="y">false</span>
+      <span class="c">capabilities</span>:
+        <span class="c">drop</span>: [<span class="m">"ALL"</span>]         <span class="g"># shed Linux superpowers</span></div>
+<ul class="tick">
+<li>🧱 <code>readOnlyRootFilesystem</code> → writes must go to mounted <code>emptyDir</code> volumes — a common first hardening step</li>
+<li>🚫 <code>privileged: true</code> ≈ root on the node — <b>never</b> for untrusted workloads (PSS · CH 13 forbids it outright at Baseline+)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Remember the pairing:</b> <b>RBAC = may it call the API?</b> · <b>SecurityContext = what can it do to the machine?</b> Book 01's CH 07 taint story protected the node from scheduling; this protects the node from the container.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch13">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ CH13 ═══ -->
+<div class="page" id="ch13"><div class="pghead"><span class="chip">CH 13</span><h2 class="t">🚨 Pod Security Standards</h2><span class="dbadge">🟢 5 MIN</span></div>
+<p class="lead">Checking every Pod's SecurityContext by hand doesn't scale. <b>Pod Security Standards (PSS)</b> define three ready-made security levels, enforced cluster-wide by namespace labels.</p>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔓</div><p class="small"><b>Privileged</b><br>no restrictions — trusted, cluster-infrastructure workloads only</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">🔒</div><p class="small"><b>Baseline</b><br>blocks the obviously dangerous (hostNetwork, privileged:true) while allowing common apps</p></div>
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🔐</div><p class="small"><b>Restricted</b><br>current hardening best practice: runAsNonRoot, drop ALL capabilities, no privilege escalation</p></div>
+</div>
+<div class="term mini"><span class="g"># enforce on a namespace — three modes per level:</span>
+<span class="p">$</span> kubectl label ns prod \
+  <span class="y">pod-security.kubernetes.io/enforce</span>=restricted \
+  <span class="y">pod-security.kubernetes.io/audit</span>=restricted \
+  <span class="y">pod-security.kubernetes.io/warn</span>=restricted</div>
+<ul class="tick">
+<li>🚧 <b>enforce</b> — rejecting non-compliant Pods · 🔍 <b>audit</b> — log violations · ⚠️ <b>warn</b> — message the user</li>
+<li>🪜 Migration pattern: run <code>warn+audit</code> first, fix offenders, then switch on <code>enforce</code></li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Version note:</b> the old <b>PodSecurityPolicy (PSP)</b> was removed in Kubernetes <b>v1.25</b>. If a tutorial teaches PSP, it's stale — the modern mechanism is <b>PSS via Pod Security Admission</b> (the labels above).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One line:</b> <i>PSS = cluster policy, three levels (Privileged → Baseline → Restricted), applied per-namespace with enforce/audit/warn labels.</i> "Restricted" ≈ your CH 12 SecurityContext, made mandatory.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch12">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch14">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ CH14 ═══ -->
+<div class="page" id="ch14"><div class="pghead"><span class="chip">CH 14</span><h2 class="t">📊 Requests &amp; Limits</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="grid2">
+<div class="card" style="border-left:4px solid #10b981;">
+<h3 class="sec" style="margin-top:0;">REQUESTS — the promise</h3>
+<p class="small">What the container is <b>guaranteed</b>. The <b>Scheduler</b> places Pods only on Nodes with enough <i>requestable</i> capacity (Book 01 · CH 06's "Pending" mystery starts here).</p></div>
+<div class="card" style="border-left:4px solid #6366f1;">
+<h3 class="sec" style="margin-top:0;">LIMITS — the ceiling</h3>
+<p class="small">The maximum the runtime <b>enforces</b>. What happens at the ceiling <b>differs radically by resource type</b> — the table below is the exam's favorite nuance.</p></div>
+</div>
+<div class="term"><span class="c">containers</span>:
+- <span class="c">name</span>: app
+  <span class="c">image</span>: myapp:2.0
+  <span class="c">resources</span>:
+    <span class="c">requests</span>: { <span class="c">cpu</span>: <span class="m">"250m"</span>, <span class="c">memory</span>: <span class="y">"256Mi"</span> }
+    <span class="c">limits</span>:&nbsp;&nbsp; { <span class="c">cpu</span>: <span class="m">"500m"</span>, <span class="c">memory</span>: <span class="y">"512Mi"</span> }</div>
+<table class="tb">
+<tr><th>Resource</th><th>Exceeding the limit →</th><th>Feels like</th></tr>
+<tr><td><b>CPU</b> (compressible)</td><td><span class="stbadge st-pend">Throttled</span> — process slowed via CFS quota</td><td>sluggish app, elevated latency, <b>no restart</b></td></tr>
+<tr><td><b>Memory</b> (incompressible)</td><td><span class="stbadge st-term">OOMKilled</span> — SIGKILL, exit code <b>137</b></td><td>container dies; RestartPolicy kicks in → often CrashLoopBackOff</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubectl describe pod oom-demo | <span class="c">grep</span> -A3 Last&nbsp;State
+<span class="y">&nbsp;&nbsp;&nbsp;Last State:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Terminated</span>
+<span class="r">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reason:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OOMKilled</span>
+<span class="r">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exit Code:&nbsp;&nbsp;&nbsp; 137</span>&nbsp;&nbsp;<span class="g"># = 128 + 9 (SIGKILL)</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The overcommit trap:</b> total requests &lt; node capacity &lt; total limits is legal and common — the cluster <i>borrows</i> headroom. When a node runs out of <i>real</i> memory, the kube evicts by QoS class — which is exactly CH 15.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Memory hook:</b> CPU over limit = <b>tickets get slower</b> · memory over limit = <b>you're escorted out (137)</b>. CPU can be shared; memory cannot be un-consumed.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch13">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch15">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ CH15 ═══ -->
+<div class="page" id="ch15"><div class="pghead"><span class="chip">CH 15</span><h2 class="t">🎚️ QoS Classes</h2><span class="dbadge">🟡 5 MIN · CORE</span></div>
+<p class="lead">Every Pod is silently stamped with a Quality-of-Security— sorry, Quality-of-<b>Service</b> class, derived <b>purely from its requests/limits</b>. It decides who gets evicted first when a node runs dry.</p>
+<div class="mtree"><b>Guaranteed</b>&nbsp;&nbsp;every container: <u>requests == limits</u> for <i>both</i> cpu AND memory
+<b>Burstable</b>&nbsp;&nbsp;&nbsp;at least ONE requests/limits field set (anything else)
+<b>BestEffort</b>&nbsp;&nbsp;no requests, no limits — anything</div>
+<table class="tb">
+<tr><th>Class</th><th>Derivation</th><th>Eviction order under node pressure</th></tr>
+<tr><td><span class="stbadge st-run" style="border-radius:6px;">Guaranteed</span></td><td>requests == limits (all containers)</td><td><b>last</b> — killed only after others</td></tr>
+<tr><td><span class="stbadge st-pend" style="border-radius:6px;">Burstable</span></td><td>some resources specified</td><td>middle — those <b>exceeding requests</b> go first</td></tr>
+<tr><td><span class="stbadge st-term" style="border-radius:6px;">BestEffort</span></td><td>nothing specified</td><td><b>first</b> — zero promises, zero protection</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubectl get pod web -o jsonpath=<span class="m">'{.status.qosClass}'</span>
+Burstable</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why this matters operationally:</b> your database should be <b>Guaranteed</b> (it's the thing you least want killed); dev/experiment Pods can ride <b>BestEffort</b> as the cluster's shock absorber. QoS is how Kubernetes turns your YAML honesty into survival priority.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>The chain, end to end:</b> requests → where the Scheduler may place you · limits → what happens when you misbehave · QoS → who survives when the node itself starves. Part V now proves all of it hands-on.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch14">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 ConfigMap — Prove Env ≠ Hot-Reload</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · One ConfigMap, both consumption methods</div>
+<div class="term mini"><span class="p">$</span> kubectl create configmap demo <span class="y">--from-literal</span>=GREETING=hello
+<span class="p">$</span> kubectl run cfg-demo --image=busybox --restart=Never \
+  --overrides=<span class="m">'{"spec":{"containers":[{"name":"c","image":"busybox",
+  "command":["sh","-c","sleep 9999"],
+  "env":[{"name":"GREETING","valueFrom":{"configMapKeyRef":{"name":"demo","key":"GREETING"}}}],
+  "volumeMounts":[{"name":"cfg","mountPath":"/etc/cfg"}]}],
+  "volumes":[{"name":"cfg","configMap":{"name":"demo"}}]}}'</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TAB 1 · OBSERVE</div><div class="tabbody"><span class="p">$</span> kubectl exec cfg-demo -- <span class="c">printenv</span> GREETING
+hello
+<span class="p">$</span> kubectl exec cfg-demo -- <span class="c">cat</span> /etc/cfg/GREETING
+hello</div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">⚙️ TAB 2 · CHANGE IT</div><div class="tabbody"><span class="p">$</span> kubectl patch cm demo <span class="y">-p</span> \
+  <span class="m">'{"data":{"GREETING":"howdy"}}'</span>
+configmap/demo patched</div></div>
+</div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Wait ~1 min, re-check</div>
+<div class="labcols">
+<div><div class="labtag">👀 ENV VAR — the snapshot</div><div class="term mini"><span class="p">$</span> kubectl exec cfg-demo -- <span class="c">printenv</span> GREETING
+<span class="r">hello</span>&nbsp;&nbsp;<span class="g"># ← UNCHANGED, forever</span></div></div>
+<div><div class="labtag">👀 VOLUME FILE — the live feed</div><div class="term mini"><span class="p">$</span> kubectl exec cfg-demo -- <span class="c">cat</span> /etc/cfg/GREETING
+<span class="p">howdy</span>&nbsp;&nbsp;<span class="g"># ← updated by kubelet (~1 min)</span></div></div>
+</div>
+<p class="small" style="margin:6px 0 0;"><b>Proved:</b> the matrix from CH 03 is real — env is a boot-time snapshot; volume mounts are kubelet-synced. <b>Teardown:</b> <code>kubectl delete pod cfg-demo &amp;&amp; kubectl delete cm demo</code>.</p></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#ch15">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔐 Secret — Encoded, Not Encrypted</h2><span class="dbadge">🟠 8 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Create, mount, go inside</div>
+<div class="term mini"><span class="p">$</span> kubectl create secret generic lab-sec <span class="y">--from-literal</span>=PASSWORD=<span class="m">"hunter2"</span>
+<span class="p">$</span> kubectl run sec-demo --image=busybox --restart=Never \
+  --overrides=<span class="m">'{"spec":{"containers":[{"name":"c","image":"busybox",
+  "command":["sh","-c","sleep 9999"],
+  "volumeMounts":[{"name":"s","mountPath":"/etc/sec","readOnly":true}]}],
+  "volumes":[{"name":"s","secret":{"secretName":"lab-sec"}}]}}'</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Read the "hidden" value — three levels of nakedness</div>
+<div class="term mini"><span class="g"># inside the pod — the file is ALREADY DECODED for the app:</span>
+<span class="p">$</span> kubectl exec sec-demo -- <span class="c">cat</span> /etc/sec/PASSWORD
+<span class="p">hunter2</span>
+<span class="g"># from the API — only base64 stands in the way:</span>
+<span class="p">$</span> kubectl get secret lab-sec -o jsonpath=<span class="m">'{.data.PASSWORD}'</span>
+<span class="y">aHVudGVyMg==</span>
+<span class="p">$</span> <span class="c">echo</span> aHVudGVyMg== | <span class="c">base64</span> <span class="y">-d</span>&nbsp;&nbsp;<span class="g"># → hunter2. instantly.</span></div>
+<p class="small" style="margin:4px 0 0;"><b>Proved:</b> CH 07's claim — base64 protects nothing; the kubelet even hands your app the decoded value. Protection lives in <b>who may run <code>get secret</code></b> (RBAC) and etcd encryption-at-rest. <b>Teardown:</b> <code>kubectl delete pod sec-demo &amp;&amp; kubectl delete secret lab-sec</code>.</p></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Interview one-liner born from this lab:</b> "Secrets protect against <i>casual exposure</i> and unauthenticated reads — not against anyone holding <code>get secrets</code> RBAC."</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🪪 RBAC — Can-I as a ServiceAccount</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Build the chain: SA → Role → Binding</div>
+<div class="term mini"><span class="p">$</span> kubectl create ns rbac-lab
+<span class="p">$</span> kubectl create serviceaccount bot -n rbac-lab
+<span class="p">$</span> kubectl create role podlist <span class="y">--verb</span>=get,list <span class="y">--resource</span>=pods -n rbac-lab
+<span class="p">$</span> kubectl create rolebinding bot-bind <span class="y">--role</span>=podlist \
+    <span class="y">--serviceaccount</span>=rbac-lab:bot -n rbac-lab</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Interrogate the bot's permissions</div>
+<div class="term mini"><span class="p">$</span> <span class="c">K="--as=system:serviceaccount:rbac-lab:bot -n rbac-lab"</span>
+<span class="p">$</span> kubectl auth <span class="c">can-i</span> list pods&nbsp;&nbsp;&nbsp;&nbsp;$K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># in the rulebook</span>
+<span class="p">yes</span>
+<span class="p">$</span> kubectl auth <span class="c">can-i</span> delete pods&nbsp;&nbsp;$K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># verbs are literal!</span>
+<span class="r">no</span>
+<span class="p">$</span> kubectl auth <span class="c">can-i</span> list secrets&nbsp;$K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># resources too</span>
+<span class="r">no</span>
+<span class="p">$</span> kubectl auth <span class="c">can-i</span> list pods -n default $K&nbsp;<span class="g"># scope is namespaced!</span>
+<span class="r">no</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · What we proved</div>
+<ul class="tick" style="margin:4px 0 0;">
+<li>✅ The bot may <b>list pods</b> — exactly one namespace, exactly the granted verbs</li>
+<li>❌ Delete? Secrets? Other namespaces? All <b>no</b> — default posture is deny; the Role's scope is absolute</li>
+<li>🔎 <code>--as</code> lets you <b>audit any identity without their credentials</b> — the core of RBAC troubleshooting</li>
+</ul>
+<p class="small"><b>Teardown:</b> <code>kubectl delete ns rbac-lab</code> — the cascade (Book 01 · Lab 3) removes the whole chain.</p></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ LAB 4 ═══ -->
+<div class="page" id="lab4"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">💥 Trigger an OOMKill on Purpose</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Deploy a Pod with a tiny memory limit and a big appetite</div>
+<div class="term mini"><span class="p">$</span> kubectl set image deploy/oom-demo oom=polinux/stress \
+  -n default 2&gt;/dev/null || kubectl create deploy oom-demo --image=polinux/stress \
+  -- stress --vm 1 --vm-bytes 200M --timeout 300s
+<span class="p">$</span> kubectl set resources deploy/oom-demo <span class="y">--limits</span>=memory=<span class="r">50Mi</span> <span class="y">--requests</span>=memory=30Mi
+<span class="p">$</span> kubectl get pods -w</div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 TAB 1 · WATCH</div><div class="tabbody"><span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; STATUS&nbsp;&nbsp;&nbsp;RESTARTS</span>
+oom-demo-<span class="c">aaaaa</span>&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;0
+oom-demo-aaaaa&nbsp;&nbsp;<span class="r">Error</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;<span class="g"># OOM!</span>
+oom-demo-aaaaa&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;1
+oom-demo-aaaaa&nbsp;&nbsp;<span class="r">Error</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;<span class="g"># again…</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 TAB 2 · AUTOPSY</div><div class="tabbody"><span class="p">$</span> kubectl describe pod -l app=oom-demo
+&nbsp;&nbsp;<span class="y">Last State: Terminated</span>
+<span class="r">&nbsp;&nbsp;&nbsp;&nbsp;Reason:&nbsp;&nbsp; OOMKilled</span>
+<span class="r">&nbsp;&nbsp;&nbsp;&nbsp;Exit:&nbsp;&nbsp;&nbsp;&nbsp; 137</span>
+<span class="g"># 128+9 = SIGKILL by the
+# kernel's OOM killer</span></div></div>
+</div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 2 · What we proved</div>
+<ul class="tick" style="margin:4px 0 0;">
+<li>✅ Memory limit exceeded → <b>OOMKilled (137)</b>, not throttled — CH 14's incompressible-resource rule</li>
+<li>✅ The Deployment's reconciliation (Book 01 · CH 06) restarts it → it OOMs again → the classic <b>CrashLoopBackOff</b> signature</li>
+<li>🩺 Real-world translation: <i>app that crash-loops right after startup + exit 137 = raise the limit or fix the leak</i></li>
+</ul>
+<p class="small"><b>Teardown:</b> <code>kubectl delete deploy oom-demo</code>. (Then check its QoS: it had requests≠limits → <code>Burstable</code> — CH 15 in the flesh.)</p></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 21</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>A ConfigMap is consumed by a Pod both as an env var and as a volume file. You update the ConfigMap. What does the running Pod see?<br><b>A.</b> Both update within ~1 min &nbsp; <b>B.</b> Env unchanged; the volume file updates eventually &nbsp; <b>C.</b> Env updates; file unchanged &nbsp; <b>D.</b> Neither — a restart is always required</div>
+<div class="qz"><span class="qn">Q2.</span>A colleague says Secrets are "encrypted by Kubernetes". The accurate response?<br><b>A.</b> True — always encrypted in etcd &nbsp; <b>B.</b> True, but only for Opaque type &nbsp; <b>C.</b> False — values are base64-<i>encoded</i>; encryption-at-rest must be explicitly enabled &nbsp; <b>D.</b> False — Secrets are stored in plain text in the API Server's memory</div>
+<div class="qz"><span class="qn">Q3.</span>Which Secret type must contain the key <code>.dockerconfigjson</code>?<br><b>A.</b> Opaque &nbsp; <b>B.</b> kubernetes.io/tls &nbsp; <b>C.</b> kubernetes.io/dockerconfigjson &nbsp; <b>D.</b> basic-auth</div>
+<div class="qz"><span class="qn">Q4.</span>By default, which identity may read Secrets in namespace <code>dev</code>?<br><b>A.</b> Any authenticated user &nbsp; <b>B.</b> The default ServiceAccount &nbsp; <b>C.</b> Cluster admins only, forever &nbsp; <b>D.</b> Nobody beyond cluster-admin-tier until an RBAC Role/Binding grants it</div>
+<div class="qz"><span class="qn">Q5.</span><code>kubectl auth can-i get pods --as=system:serviceaccount:dev:bot</code> answers…<br><b>A.</b> Can the bot authenticate? &nbsp; <b>B.</b> May <i>bot</i> perform <i>get pods</i>? (authorization, impersonated) &nbsp; <b>C.</b> Do you have permission? &nbsp; <b>D.</b> Does the Role exist?</div>
+<div class="qz"><span class="qn">Q6.</span>A RoleBinding may reference which rulebook(s)?<br><b>A.</b> Role only &nbsp; <b>B.</b> ClusterRole only &nbsp; <b>C.</b> Role or ClusterRole &nbsp; <b>D.</b> Neither — bindings only reference users</div>
+<div class="qz"><span class="qn">Q7.</span>A Pod is classed <b>Guaranteed</b> when…<br><b>A.</b> It runs on 3+ nodes &nbsp; <b>B.</b> limits only are set &nbsp; <b>C.</b> Every container sets requests == limits for both CPU and memory &nbsp; <b>D.</b> It has priorityClassName set</div>
+<div class="qz"><span class="qn">Q8.</span>A container consistently exceeds its memory limit. Result?<br><b>A.</b> CPU throttling &nbsp; <b>B.</b> Pod rescheduled &nbsp; <b>C.</b> Limit auto-raised &nbsp; <b>D.</b> OOMKilled — exit code 137</div>
+<div class="qz"><span class="qn">Q9.</span><code>readOnlyRootFilesystem</code> is set at which level?<br><b>A.</b> Namespace &nbsp; <b>B.</b> Role &nbsp; <b>C.</b> Container securityContext &nbsp; <b>D.</b> ServiceAccount</div>
+<div class="qz"><span class="qn">Q10.</span>Which PSS level requires runAsNonRoot, dropping ALL capabilities, and disabling privilege escalation?<br><b>A.</b> Privileged &nbsp; <b>B.</b> Restricted &nbsp; <b>C.</b> Baseline &nbsp; <b>D.</b> PodSecurityPolicy</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#lab4">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 22</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>B</b></td><td>Env = boot snapshot, never updates; volume files kubelet-synced ~1 min — CH 02/03</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>Base64 is transport encoding; etcd encryption-at-rest is opt-in — CH 07</td></tr>
+<tr><td>3</td><td><b>C</b></td><td>dockerconfigjson type mandates the <code>.dockerconfigjson</code> key — CH 05/06</td></tr>
+<tr><td>4</td><td><b>D</b></td><td>Default posture is deny; even the default SA has zero permissions — CH 08/11</td></tr>
+<tr><td>5</td><td><b>B</b></td><td>can-i + <code>--as</code> = authorization check for an impersonated identity — CH 08/09</td></tr>
+<tr><td>6</td><td><b>C</b></td><td>RoleBinding may bind a ClusterRole, scoping it to its namespace — CH 10</td></tr>
+<tr><td>7</td><td><b>C</b></td><td>Guaranteed = requests==limits, cpu AND memory, every container — CH 15</td></tr>
+<tr><td>8</td><td><b>D</b></td><td>Memory is incompressible → OOMKill, 128+9=137 — CH 14, Lab 4</td></tr>
+<tr><td>9</td><td><b>C</b></td><td>readOnlyRootFilesystem is container-level SecurityContext — CH 12</td></tr>
+<tr><td>10</td><td><b>B</b></td><td>Restricted = hardening best practice; PSP is removed (v1.25) — CH 13</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 03</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read the missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–4, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q2 or Q4?</b> Those are the two real-world security gaps — "encoded ≠ encrypted" and "default deny". Missed Q6? The ClusterRole+RoleBinding combo is the most misremembered fact in RBAC.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 23</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>ConfigMap</b> — namespaced key/value (or file) store for plain config; consumed as env vars or volume files.</div>
+<div class="gl"><b>Hot-reload</b> — volume-mounted ConfigMaps/Secrets update automatically (~1 min, eventual); env vars and subPath mounts never do.</div>
+<div class="gl"><b>Secret</b> — ConfigMap's sensitive sibling; base64-encoded values, RBAC-gated reads, same two consumption methods.</div>
+<div class="gl"><b>Opaque</b> — default Secret type: arbitrary key/value pairs.</div>
+<div class="gl"><b>imagePullSecrets</b> — registry credentials used by the kubelet to pull private images; best attached at ServiceAccount level.</div>
+<div class="gl"><b>Base64</b> — transport encoding, not encryption. Decodable by anyone in one command.</div>
+<div class="gl"><b>Encryption at rest</b> — opt-in kube-apiserver EncryptionConfiguration that encrypts Secrets inside etcd.</div>
+<div class="gl"><b>Authentication vs Authorization</b> — who are you vs may you do that. RBAC answers the second.</div>
+<div class="gl"><b>Role / ClusterRole</b> — namespaced / cluster-level rulebooks: verbs on resources.</div>
+<div class="gl"><b>RoleBinding / ClusterRoleBinding</b> — attach subjects to rulebooks; a RoleBinding may bind a ClusterRole but scope it to its namespace.</div>
+<div class="gl"><b>Subject</b> — User, Group, or ServiceAccount named by a Binding.</div>
+<div class="gl"><b>ServiceAccount</b> — workload identity; its projected token (mounted in the Pod) is the credential Pods use against the API.</div>
+<div class="gl"><b>SecurityContext</b> — Linux-level hardening: runAsNonRoot, readOnlyRootFilesystem, capabilities, allowPrivilegeEscalation (pod- and container-level).</div>
+<div class="gl"><b>Pod Security Standards</b> — Privileged / Baseline / Restricted levels enforced per-namespace via pod-security.kubernetes.io labels (successor to removed PSP).</div>
+<div class="gl"><b>Requests / Limits</b> — guaranteed capacity for scheduling / enforced ceiling (CPU throttles; memory OOMKills with exit 137).</div>
+<div class="gl"><b>QoS Class</b> — Guaranteed (req==lim) · Burstable (partial) · BestEffort (none) — determines eviction order under node pressure.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 24</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">⚙️ Config &amp; Secrets — commands</div><div class="term mini"><span class="p">$</span> kubectl create configmap cm --from-literal=K=V --from-file=f.conf
+<span class="p">$</span> kubectl create secret generic s --from-literal=K=V
+<span class="p">$</span> kubectl create secret docker-registry reg --docker-server=… --docker-username=…
+<span class="p">$</span> kubectl create secret tls t --cert=crt --key=key
+<span class="p">$</span> kubectl get secret s -o jsonpath='{.data.K}' | base64 -d
+<span class="p">$</span> kubectl patch sa default -p '{"imagePullSecrets":[{"name":"reg"}]}'</div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🪪 RBAC — commands</div><div class="term mini"><span class="p">$</span> kubectl create role r --verb=get,list --resource=pods -n ns
+<span class="p">$</span> kubectl create rolebinding rb --role=r --serviceaccount=ns:sa -n ns
+<span class="p">$</span> kubectl create clusterrole cr --verb=get --resource=nodes
+<span class="p">$</span> kubectl auth can-i delete pods -n ns --as=system:serviceaccount:ns:sa
+<span class="p">$</span> kubectl describe role/rolebinding …&nbsp;&nbsp;<span class="g"># audit what exists</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🔄 Hot-reload matrix</div><table class="tb" style="margin:0;"><tr><th>Consumed as</th><th>Updates?</th></tr><tr><td>env var</td><td><span class="bad">never</span></td></tr><tr><td>volume file</td><td><span class="ok">yes (~1 min)</span></td></tr><tr><td>subPath mount</td><td><span class="bad">never</span></td></tr></table></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🎚️ QoS + enforcement</div><div class="term mini"><span class="g">Guaranteed: requests==limits (cpu+mem, all)</span>
+<span class="g">Burstable: partial&nbsp;&nbsp;·&nbsp;&nbsp;BestEffort: none</span>
+<span class="g">eviction: BestEffort → Burst&gt;req → Guaranteed</span>
+<span class="r">mem over limit → OOMKilled 137</span>
+<span class="y">cpu over limit → throttled</span>
+<span class="p">$</span> kubectl get pod P -o jsonpath='{.status.qosClass}'</div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>ConfigMap = whiteboard, Secret = safe — same delivery, different trust · both ~1 MiB, namespaced</li>
+<li>Base64 ≠ encryption — real layers: etcd encryption-at-rest + RBAC (+ external secret managers)</li>
+<li>Default deny: no Role = no access; default SA has zero permissions; audit with <code>can-i --as</code></li>
+<li>RoleBinding may bind a ClusterRole (namespaced reach) · cluster-scoped resources force ClusterRoles</li>
+<li>SecurityContext = Linux perms; PSS (Privileged/Baseline/Restricted) = namespace-enforced policy; PSP is gone (v1.25)</li>
+<li>Requests → scheduling · Limits → CPU throttle / mem OOMKill · QoS → eviction order</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 25</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 02 complete</span></div>
+<p class="lead">Book 01 gave you the machine. This book gave it <b>manners</b> — config, secrets, permissions, and a resource contract.</p>
+<div class="mtree"><b>☸️ POD</b> <span class="g">— fully dressed now:</span>
+├── <u>⚙️ ConfigMap</u>   <span class="g">plain config → env / files (hot-reload rules known)</span>
+├── <u>🔐 Secret</u>      <span class="g">sensitive data — encoded ≠ encrypted, RBAC-gated</span>
+├── <u>🪪 ServiceAccount</u> <span class="g">+ Role/RoleBinding = exactly what it may do</span>
+├── <u>🛡️ SecurityContext</u> <span class="g">runAsNonRoot · roFS · caps (PSS-enforced)</span>
+└── <u>📊 requests/limits</u> <span class="g">→ scheduler placement, throttle/OOM, QoS class</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Decouple config from images and pick env-vs-volume <i>knowing</i> the hot-reload consequences</li>
+<li>Dismantle the "Secrets are encrypted" myth and name the four real protection layers</li>
+<li>Write Role + RoleBinding, reuse a ClusterRole per-namespace, and audit anyone with <code>can-i --as</code></li>
+<li>Harden a Pod (SecurityContext) and enforce it fleet-wide with PSS namespace labels</li>
+<li>Predict throttle-vs-OOMKill, and read a 137 exit code like a native speaker</li>
+<li>Trigger — and diagnose — every failure mode in Labs 1–4 on demand</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 03 · Services &amp; Networking Deep Dive:</b> LoadBalancer, Ingress &amp; TLS termination, NetworkPolicy, CoreDNS internals, and the Gateway API. Your Pods can now be configured, secured, and budgeted — Book 03 teaches the world how to <i>reach</i> them.</div></div>
+<div class="center" style="margin-top:18px;font-size:20px;">— End of Book 02 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 02 · Config, Secrets &amp; RBAC</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 26</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

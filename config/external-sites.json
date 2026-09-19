@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "sites": [
+    {
+      "id": "ext-linux101",
+      "track": "linux",
+      "title": "Linux course site",
+      "summary": "The complete Linux course as an online site.",
+      "url": "https://eslamnabawy.github.io/linux101/",
+      "pinned": true,
+      "order": 0
+    },
+    {
+      "id": "ext-terraform",
+      "track": "terraform",
+      "title": "Terraform course site",
+      "summary": "The complete Terraform course as an online site.",
+      "url": "https://eslamnabawy.github.io/TerraForm-By-Nabawy/",
+      "pinned": true,
+      "order": 0
+    },
+    {
+      "id": "ext-cicd",
+      "track": "cicd",
+      "title": "CI/CD course site",
+      "summary": "The complete CI/CD course as an online site.",
+      "url": "https://eslamnabawy.github.io/cicd-by-nabawy/",
+      "pinned": true,
+      "order": 0
+    }
+  ]
+}

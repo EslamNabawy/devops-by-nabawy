@@ -1,0 +1,221 @@
+[
+  {
+    "id": "start-here",
+    "title": "Start Here: Foundations, Git & CI",
+    "file": "pdf-merged-01-start-here.html",
+    "category": "Start Here",
+    "difficulty": "Beginner",
+    "description": "The automated path from commit to production: lifecycle, branching, PR gates, merge queues, trunk discipline.",
+    "time_minutes": 75,
+    "prereqs": [],
+    "outcomes": [
+      "Draw commit-to-production lifecycle",
+      "Choose branching model and enforce PR gates",
+      "Run merge queues with trunk discipline"
+    ],
+    "tags": [
+      "lifecycle",
+      "git",
+      "ci",
+      "trunk"
+    ],
+    "path": "start-here",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "build-artifacts",
+    "title": "Pipelines, Build, Test & Artifacts",
+    "file": "pdf-merged-10-build-artifacts.html",
+    "category": "Build",
+    "difficulty": "Intermediate",
+    "description": "Trigger to versioned artifact: stages, runners, hermetic builds, test pyramid, registries, signing, SBOM.",
+    "time_minutes": 130,
+    "prereqs": [
+      "start-here"
+    ],
+    "outcomes": [
+      "Model stages, jobs and runners",
+      "Isolate hermetic builds with correct caching",
+      "Place tests in pyramid and quarantine flakes",
+      "Version, publish, sign and attest artifacts"
+    ],
+    "tags": [
+      "pipeline",
+      "build",
+      "testing",
+      "hermetic",
+      "registry",
+      "sbom"
+    ],
+    "path": "build",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "deliver-operate",
+    "title": "Delivery, Deployment & Operations",
+    "file": "pdf-merged-11-deliver-operate.html",
+    "category": "Deliver",
+    "difficulty": "Intermediate",
+    "description": "Releasable always, deployed by decision, watched in production: strategies, envs, IaC, SLOs, rollback, supply-chain gates.",
+    "time_minutes": 255,
+    "prereqs": [
+      "build-artifacts"
+    ],
+    "outcomes": [
+      "Pick deployment strategy per risk",
+      "Keep main releasable with approvals and IaC envs",
+      "Track SLOs, roll back per strategy, secure the chain"
+    ],
+    "tags": [
+      "delivery",
+      "deployment",
+      "environments",
+      "terraform",
+      "slo",
+      "rollback"
+    ],
+    "path": "deliver",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "jenkins-complete",
+    "title": "Jenkins Complete",
+    "file": "pdf-merged-12-jenkins-complete.html",
+    "category": "Jenkins",
+    "difficulty": "Intermediate",
+    "description": "Controller to pipeline to hardening: architecture, setup, Jenkinsfiles, agents, Groovy, credentials, security, backup, triage.",
+    "time_minutes": 345,
+    "prereqs": [
+      "start-here"
+    ],
+    "outcomes": [
+      "Map concepts to controller, agents and Jenkinsfiles",
+      "Install to first green build and scale agents",
+      "Bind credentials, harden, back up and triage"
+    ],
+    "tags": [
+      "jenkins",
+      "architecture",
+      "pipelines",
+      "agents",
+      "groovy",
+      "security"
+    ],
+    "path": "jenkins",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "platforms-roadmaps",
+    "title": "Platforms & 2026 Roadmaps",
+    "file": "pdf-merged-13-platforms-roadmaps.html",
+    "category": "Platforms",
+    "difficulty": "Intermediate",
+    "description": "Actions, GitLab, ArgoCD GitOps — plus where Jenkins and Actions are headed and how to choose.",
+    "time_minutes": 190,
+    "prereqs": [
+      "build-artifacts",
+      "jenkins-complete"
+    ],
+    "outcomes": [
+      "Write workflows and gate with environments",
+      "Declare GitOps Applications with sync waves",
+      "Compare platforms across 10 dimensions"
+    ],
+    "tags": [
+      "github",
+      "gitlab",
+      "gitops",
+      "argocd",
+      "roadmap",
+      "decision"
+    ],
+    "path": "platforms",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "labs-handbook",
+    "title": "Labs Handbook",
+    "file": "pdf-merged-14-labs-handbook.html",
+    "category": "Labs",
+    "difficulty": "Intermediate",
+    "description": "Build it, break it, recover it: first pipeline to Jenkins live to Terraform evidence, with rollback and DR drills.",
+    "time_minutes": 675,
+    "prereqs": [
+      "start-here",
+      "jenkins-complete"
+    ],
+    "outcomes": [
+      "Push to green check with gates",
+      "Trigger Jenkins from webhooks and ship images",
+      "Break and recover prod with postmortem"
+    ],
+    "tags": [
+      "lab",
+      "pipeline",
+      "jenkins",
+      "docker",
+      "terraform",
+      "rollback"
+    ],
+    "path": "labs",
+    "lab_env": "GitHub + Jenkins + Docker",
+    "updated": "2026-09-18",
+    "version": "4.0"
+  },
+  {
+    "id": "cheatsheet",
+    "title": "Command Cheatsheet",
+    "file": "pdf-36-command-cheatsheet.html",
+    "category": "Reference",
+    "difficulty": "Beginner",
+    "description": "Every lab command grouped by tool.",
+    "time_minutes": 15,
+    "prereqs": [],
+    "outcomes": [
+      "Find any lab command fast",
+      "Copy per-tool snippets",
+      "Unblock local runs"
+    ],
+    "tags": [
+      "reference",
+      "commands"
+    ],
+    "path": "reference",
+    "updated": "2026-09-01",
+    "version": "2.0"
+  },
+  {
+    "id": "observability",
+    "title": "Observability: Loki, Prometheus & Grafana",
+    "file": "pdf-43-observability.html",
+    "category": "Observability",
+    "difficulty": "Intermediate",
+    "description": "See inside production: logs with Loki, metrics with Prometheus, dashboards with Grafana, queries that answer.",
+    "time_minutes": 120,
+    "prereqs": [
+      "deliver-operate"
+    ],
+    "outcomes": [
+      "Separate logs, metrics and traces",
+      "Ship logs with Promtail and query with LogQL",
+      "Scrape targets and alert with Prometheus",
+      "Unify it all in Grafana dashboards"
+    ],
+    "tags": [
+      "observability",
+      "loki",
+      "prometheus",
+      "grafana",
+      "logql",
+      "promql"
+    ],
+    "path": "observability",
+    "updated": "2026-09-18",
+    "version": "1.0"
+  }
+]

@@ -1,0 +1,12 @@
+---
+- name: Restart service
+  service:
+    name: "{{ service_name }}"
+    state: restarted
+  ignore_errors: true
+
+- name: Reload service
+  service:
+    name: "{{ service_name }}"
+    state: reloaded
+  ignore_errors: true

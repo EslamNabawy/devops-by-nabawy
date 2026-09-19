@@ -1,0 +1,15 @@
+clear---
+- name: My first Ansible playbook
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Print hello message
+      debug:
+        msg: "Hello from Ansible in WSL"
+
+    - name: Create test file
+      file:
+        path: /tmp/ansible_test.txt
+        state: touch
+        mode: '0644'

@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["ansible-80-requirements-yml"]={"html":"<pre class=\"code\" data-lang=\"yml\"><code>---\ncollections:\n  - name: community.mysql\n    version: \">=3.0.0\"\n  - name: community.general\n    version: \">=8.0.0\"\n</code></pre>","toc":[],"words":13,"assets":[]};

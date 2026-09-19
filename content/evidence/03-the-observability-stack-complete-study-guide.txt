@@ -1,0 +1,772 @@
+Here's your merged, single-file study guide. Save it as `observability-complete-study-guide.md` — everything below is one coherent document.
+
+````markdown
+# The Observability Stack: Complete Study Guide
+
+**Loki + Promtail · Prometheus + Exporters · Grafana — deployed on Minikube with Helm**
+
+> **Scope of this document:** Observability fundamentals → the three signal types → Loki/Promtail
+> architecture → Prometheus/exporters → Grafana → the full Minikube + Helm deployment → querying
+> (LogQL/PromQL) → app integration → troubleshooting → cleanup → mental model → interview prep.
+> Everything here reflects one concrete lab: a Minikube cluster, a dedicated `observability`
+> namespace, and two Helm charts (`kube-prometheus-stack` and `loki-stack`).
+
+---
+
+## Table of Contents
+
+1. [What is Observability?](#part-1--what-is-observability)
+2. [Logs vs Metrics vs Traces](#part-2--logs-vs-metrics-vs-traces)
+3. [Logs: Loki + Promtail](#part-3--logs-loki--promtail)
+4. [Metrics: Prometheus + Exporters](#part-4--metrics-prometheus--exporters)
+5. [Traces (context for the next step)](#part-5--traces-context-for-the-next-step)
+6. [Visualization: Grafana](#part-6--visualization-grafana)
+7. [How It All Fits Together in Kubernetes](#part-7--how-it-all-fits-together-in-kubernetes)
+8. [Deployment: Minikube + Helm](#part-8--deployment-minikube--helm)
+9. [Querying the Data: LogQL and PromQL](#part-9--querying-the-data-logql-and-promql)
+10. [Application Integration](#part-10--application-integration)
+11. [Troubleshooting Playbook](#part-11--troubleshooting-playbook)
+12. [Cleanup](#part-12--cleanup)
+13. [The Mental Model (Architecture Diagram)](#part-13--the-mental-model-architecture-diagram)
+14. [Interview Prep: Concepts, Commands, Quiz](#part-14--interview-prep)
+
+---
+
+## Part 1 — What is Observability?
+
+**Observability** is the ability to understand what is happening inside a system by examining the
+data it produces — **without having to ship new code to ask a new question.**
+
+That last clause is the whole point. You instrument the system *once*; after that, any new question
+("why was latency high at 2 AM?", "which pod threw the error?") is answered by querying data that
+already exists, not by redeploying with extra print statements.
+
+Observability rests on **four core pillars**:
+
+| Pillar | One-liner |
+|---|---|
+| **Logs** | Discrete, timestamped records of events |
+| **Metrics** | Numeric measurements over time |
+| **Traces** | The path a single request takes across services |
+| **Visualization** | Turns raw signals into dashboards a human can act on |
+
+Each signal exists to answer a *different kind of question* — memorize the questions:
+
+- **Logs** → *"What happened, and what did it say?"*
+- **Metrics** → *"How much, how fast, how often?"*
+- **Traces** → *"Where did the time go?"*
+- **Visualization** → *how a human consumes all of the above.*
+
+---
+
+## Part 2 — Logs vs Metrics vs Traces
+
+The three signal types are complementary, not redundant. This table is the single most
+exam-worthy artifact in this guide:
+
+| | **Logs** | **Metrics** | **Traces** |
+|---|---|---|---|
+| **Question** | What happened, and what did it say? | How much, how fast, how often? | Where did the time go? |
+| **Nature** | Discrete, timestamped event records | Numeric measurements over time | Full journey of one request across services |
+| **Shape** | Free-form text lines | Time series (name + labels + values) | Request path through service hops |
+| **Stored by (this stack)** | **Loki** | **Prometheus** | *Not deployed in this lab* (Tempo / Jaeger / Zipkin would be) |
+| **Query language** | **LogQL** | **PromQL** | (trace UI) |
+| **Best for** | Reading the *exact* content of an event ("show me the stack trace") | Trends, rates, aggregation, alerting, dashboards | Latency breakdown across a multi-service request |
+
+**How they work together (the classic debugging flow):**
+a **metric** alert fires ("error rate jumped") → a **trace** shows which hop got slow → a
+**log** line tells you the exact exception. **Grafana** is the pane of glass where all of this
+comes together — and because Loki uses *the exact same label model as Prometheus and Kubernetes*,
+you can pivot from a metric on a pod straight to that pod's logs.
+
+### The Core Stack at a Glance
+
+| Component | Role | Installed by | Runs as |
+|---|---|---|---|
+| **Loki** | Stores and indexes logs | `loki-stack` | Log backend |
+| **Promtail** | Tails container logs on every node and ships them to Loki | `loki-stack` | **DaemonSet** |
+| **Prometheus** | Scrapes and stores metrics as time series | `kube-prometheus-stack` | Metrics backend |
+| **node-exporter** | Exposes host-level metrics | `kube-prometheus-stack` | **DaemonSet** |
+| **kube-state-metrics** | Exposes Kubernetes object state metrics | `kube-prometheus-stack` | Deployment |
+| **Alertmanager** | Routes PromQL alert conditions to Slack/email/PagerDuty | `kube-prometheus-stack` | *Disabled in this lab* |
+| **Grafana** | Queries both backends, renders dashboards | `kube-prometheus-stack` | Deployment |
+
+**Key asymmetry to remember:** Promtail **pushes** logs to Loki; Prometheus **pulls** metrics
+from targets. Two different transport models, one shared label model.
+
+---
+
+## Part 3 — Logs: Loki + Promtail
+
+### 3.1 Why Loki?
+
+Loki is a **horizontally-scalable, multi-tenant log aggregation system** built by Grafana Labs.
+It is deliberately different from full-text systems like ELK:
+
+- **Cost-effective:** **10–20x cheaper** for storage, because Loki **indexes only metadata
+  (labels) — not the full text of every log line.**
+- **Storage:** Logs are compressed into **chunks** and stored in **cheap object storage**
+  (or a local filesystem in labs).
+- **Querying:** You query with **LogQL**, a language *deliberately designed to be similar to PromQL*.
+- **Integration:** **Native Grafana integration** (no separate UI needed), and it uses the
+  **exact same label model as Kubernetes and Prometheus**.
+
+**The mental model:** think of Loki as "Prometheus for logs." Labels identify *which stream* a log
+belongs to (that's what's indexed); the actual text is searched only *at query time*. This is the
+root cause of both its cheapness and its query behavior — label selectors are fast, line filters
+are done on the fly.
+
+### 3.2 Loki Architecture — the write path and read path
+
+```
+ WRITE PATH
+ container log files ──► Promtail ──► Distributor ──► Ingester ──► Store
+                                        │               │            │
+                                   validates &     batches into   chunks +
+                                   hashes streams  chunks, writes  index
+
+ READ PATH
+ Grafana ──LogQL──► Querier ──► reads chunks + index from Store/Ingester
+```
+
+| Component | Job |
+|---|---|
+| **1. Promtail** | Ships logs from the nodes |
+| **2. Distributor** | **Validates** and **hashes** the incoming log streams |
+| **3. Ingester** | Batches the streams into **chunks** and writes them |
+| **4. Store** | Stores the chunks **and the index** (object storage or local disk) |
+| **5. Querier** | Executes the LogQL queries coming from Grafana |
+
+A **log stream** = a unique combination of labels. Every distinct label set is its own stream —
+which is why the labels Promtail attaches matter so much.
+
+### 3.3 Promtail Workflow — why a DaemonSet, and the 4 steps
+
+Promtail runs as a **DaemonSet** — **one pod per Kubernetes node**. Why? Because container logs
+are **files on each node's local filesystem**. A Promtail pod on node A physically cannot read
+node B's `/var/log/pods`. Node-local data ⇒ node-local collector.
+
+| Step | Action | Detail |
+|---|---|---|
+| **1. Discover** | Find pods | Uses **Kubernetes service discovery** to find every pod running **on its node** |
+| **2. Tail** | Read the logs | Reads container log files directly from **`/var/log/pods`** — like a `tail -f` |
+| **3. Label** | Attach metadata | Attaches Kubernetes metadata as labels: **namespace, pod, container, node** — *the exact same labels Prometheus uses* |
+| **4. Ship** | Send to Loki | Batches log lines and **pushes to Loki's distributor over HTTP** |
+
+**Why step 3 matters more than it looks:** because Promtail's labels are identical to Prometheus's
+labels, logs and metrics are cross-correlatable by default. You see a CPU spike on
+`pod X, namespace Y` in a Prometheus panel → query `{namespace="Y", pod="X"}` in Loki → read the
+logs from exactly that window. Zero extra configuration produces this.
+
+---
+
+## Part 4 — Metrics: Prometheus + Exporters
+
+### 4.1 The pull model
+
+Prometheus is an open-source monitoring system that uses a **pull model**: it **scrapes** metrics
+from targets on a regular interval, rather than waiting for applications to push data.
+
+Practical consequences of pulling:
+
+- **Central control:** the scraper decides the cadence and the target list — apps don't need to
+  know where Prometheus lives.
+- **Failure is visible:** a dead target doesn't just leave a gap in the data — its `up` metric
+  goes to `0`. You can literally query whether monitoring works.
+
+### 4.2 Time series and PromQL
+
+- **Storage:** every measurement is a **time series** = **metric name + key/value labels +
+  a sequence of timestamped values.**
+  Example: `container_cpu_usage_seconds_total{namespace="app", pod="api-7d9f"}` — the labels are
+  the dimensions you aggregate by.
+- **Querying:** **PromQL** — a powerful query language for aggregating, filtering, and computing
+  **rates** over time series.
+- **Alerting:** Prometheus pairs with **Alertmanager**, which turns PromQL conditions into
+  **routed alerts** (Slack, email, PagerDuty). *(Alertmanager is disabled in this lab's
+  deployment — but the concept stands.)*
+
+### 4.3 Service discovery — no manual IP lists
+
+In Kubernetes, Prometheus **automatically finds targets using service discovery and Custom
+Resources (CRDs)**. Nobody maintains a list of pod IPs (pods are ephemeral anyway — the list
+would be stale in minutes).
+
+### 4.4 The metric sources — know who exposes what
+
+| Component | Where it runs | What it exposes | The question it answers |
+|---|---|---|---|
+| **node-exporter** | **DaemonSet** (one pod per node) | **Host-level** metrics: CPU, memory, disk, network | "Is the machine itself healthy?" |
+| **kube-state-metrics** | Watches the **Kubernetes API** | **Object state**: pod status, deployment replicas, restarts | "Does Kubernetes *think* everything is fine?" |
+| **cAdvisor** | **Built into the kubelet** | **Per-container** resource usage (actual CPU/memory each container consumes) | "Which container is eating resources?" |
+| **ServiceMonitor / PodMonitor** | CRDs — not pods at all | Declarative rules for **which Services/Pods Prometheus should scrape** | "How does Prometheus find *my app*?" |
+
+**Drill this distinction:** node-exporter = *machine*, kube-state-metrics = *Kubernetes objects*,
+cAdvisor = *containers*. Three layers of "is it healthy," three different components.
+
+**ServiceMonitor / PodMonitor:** these CRDs tell Prometheus exactly which Services or Pods to
+scrape. This is what lets **Helm charts auto-wire** scraping — deploying the CRD *is* the
+configuration. (Full example in Part 10.)
+
+---
+
+## Part 5 — Traces (context for the next step)
+
+A **trace** records the **full journey of a single request** as it moves through multiple services:
+
+```
+API Gateway → Auth Service → Order Service → Database Query
+```
+
+- **Purpose:** traces show **exactly where time was spent** during a request. Metrics tell you
+  *that* requests are slow; traces tell you *which hop* made them slow.
+- **Tools:** **Grafana Tempo, Jaeger, or Zipkin**, with applications instrumented via
+  **OpenTelemetry**.
+- **Status in this lab:** traces are **not deployed here** — they are the **natural next step**
+  once logs (Loki) and metrics (Prometheus) are in place.
+
+---
+
+## Part 6 — Visualization: Grafana
+
+Grafana is the **unified UI for observability**.
+
+- **Data handling:** Grafana **does not store data itself**. It connects to **Data Sources**
+  (Prometheus, Loki) and **queries them live** on every panel refresh. Wipe the backends and
+  Grafana has nothing to show — it's a lens, not a database.
+- **What a Data Source needs:** a **URL**, **authentication**, and the **query language** it
+  should speak (**PromQL** or **LogQL**).
+- **Dashboards and panels:** a **Dashboard is a collection of Panels**. Each panel runs a query
+  against one data source and renders the result as a **graph, table, log stream, or gauge**.
+- **Dashboards as code:** dashboards are **JSON** — so they can be **version-controlled** or
+  **imported from `grafana.com/dashboards`** by numeric ID.
+- **Explore mode:** run **ad-hoc PromQL or LogQL queries** without building a dashboard — the
+  go-to tool for debugging ("just show me the errors from that namespace *right now*").
+
+**Important deployment detail:** in this stack, Grafana is **installed by `kube-prometheus-stack`**,
+not deployed standalone. That fact is exactly what causes the datasource conflict in Part 8.
+
+---
+
+## Part 7 — How It All Fits Together in Kubernetes
+
+**The complete data flow:**
+
+1. **Application pods** write logs and (optionally) expose `/metrics`.
+2. On every node, **Promtail** (DaemonSet) tails `/var/log/pods`, labels each line with
+   Kubernetes metadata, and **pushes** batches to Loki's distributor.
+3. On every node, **node-exporter** (DaemonSet) exposes host metrics; **cAdvisor** (in the
+   kubelet) exposes per-container metrics; **kube-state-metrics** exposes object state.
+4. **Prometheus pulls** all of those metrics on a scrape interval, discovering targets via
+   Kubernetes service discovery and CRDs (ServiceMonitor/PodMonitor).
+5. **Grafana** holds both as data sources and **queries Prometheus (PromQL)** and
+   **Loki (LogQL)** live.
+6. You open Grafana in a browser through a **port-forward tunnel** and see everything.
+
+**Two transports, one label model:** logs are *pushed* (Promtail → Loki, HTTP), metrics are
+*pulled* (Prometheus → targets, scrape). But both carry the **same labels**
+(namespace / pod / container / node), which is what makes the stack feel like one system.
+
+---
+
+## Part 8 — Deployment: Minikube + Helm
+
+### 8.1 Helm in one paragraph
+
+**Helm** is a **package manager for Kubernetes**. It bundles all necessary manifests —
+Deployments, Services, ConfigMaps, CRDs — into **"charts."** Installing a chart creates a
+**release**. Charts live in **repositories** you add to your host.
+
+### 8.2 Prerequisites and initial setup
+
+- **Install Helm** on the host machine.
+- **Add and update the two chart repositories:**
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+```
+
+- **Create a dedicated namespace** — best practice, keeps monitoring components separate from
+  application workloads:
+
+```bash
+kubectl create namespace observability
+```
+
+### 8.3 Chart 1: `kube-prometheus-stack` (Prometheus + Grafana + Alertmanager + exporters)
+
+One chart installs: **Prometheus, Alertmanager, Grafana, node-exporter, kube-state-metrics,
+the ServiceMonitor/PodMonitor CRDs, and default Kubernetes dashboards.**
+
+**⚠️ Resource management — why the `--set` overrides matter:**
+By default, this chart **requests more CPU and RAM than a small Minikube cluster can handle.**
+If you install it bare, pods sit in `Pending` because the scheduler can't fit their resource
+*requests* anywhere. You must **drastically trim resource requests and limits for every
+component** with `--set` flags:
+
+```bash
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  -n observability \
+  --set alertmanager.enabled=false \
+  --set prometheus.prometheusSpec.retention=6h \
+  --set grafana.adminPassword=admin123 \
+  --set prometheus.prometheusSpec.resources.requests.cpu=100m \
+  --set prometheus.prometheusSpec.resources.requests.memory=256Mi \
+  --set grafana.resources.requests.cpu=50m \
+  --set grafana.resources.requests.memory=128Mi
+  # ...similar trimming --set flags for kube-state-metrics and node-exporter.
+  # (Exact value keys: helm show values prometheus-community/kube-prometheus-stack)
+```
+
+Rationale for each override:
+
+| Override | Why |
+|---|---|
+| Resource requests/limits trimmed on **every component** | Chart defaults assume beefy nodes; Minikube pods go `Pending` otherwise |
+| `retention=6h` | TSDB storage grows with retention; a lab doesn't need history — 6 hours is plenty for debugging |
+| `alertmanager.enabled=false` | No alert routing needed in a lab → fewer pods, less RAM |
+| `adminPassword=admin123` | The lab's Grafana credentials (`admin` / `admin123`) |
+
+**🔑 Idempotency rule:** **always use `helm upgrade --install`, never plain `helm install`.**
+`helm upgrade --install` is **safe to re-run**: if the release exists it **upgrades it in-place**;
+if not, it installs. Plain `helm install` **fails** on a second run.
+
+### 8.4 Chart 2: `loki-stack` (Loki + Promtail)
+
+Installs **Loki** for log storage and deploys **Promtail as a DaemonSet** across the cluster:
+
+```bash
+helm upgrade --install loki-stack grafana/loki-stack \
+  -n observability \
+  --set grafana.sidecar.datasources.defaultDatasourceEnabled=false
+```
+
+### 8.5 ⚠️ The datasource provisioning conflict (the one non-obvious gotcha)
+
+**The mechanism, step by step:**
+
+1. `loki-stack` ships **its own Grafana data-source ConfigMap** for Loki.
+2. The **Grafana sidecar** (running in the Grafana installed by `kube-prometheus-stack`)
+   **auto-discovers** datasource ConfigMaps and loads them. Nice — Loki appears in Grafana
+   with zero manual configuration.
+3. **The conflict:** `kube-prometheus-stack` marks **Prometheus** as the **default** datasource.
+   `loki-stack` **also tries to mark Loki as default**.
+4. Grafana allows **exactly one default datasource**. Two defaults = **"Datasource provisioning
+   error"** → Grafana **crashes → restarts → crashes → `CrashLoopBackOff`**.
+
+**The fix:** when installing Loki, set
+**`grafana.sidecar.datasources.defaultDatasourceEnabled=false`** — Loki still becomes a
+datasource, just **not the default** (Prometheus stays default).
+
+**Emergency repair if it's already broken:** find the extra datasource ConfigMap with
+`kubectl get configmap -n observability` and **remove the `isDefault: true`** flag
+(then restart the Grafana pod).
+
+### 8.6 Accessing Grafana through port-forward
+
+Helm installs Grafana as a **`ClusterIP` Service** — reachable only from *inside* the cluster,
+**not from your Windows/WSL host**. You must tunnel:
+
+```bash
+kubectl port-forward --address 0.0.0.0 -n observability \
+  svc/kube-prometheus-stack-grafana 3000:80
+```
+
+Then open **`http://localhost:3000`** → login **`admin` / `admin123`**.
+
+Decoding the command:
+
+| Piece | Meaning |
+|---|---|
+| `svc/kube-prometheus-stack-grafana` | The Service to tunnel to |
+| `-n observability` | The namespace the Service lives in |
+| `3000:80` | **local port 3000 → Service port 80** |
+| `--address 0.0.0.0` | Bind the forward on **all host interfaces**, not loopback only — **required on Windows/WSL**, otherwise you get *connection refused* from the Windows side |
+
+### 8.7 Dashboards: what you get vs what you import
+
+- **Pre-installed** (shipped by `kube-prometheus-stack`): cluster compute resources,
+  namespaces, nodes, and the Kubelet — all Prometheus-backed.
+- **Not included:** Loki dashboards. Import community dashboards via the Grafana UI
+  (**Dashboards → Import → enter ID → Load**):
+  - **ID `13639`** — Kubernetes Logs
+  - **ID `12611`** — Log volume
+- Or skip dashboards entirely and use **Explore** (Part 9).
+
+---
+
+## Part 9 — Querying the Data: LogQL and PromQL
+
+**Framing:** two backends, two query languages, one UI. LogQL was *deliberately designed to be
+similar to PromQL*, and both select by the *same labels* — learn one, and the other feels familiar.
+
+### 9.1 Start in Explore mode
+
+Grafana → **Explore** → pick a datasource → run ad-hoc queries, no dashboard needed:
+
+- Against **Loki:** `{namespace="observability"}` → live log streams from every pod in the namespace
+- Against **Prometheus:** `up` → `1` = scrape healthy, `0` = target down
+
+### 9.2 LogQL — structure and examples
+
+Every LogQL query has two stages: a **log stream selector** (labels — *indexed*, fast) followed by
+an optional **filter pipeline** (line filters — evaluated at *query time*) and an optional
+**metric wrapper** (turn log counts into numbers).
+
+```logql
+# 1. Stream selector: all logs from a namespace
+{namespace="observability"}
+
+# Narrow by pod / container (the labels Promtail attached)
+{namespace="default", pod="my-app-7d9f8b6c-", container="app"}
+
+# 2. Line filters: keep / drop lines by content (this is where Loki searches text)
+{namespace="observability"} |= "error"
+{namespace="observability"} |= "error" != "timeout"
+
+# 3. Metric query: count matching log lines per pod over a 5m window
+sum by (pod) (count_over_time({namespace="default"} |= "error" [5m]))
+```
+
+**Why this ordering matters:** the label selector runs against the **index**; the text search runs
+against the matching streams **at query time**. That is the direct payoff of Loki's
+"index only labels" design — and exactly why the cheap storage doesn't mean slow queries *if*
+your labels are chosen well.
+
+Note the shape of stage 3: it converts **logs into a metric** (`count_over_time` over a `[5m]`
+range) — the bridge between the two signal types, and structurally a sibling of PromQL's `rate()`.
+
+### 9.3 PromQL — examples (annotated by source component)
+
+```promql
+# Health of every scrape target (1 = up, 0 = down)
+up
+
+# Only the observability stack itself
+up{namespace="observability"}
+
+# Per-container CPU rate over 5m — metric from cAdvisor (via kubelet)
+sum by (pod) (rate(container_cpu_usage_seconds_total[5m]))
+
+# Container memory right now — cAdvisor
+sum by (pod) (container_memory_usage_bytes)
+
+# Node memory available, as a fraction — metric from node-exporter
+node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+```
+
+Two PromQL mechanics worth internalizing:
+
+- `[5m]` selects a **range vector** (many points over 5 minutes) — functions like `rate()`
+  *require* a range.
+- `sum by (pod) (...)` **aggregates** across labels, keeping `pod` as the grouping dimension —
+  the same labels Loki uses, so results line up across both backends.
+
+### 9.4 Instant versus trend debugging
+
+- **Right now, is it broken?** → `up`, or a raw log stream `{namespace="..."}`
+- **Trending toward broken?** → `rate()` over `[5m]`, a count of errors per pod, memory fraction
+  graphed on a pre-built dashboard.
+
+---
+
+## Part 10 — Application Integration
+
+### 10.1 Logs: zero configuration
+
+**Promtail automatically collects logs from every pod in the cluster** — no annotations, no CRDs,
+nothing. Its DaemonSet + Kubernetes service discovery pick up new pods as they appear. Deploy an
+app, and its logs (already labeled with namespace/pod/container) are in Loki.
+
+### 10.2 Metrics: two requirements
+
+To get Prometheus scraping your application:
+
+1. **The app must expose a `/metrics` endpoint on an `http` port** (client libraries exist for
+   every major language that publish counters/gauges/histograms in Prometheus format).
+2. **Create a `ServiceMonitor` Custom Resource** whose label selector matches your application,
+   so Prometheus discovers it through the CRD (Helm/operator auto-wires the rest).
+
+Minimal annotated example:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: my-app
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack   # must match what the Prometheus operator selects
+spec:
+  selector:
+    matchLabels:
+      app: my-app                    # selects YOUR app's Service by its labels
+  namespaceSelector:
+    matchNames:
+      - default                      # where the app's Service lives
+  endpoints:
+    - port: http                     # the NAME of the Service port serving /metrics
+      path: /metrics
+      interval: 30s
+```
+
+- `selector.matchLabels` → finds the app's **Service**.
+- `endpoints.port` → refers to the Service port **name** — which is why the requirement says
+  "on an `http` port."
+- `release: kube-prometheus-stack` → the label the operator's discovery rules match on; this is
+  the "auto-wiring" Helm charts provide.
+
+**Verify it worked:** query `up{namespace="default"}` in Explore — your app should appear with
+value `1` within a scrape interval or two.
+
+---
+
+## Part 11 — Troubleshooting Playbook
+
+*Reason from **symptom → diagnosis → root cause → fix**. The diagnostic command sequence matters
+more than memorizing fixes.*
+
+### Scenario 1 — Pods stuck in `Pending`
+
+- **Symptom:** `kubectl get pods -n observability` → pods sitting in `Pending`, not starting.
+- **Diagnose:** `kubectl describe pod <pod> -n observability` → events show
+  **`FailedScheduling: Insufficient cpu / memory`**.
+- **Root cause:** the **cluster lacks free CPU/memory**. The chart's default resource *requests*
+  don't fit on the Minikube node — and the scheduler will not place a pod whose requests don't fit.
+- **Fix:** either **lower the resource requests** (the `--set` overrides from Part 8) or
+  **give Minikube more capacity** (`minikube start --cpus=... --memory=...`).
+- **Lesson:** `Pending` = scheduling problem = look at *requests vs available*, before anything else.
+
+### Scenario 2 — Grafana `OOMKilled`
+
+- **Symptom:** Grafana pod restarts repeatedly; `kubectl describe pod` shows last state
+  **`OOMKilled`** (exit code 137).
+- **Root cause:** the container **ran out of memory** — it exceeded its own memory *limit*.
+- **Diagnose before fixing:** **check the node's free memory first** (`kubectl top nodes`) —
+  **do not blindly raise the Grafana limit.** If the node itself has no headroom, a bigger limit
+  just moves the out-of-memory kill from the container to the node.
+- **Fix:** if the node has headroom → raise Grafana's memory limit via `--set`; if not → free
+  node capacity (disable components, trim other pods, grow Minikube).
+- **Lesson:** `OOMKilled` = *limit* problem; node exhaustion = *capacity* problem. Diagnose which
+  one you have.
+
+### Scenario 3 — Grafana `CrashLoopBackOff` with a provisioning error
+
+- **Symptom:** Grafana cycles `CrashLoopBackOff`; its logs show a
+  **"Datasource provisioning error."**
+- **Diagnose:** `kubectl logs <grafana-pod> -n observability` for the error text;
+  `kubectl get configmap -n observability` → you'll find **two datasource ConfigMaps**
+  (one from each chart) **both marked default**.
+- **Root cause:** **two datasources marked as default.** Grafana permits exactly **one** default;
+  provisioning fails at startup, every time → crash loop. (This is *not* a resource problem —
+  a config validation failure can crash-loop a perfectly sized pod.)
+- **Fix:** **prevention** — install loki-stack with
+  `--set grafana.sidecar.datasources.defaultDatasourceEnabled=false`.
+  **Repair** — find the extra ConfigMap and **remove the `isDefault: true`** flag, then restart
+  Grafana (`kubectl delete pod` — the Deployment recreates it clean).
+- **Lesson:** read the crash logs — the error message names the subsystem (provisioning), which
+  points straight at ConfigMaps.
+
+### Scenario 4 — "Connection refused" from Windows / WSL
+
+- **Symptom:** browser on Windows can't reach `localhost:3000` even though port-forward is running.
+- **Root cause:** the forward was bound to loopback **inside the WSL VM only** —
+  the `--address 0.0.0.0` flag was missing.
+- **Fix:** re-run with the full command:
+  `kubectl port-forward --address 0.0.0.0 -n observability svc/kube-prometheus-stack-grafana 3000:80`
+- **Lesson:** on WSL, your browser and your cluster live on different network boundaries —
+  bind all interfaces so the port relay works.
+
+### Scenario 5 — "Grafana shows no data" (general reasoning flow)
+
+Work the chain in order:
+
+1. **Is the backend pod running?** → `kubectl get pods -n observability` (a crashed Loki or
+   Prometheus means no queries can succeed).
+2. **Is the datasource alive?** → Grafana → Explore → run `up` (Prometheus) or
+   `{namespace="observability"}` (Loki). If *Explore* works but a dashboard doesn't, the problem
+   is the dashboard's query/time-range, not the stack.
+3. **Missing app metrics specifically?** → the app has no `/metrics` endpoint, or the
+   ServiceMonitor selector doesn't match — check `up` for the target.
+4. **Right namespace? Right time range?** → the boring causes are the common ones.
+
+---
+
+## Part 12 — Cleanup
+
+Remove the entire stack:
+
+```bash
+helm uninstall kube-prometheus-stack -n observability
+helm uninstall loki-stack            -n observability
+kubectl delete namespace observability
+```
+
+Deleting the namespace removes anything the charts left behind inside it.
+*(Practical note: the CRDs that `kube-prometheus-stack` installed are cluster-scoped and may
+remain after uninstall — delete them explicitly if you want a spotless cluster.)*
+
+---
+
+## Part 13 — The Mental Model (Architecture Diagram)
+
+```
+                        YOUR HOST  (Windows / WSL)
+  ┌───────────────────────────────────────────────────────────────┐
+  │   Browser ──► http://localhost:3000         (admin/admin123)  │
+  │       ▲                                                       │
+  │       └── kubectl port-forward --address 0.0.0.0 \            │
+  │             -n observability \                                │
+  │             svc/kube-prometheus-stack-grafana 3000:80         │
+  └───────────────────────┬───────────────────────────────────────┘
+                          │  tunnel into the cluster
+━━━━━━━━━━━━━━━━━━━━━━━━━ ╪ ━━━━━━━━━━━ MINIKUBE CLUSTER ━━━━━━━━━━━
+                          ▼
+     namespace: observability
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                     GRAFANA  (Deployment)                       │
+  │           the single UI — it stores NO data itself              │
+  │        ▲ queries PromQL                ▲ queries LogQL          │
+  └────────┼───────────────────────────────┼─────────────────────────┘
+           │                               │
+  ┌────────┴───────────────┐     ┌─────────┴──────────────┐
+  │       PROMETHEUS       │     │         LOKI           │
+  │   pull model · TSDB    │     │  label index + chunk   │
+  │   time series storage  │     │  store (disk/object)   │
+  └────────▲───────────────┘     └─────────▲──────────────┘
+           │ PULL /metrics                 │ PUSH (HTTP, batched)
+           │                        inside Loki:
+           │              Promtail → Distributor → Ingester → Store
+           │                                 (Querier serves Grafana)
+  ┌────────┴───────────────────────────────────────────────────┐
+  │                EVERY NODE   (DaemonSets)                   │
+  │  ┌────────────────┐        ┌────────────────────────┐      │
+  │  │ node-exporter  │        │        Promtail        │      │
+  │  │ host metrics:  │        │ tails /var/log/pods,   │      │
+  │  │ cpu/mem/disk/  │        │ attaches labels        │      │
+  │  │ net            │        │ (ns/pod/ctr/node),     │      │
+  │  └────────────────┘        │ ships to Distributor   │      │
+  │                            └────────────────────────┘      │
+  └────────────────────────────────────────────────────────────┘
+
+  ALSO FEEDING PROMETHEUS:
+   • kube-state-metrics ── watches K8s API ──► pod status / replicas / restarts
+   • cAdvisor (inside kubelet) ─────────────► per-container cpu/mem usage
+   • your apps ── /metrics ──(ServiceMonitor CRD)──► auto-discovered & scraped
+```
+
+**The one-paragraph mental model:**
+
+> Nodes produce raw signals. **Promtail pushes logs** into Loki, which indexes *only labels* and
+> compresses chunks into storage. **Prometheus pulls metrics** from node-exporter, cAdvisor,
+> kube-state-metrics, and any app with a `/metrics` endpoint + ServiceMonitor. Both systems speak
+> the **same label language** (namespace/pod/container/node). **Grafana stores nothing** — it
+> queries both backends live (PromQL/LogQL) and renders them for humans. You reach Grafana from
+> your laptop through a **port-forward** because its ClusterIP isn't externally reachable.
+
+---
+
+## Part 14 — Interview Prep
+
+### 14.1 Concept questions (with distilled answers)
+
+1. **What is observability?**
+   The ability to understand what's happening inside a system by examining the data it produces —
+   **without shipping new code to ask a new question.** Pillars: logs, metrics, traces, visualization.
+2. **Logs vs metrics vs traces — when do you use each?**
+   Logs = *what happened and what did it say* (exact events). Metrics = *how much/how fast/how
+   often* (trends, rates, alerting). Traces = *where did the time go* (latency per hop of one
+   request). Debug flow: metric alerts → trace locates the slow hop → log shows the exception.
+3. **Why is Loki 10–20x cheaper than full-text log systems?**
+   It indexes **only metadata (labels), not the full text** of log lines; text is searched at
+   query time. Chunks are compressed into **cheap object storage**.
+4. **Pull vs push — explain Prometheus's model vs Promtail's.**
+   Prometheus **pulls** (scrapes targets on an interval — central control of cadence, and a dead
+   target is visible via `up=0`). Promtail **pushes** logs (HTTP batches) to Loki's distributor.
+5. **Why are Promtail and node-exporter DaemonSets?**
+   Their data is **node-local**: container logs live in each node's `/var/log/pods`; host metrics
+   are per-machine. One pod per node guarantees full coverage.
+6. **What makes up a Prometheus time series?**
+   A **metric name + key/value labels + a sequence of timestamped values.**
+7. **node-exporter vs kube-state-metrics vs cAdvisor?**
+   Host-level machine metrics (DaemonSet) vs Kubernetes *object state* from the API server
+   (pod status, replicas, restarts) vs per-container resource usage built into the kubelet.
+8. **What are ServiceMonitor/PodMonitor and why do they exist?**
+   CRDs that **declaratively** tell Prometheus which Services/Pods to scrape — no manual IP
+   lists; deploying the CRD *is* the configuration (Helm charts auto-wire it).
+9. **Tell me about a bug you debugged in this stack.** *(the star story)*
+   Grafana `CrashLoopBackOff` with a datasource provisioning error: both `kube-prometheus-stack`
+   and `loki-stack` provisioned a datasource marked **default**; Grafana allows exactly one.
+   Diagnosed via pod logs + `kubectl get configmap`; fixed by
+   `grafana.sidecar.datasources.defaultDatasourceEnabled=false` (or removing `isDefault: true`
+   from the extra ConfigMap).
+10. **Why `helm upgrade --install` instead of `helm install`?**
+    Idempotency — re-running **upgrades an existing release in place** instead of failing.
+11. **Why port-forward instead of a Service type like NodePort/LoadBalancer?**
+    Grafana is installed as **ClusterIP** (cluster-internal only). Port-forward is the
+    zero-configuration dev/lab access path; NodePort/LoadBalancer/Ingress are what you'd use to
+    expose it properly. On Windows/WSL you **must** pass `--address 0.0.0.0`.
+12. **Why drop Prometheus retention to 6h in a lab?**
+    TSDB storage grows with retention; a lab needs no history, so 6h saves significant disk.
+13. **How do logs and metrics link together in this stack?**
+    **Same label model** — Promtail attaches the exact labels Prometheus uses
+    (namespace/pod/container/node), so a metric anomaly on a pod maps directly to that pod's log stream.
+14. **What's the natural next step for this stack?**
+    **Traces** — deploy Grafana Tempo (or Jaeger/Zipkin) and instrument apps with OpenTelemetry,
+    completing all three signals.
+
+### 14.2 Command cheat sheet
+
+| Command | What it does / tells you |
+|---|---|
+| `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts` | Add chart repo |
+| `helm repo add grafana https://grafana.github.io/helm-charts` | Add chart repo |
+| `helm repo update` | Refresh repo indexes |
+| `kubectl create namespace observability` | Dedicated namespace for the stack |
+| `helm upgrade --install <release> <chart> -n observability --set ...` | Idempotent install/upgrade |
+| `helm list -n observability` | Installed releases |
+| `helm uninstall <release> -n observability` | Remove a release |
+| `kubectl get pods -n observability` | First health check: Running / Pending / CrashLoopBackOff |
+| `kubectl describe pod <pod> -n observability` | Events: FailedScheduling, OOMKilled, restart reason |
+| `kubectl logs <pod> -n observability` | App-level errors (provisioning error lives here) |
+| `kubectl get configmap -n observability` | Find datasource provisioning ConfigMaps |
+| `kubectl top nodes` / `kubectl top pods -n observability` | Actual CPU/memory vs requests |
+| `kubectl delete pod <pod> -n observability` | Force a clean restart (e.g., after ConfigMap fix) |
+| `kubectl port-forward --address 0.0.0.0 -n observability svc/kube-prometheus-stack-grafana 3000:80` | Access Grafana at `localhost:3000` |
+
+**Query one-liners:** `{namespace="observability"}` (Loki) · `up` (Prometheus) ·
+`sum by (pod) (rate(container_cpu_usage_seconds_total[5m]))` ·
+`sum by (pod) (count_over_time({namespace="default"} |= "error" [5m]))`
+
+### 14.3 Self-quiz
+
+1. Which Loki component validates and hashes incoming log streams?
+2. From which path does Promtail read container logs, and as what workload type?
+3. What three things make up a Prometheus time series?
+4. Which component exposes per-container CPU/memory, and where does it run?
+5. Why does Grafana crash-loop when two datasources are default, and what's the exact `--set` fix?
+6. What does `up == 0` mean?
+7. Why does Grafana itself store no data?
+8. What are the three commands for full cleanup?
+9. Which two community dashboard IDs cover Kubernetes logs and log volume?
+10. Why must the port-forward use `--address 0.0.0.0` on Windows/WSL?
+
+<details>
+<summary><strong>Answers</strong> (click to expand)</summary>
+
+1. The **Distributor** (then the Ingester batches streams into chunks, and the Store keeps chunks + index).
+2. **`/var/log/pods`** on its node; Promtail runs as a **DaemonSet** (one pod per node, because logs are node-local files).
+3. **Metric name + key/value labels + a sequence of timestamped values.**
+4. **cAdvisor**, built into the **kubelet**.
+5. Grafana allows exactly **one default datasource**; provisioning fails at startup every restart. Fix: `--set grafana.sidecar.datasources.defaultDatasourceEnabled=false` when installing loki-stack.
+6. A scrape target is **down** — Prometheus couldn't scrape it (visible failure is a pull-model benefit).
+7. It's a **visualization layer**: it connects to data sources (Prometheus, Loki) and **queries them live**.
+8. `helm uninstall kube-prometheus-stack -n observability` → `helm uninstall loki-stack -n observability` → `kubectl delete namespace observability`.
+9. **13639** (Kubernetes Logs) and **12611** (Log volume), imported via the Grafana UI.
+10. Without it, the forward binds to loopback inside WSL only, and the Windows browser gets **connection refused**; `0.0.0.0` binds all host interfaces.
+</details>
+````
+
+Want me to also generate a condensed one-page cheat sheet version, or a set of Anki-style flashcards from the quiz section?

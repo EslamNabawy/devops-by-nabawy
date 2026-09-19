@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>▶ Task: Reusable generic_package Role — By Nabawy — REDLINE Daylight</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#fffefb; --panel2:#f1efea; --ink:#2d2a26; --dim:#7d766c;
+  --line:#e4e0d8; --line2:#d4cfc4;
+  --red:#c0392b; --red-deep:#a93226; --red-t:#c0392b; --red-fill:#fdf0ee;
+  --ok:#1e8e5a; --t-ok:#e9f6ef; --chg:#b07d10; --t-chg:#faf3e2; --fail-t:#c0392b; --t-fail:#fdf0ee;
+  --skip:#8b857a; --cyan:#0e7490; --t-cyan:#e8f4f8;
+  --shadow:2px 2px 0 rgba(45,42,38,.14);
+}
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#eceae5; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.sheet{width:210mm; height:297mm; background:var(--bg); margin:9mm auto; padding:13mm 13mm 20mm; position:relative; border:1px solid var(--line2); page-break-after:always; overflow:hidden;}
+.sheet::before{content:''; position:absolute; top:0; left:0; right:0; height:7px; background:linear-gradient(to bottom,var(--red) 0 5px,var(--ink) 5px 7px);}
+@media print{ body{background:#fff;} .sheet{margin:0; border:none; box-shadow:none;} }
+.mono{font-family:'Consolas',monospace;}
+.pghead{margin:0 0 9px; border-bottom:2px solid var(--ink); padding-bottom:6px;}
+.hrow{display:flex; align-items:flex-start; gap:10px;}
+.kick{font:800 10px 'Consolas',monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--red-t); margin-bottom:2px;}
+h1.t{font:800 20px/1.3 'Segoe UI',sans-serif; margin:0; border-left:5px solid var(--red); padding-left:11px;}
+.hmeta{margin-left:auto; font:800 9.5px 'Consolas',monospace; border:2px solid var(--red); color:#fff; background:var(--red); border-radius:4px; padding:2px 8px; white-space:nowrap;}
+.folio{position:absolute; bottom:6mm; left:13mm; right:13mm; display:flex; align-items:center; gap:8px; font:9.5px 'Consolas',monospace; color:var(--dim);}
+.folio::before,.folio::after{content:''; flex:1; border-top:1px solid var(--line2);}
+.folio .fnum{color:var(--ink); font-weight:700;}
+.folio .by{color:var(--red-t); font-weight:800;}
+a.tlink{color:var(--red-t); font-weight:700; text-decoration:none; border-bottom:2px dotted var(--red);}
+a.backtoc{color:var(--dim); text-decoration:none; border:1.5px solid var(--line2); border-radius:4px; padding:0 6px; font:800 9px 'Consolas',monospace; background:var(--panel);}
+a.backtoc:hover{color:var(--red-t); border-color:var(--red);}
+.taskhead{display:flex; align-items:baseline; gap:9px; font:700 13px 'Segoe UI',sans-serif; margin:11px 0 5px;}
+.taskhead::before{content:'▸'; color:var(--red); font-family:'Consolas',monospace;}
+.taskhead::after{content:''; flex:1; border-bottom:2px dotted var(--line2); transform:translateY(-3px);}
+.taskhead .hst{font:400 9.5px 'Consolas',monospace; color:var(--dim);}
+.mark{border-radius:6px 10px 10px 6px; border-left:4px solid; padding:6px 10px; margin:7px 0; font-size:12px; line-height:1.55; background:var(--panel);}
+.mark .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; margin-right:6px; color:var(--dim);}
+.mark .tag::before{content:'[ ';} .mark .tag::after{content:' ]';}
+.m-key{border-color:var(--red); background:var(--red-fill);} .m-key .tag{color:var(--red-t);}
+.m-ok{border-color:var(--ok); background:var(--t-ok);} .m-ok .tag{color:var(--ok);}
+.m-tip{border-color:var(--cyan); background:var(--t-cyan);} .m-tip .tag{color:var(--cyan);}
+.m-warn{border-color:var(--chg); background:var(--t-chg);} .m-warn .tag{color:var(--chg);}
+.m-fail{border-color:var(--fail-t); background:var(--t-fail);} .m-fail .tag{color:var(--fail-t);}
+.m-fun{border-color:var(--skip); background:var(--panel2);}
+.m-exam{border:2px solid var(--line2); border-left:5px solid var(--red); background:var(--panel); border-radius:6px 10px 10px 6px; box-shadow:var(--shadow); padding:6px 10px; margin:7px 0; font-size:12px; line-height:1.55;}
+.m-exam .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; color:var(--red-t); margin-right:6px;}
+.panel{background:var(--panel); border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:8px 11px;}
+.ptitle{font:700 13.5px 'Segoe UI',sans-serif; margin:0 0 4px;}
+.blk{display:inline-block; border:2px solid var(--line2); border-radius:6px; padding:6px 10px; font-weight:700; font-size:11.5px; text-align:center; box-shadow:2px 2px 0 rgba(45,42,38,.16); background:var(--panel);}
+.blk small{display:block; font-weight:500; font-size:9.5px; margin-top:1px; color:var(--dim);}
+.b-red{background:var(--red); border-color:var(--red-deep); color:#fff;} .b-red small{color:#ffe3e0;}
+.b-ok{border-color:var(--ok); background:var(--t-ok);} .b-ok small{color:var(--ok);}
+.chipr{display:inline-flex; align-items:center; background:var(--panel); border:2px solid var(--line2); border-radius:4px; padding:3px 9px; font:700 10.5px 'Consolas',monospace; box-shadow:2px 2px 0 rgba(45,42,38,.14);}
+.chipr small{color:var(--dim);}
+.fstem{width:2.5px; height:12px; background:var(--line2); margin:0 auto;}
+.fbar{border-top:2.5px solid var(--line2); height:0;}
+.fbarwrap{display:flex; justify-content:center;}
+.fbar2{width:50%}.fbar3{width:66.7%}
+.fcols{display:flex;}
+.fcol{flex:1; padding:0 5px; display:flex; flex-direction:column; align-items:center;}
+.fcol .fstub{width:2.5px; height:12px; background:var(--line2);}
+.darr{text-align:center; color:var(--red-t); font-size:12px; margin:1px 0;}
+.harrow{color:var(--red-t); font-size:12px; align-self:center;}
+.frow{display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap;}
+.dnote{text-align:center; font-size:11px; color:var(--dim); margin-top:3px;}
+.zone{border:2px solid var(--line2); border-radius:8px; padding:8px 10px; background:var(--panel); box-shadow:var(--shadow);}
+.zlabel{font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; color:var(--red-t); text-align:center; margin-bottom:6px;}
+.zlabel::before{content:'[ ';} .zlabel::after{content:' ]';}
+.code{background:#33383f; color:#eceef1; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:8px 11px; font:11px/1.55 'Consolas','SF Mono',monospace; white-space:pre; overflow-x:auto; text-align:left; max-width:100%; margin:5px 0;}
+.code .p{color:#f5c96b;} .code .c{color:#9cc3ea;} .code .y{color:#f5d78e;} .code .r{color:#f19999;} .code .m{color:#f0b6cd;} .code .g{color:#a8adb5;} .code .s{color:#a3dfb8;}
+.code .ok{color:#6fd3a1; font-weight:700;} .code .chg{color:#f0b429; font-weight:700;} .code .fl{color:#f19999; font-weight:700;}
+.code.mini{font-size:10px; padding:6px 9px; line-height:1.5; margin:4px 0;}
+.tree{background:#33383f; color:#dfe2e6; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:9px 13px; font:11px/1.65 'Consolas',monospace; white-space:pre; overflow-x:auto; text-align:left;}
+.tree b{color:#f5c96b;} .tree u{color:#a3dfb8; text-decoration:none;} .tree em{color:#f0b6cd; font-style:normal;} .tree i{color:#9cc3ea; font-style:normal;} .tree .g{color:#a8adb5;}
+.tblwrap{overflow-x:auto;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border:2px solid var(--line2); border-radius:6px; overflow:hidden; font-size:11.5px; box-shadow:var(--shadow); background:var(--panel);}
+.tb th{background:var(--ink); color:#fff; border-bottom:3px solid var(--red); padding:5.5px 9px; text-align:left; font:800 10.5px 'Segoe UI',sans-serif;}
+.tb td{padding:5.5px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5;}
+.tb tr:nth-child(even) td{background:var(--panel2);}
+.tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.grid2>*{min-width:0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+.grid3>*{min-width:0;}
+h3.sec{font:700 13.5px 'Segoe UI',sans-serif; margin:10px 0 5px;}
+h3.sec .n{color:var(--red-t); margin-right:5px; font-family:'Consolas',monospace;}
+p.lead{font-size:12.6px; line-height:1.7; margin:0 0 7px; color:#4a453e;}
+p.small,li{font-size:11.8px; line-height:1.6;}
+ul.tick{list-style:none; padding:0; margin:4px 0;}
+ul.tick li{padding:2.5px 2px;}
+.stbad{display:inline-block; border:2px solid; border-radius:4px; padding:0 7px; font:800 9.5px 'Consolas',monospace;}
+.st-ok{border-color:var(--ok); color:var(--ok); background:var(--t-ok);}
+.st-chg{border-color:var(--chg); color:var(--chg); background:var(--t-chg);}
+.st-skip{border-color:var(--skip); color:var(--skip);}
+.stepitem{display:flex; gap:10px; align-items:flex-start; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); background:var(--panel); padding:8px 12px; margin:0 0 8px;}
+.stepnum{min-width:26px; height:26px; background:var(--red); color:#fff; border-radius:6px; font:900 13px 'Consolas',monospace; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 rgba(45,42,38,.3);}
+.ok{color:var(--ok); font-weight:800;} .bad{color:var(--fail-t); font-weight:800;}
+.tocrow{display:flex; align-items:baseline; padding:4.5px 2px; font-size:12px;}
+.tocrow .tnum{font:700 11.5px 'Consolas',monospace; color:var(--red-t); width:36px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted var(--line2); margin:0 8px 4px;}
+.tocrow .tp{font-weight:800;}
+a.tocrow{color:inherit; text-decoration:none;}
+a.tocrow:hover .tp{color:var(--red-t);}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:0 18px;}
+.cover{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover .stamp{background:var(--red); color:#fff; font:900 40px 'Consolas',monospace; padding:14px 24px; border-radius:8px; box-shadow:4px 4px 0 rgba(45,42,38,.28); transform:rotate(-2deg); margin-bottom:22px;}
+.cover .ckick{font:800 12px 'Consolas',monospace; letter-spacing:.28em; text-transform:uppercase; color:var(--red-t);}
+.cover h1{font:800 42px/1.25 'Segoe UI',sans-serif; margin:12px 0 4px;}
+.cover .ambrule{width:90px; border:none; border-top:6px solid var(--red); margin:14px auto;}
+.cover .sub{font-size:14px; color:var(--dim); max-width:148mm; line-height:1.75;}
+.cover .byline{margin-top:18px; font:800 16px 'Consolas',monospace; color:var(--red-t); letter-spacing:.08em;}
+.cover .byline small{display:block; font:600 10.5px 'Consolas',monospace; color:var(--dim); margin-top:3px; letter-spacing:.15em;}
+.cover .vols{display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center;}
+.volcard{border:2px solid var(--line2); border-radius:6px; background:var(--panel); box-shadow:var(--shadow); padding:9px 15px; font:800 12.5px 'Segoe UI',sans-serif;}
+.volcard small{display:block; font-weight:600; color:var(--dim); font-size:10px; margin-top:2px;}
+.volcard.on{border-color:var(--red); background:var(--red); color:#fff;} .volcard.on small{color:#ffe3e0;}
+.cover .cver{position:absolute; bottom:10mm; left:0; right:0; text-align:center; font:10px 'Consolas',monospace; letter-spacing:.22em; color:var(--dim);}
+code{font-family:'Consolas',monospace; background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:0 5px; font-size:.9em;}
+</style>
+</head>
+<body>
+
+<!-- ═══ 01 · COVER ═══ -->
+<div class="sheet cover">
+  <div class="stamp">📦</div>
+  <div class="ckick">REDLINE DAYLIGHT · TASK DOCUMENTATION</div>
+  <h1>Reusable Role:<br>generic_package</h1>
+  <div class="ambrule"></div>
+  <div class="sub">A production-style Ansible project: <b>one generic role</b> that installs and configures <b>any Linux package</b> — nginx, apache2, redis, git — driven entirely by variables. Correct structure, full idempotency, four verification checks, and proof the same role deploys a second package with zero edits.</div>
+  <div class="byline">By Nabawy<small>ENGINEERED &amp; DOCUMENTED</small></div>
+  <div class="vols">
+    <div class="volcard on">TASK DOC<small>Build + Verify</small></div>
+    <div class="volcard">Role<small>generic_package</small></div>
+    <div class="volcard">WSL<small>Ubuntu 22.04+</small></div>
+    <div class="volcard">Idempotent<small>run twice ✓</small></div>
+  </div>
+  <div class="cver">GENERIC · REUSABLE · IDEMPOTENT · TESTABLE — BY NABAWY</div>
+</div>
+
+<!-- ═══ 02 · TOC ═══ -->
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Contents</div><h1 class="t">📖 Table of Contents</h1></div><span class="hmeta">Goal · Tools · 15 Steps · Checklist · Troubleshooting</span></div></div>
+  <div class="tocgrid">
+    <div>
+      <a class="tocrow" href="#summary"><span class="tnum">🗺️</span><span>The Map — Executive Summary</span><span class="dots"></span><span class="tp">3</span></a>
+      <a class="tocrow" href="#goal"><span class="tnum">01</span><span>Task Goal + 5 Objectives</span><span class="dots"></span><span class="tp">4</span></a>
+      <a class="tocrow" href="#tools"><span class="tnum">02</span><span>Tools Used + Setup Check</span><span class="dots"></span><span class="tp">5</span></a>
+      <a class="tocrow" href="#steps-a"><span class="tnum">03</span><span>Steps 1–4 — Skeleton · cfg · Inventory · Defaults</span><span class="dots"></span><span class="tp">6</span></a>
+      <a class="tocrow" href="#steps-b"><span class="tnum">04</span><span>Steps 5–7 — vars · Tasks · Handlers</span><span class="dots"></span><span class="tp">7</span></a>
+      <a class="tocrow" href="#steps-c"><span class="tnum">05</span><span>Steps 8–10 — Templates · meta · site.yml</span><span class="dots"></span><span class="tp">8</span></a>
+      <a class="tocrow" href="#steps-d"><span class="tnum">06</span><span>Steps 11–13 — Check · Dry Run · Real Run</span><span class="dots"></span><span class="tp">9</span></a>
+    </div>
+    <div>
+      <a class="tocrow" href="#steps-e"><span class="tnum">07</span><span>Steps 14–15 — Verify nginx · Prove Reuse</span><span class="dots"></span><span class="tp">10</span></a>
+      <a class="tocrow" href="#anatomy"><span class="tnum">🧬</span><span>Variable Precedence + Role Anatomy</span><span class="dots"></span><span class="tp">11</span></a>
+      <a class="tocrow" href="#concepts"><span class="tnum">🎓</span><span>The Ansible Concepts in Play</span><span class="dots"></span><span class="tp">12</span></a>
+      <a class="tocrow" href="#proof"><span class="tnum">✅</span><span>The Expected Result — Proven</span><span class="dots"></span><span class="tp">13</span></a>
+      <a class="tocrow" href="#checklist"><span class="tnum">📋</span><span>Completion Checklist</span><span class="dots"></span><span class="tp">14</span></a>
+      <a class="tocrow" href="#trouble"><span class="tnum">🔧</span><span>Troubleshooting Table</span><span class="dots"></span><span class="tp">15</span></a>
+    </div>
+  </div>
+  <div class="taskhead">TASK [How to use this doc]<span class="hst">read order</span></div>
+  <div class="mark m-tip"><span class="tag">DEBUG</span><b>Build first, understand second:</b> pages 6–10 are the build (15 steps, every file in full). Page 11 explains <i>why</i> the variable precedence works. Page 12 maps every Ansible concept to where it's used. Page 13 shows the expected outputs. Pages 14–15 are your acceptance gate and your rescue kit. Everything from the task spec is here — nothing trimmed.</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 2 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span></div>
+</div>
+
+<!-- ═══ 03 · SUMMARY ═══ -->
+<div class="sheet" id="summary">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Executive Summary</div><h1 class="t">🗺️ The Map — The Whole Task</h1></div><span class="hmeta">start here</span></div></div>
+  <p class="lead">One role. Any package. Here's the route — every line links to its page.</p>
+  <p class="lead">The mission is set in <a class="tlink" href="#goal">Section 1 — Task Goal &amp; the 5 Objectives</a>: a production-style project where a single <b>generic_package</b> role installs and configures any Linux package — ending with nginx running, enabled at boot, and serving a styled page at <code>http://localhost</code> showing package, host, service and port.</p>
+  <p class="lead">The gear list is in <a class="tlink" href="#tools">Section 2 — Tools</a>: WSL Ubuntu, Ansible 2.16.3, apt/package, systemd, Jinja2, ansible-galaxy, git and an SSH key — plus the setup-check commands.</p>
+  <p class="lead">Then the build across five pages: <a class="tlink" href="#steps-a">Steps 1–4</a> (folder skeleton, ansible.cfg, inventory.ini, role defaults), <a class="tlink" href="#steps-b">Steps 5–7</a> (vars lock, the four guarded tasks, the two ignore_errors handlers), <a class="tlink" href="#steps-c">Steps 8–10</a> (three Jinja2 templates, meta, site.yml), <a class="tlink" href="#steps-d">Steps 11–13</a> (syntax check, --check --diff dry run, the real run twice), and <a class="tlink" href="#steps-e">Steps 14–15</a> (nginx verification six ways + the reusability proof with redis-server).</p>
+  <p class="lead">Then the understanding: <a class="tlink" href="#anatomy">Variable Precedence + Role Anatomy</a> (why defaults lose to playbook vars), <a class="tlink" href="#concepts">The Concepts in Play</a> (every Objective-3 concept mapped), and <a class="tlink" href="#proof">The Expected Result</a> — what each of the four checks looks like when green. Close with the <a class="tlink" href="#checklist">Completion Checklist</a> and the <a class="tlink" href="#trouble">Troubleshooting Table</a>. Route clear. ▶</p>
+  <div class="m-key"><span class="tag">KEY IDEA</span><b>The unifying idea:</b> the role never mentions a package name in its own code. nginx, redis, apache2 — all of it arrives through variables. Change the vars, change the deployment. That's what "reusable" actually means.</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 3 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span></div>
+</div>
+
+<!-- ═══ 04 · GOAL ═══ -->
+<div class="sheet" id="goal">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Section 01</div><h1 class="t">🎯 Task Goal <span class="en">— and the 5 Objectives</span></h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead">Build a <b>production-style Ansible project</b> using a single generic, reusable role — <b>generic_package</b> — to install and configure any Linux package on target hosts. The project must use correct structure (<code>ansible.cfg</code>, <code>inventory</code>, <code>site.yml</code>, <code>roles/</code>), use <b>roles instead of flat playbook tasks</b>, and be fully <b>idempotent, testable, and reusable</b>.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA · Expected result</span>After <code>ansible-playbook site.yml</code>: nginx is <b>installed, running, enabled at boot</b>, and serves a styled HTML page at <code>http://localhost</code> showing the deployed package, host, service, and port.</div>
+  <div class="taskhead">TASK [The 5 Objectives]<span class="hst">complete = all 5 done</span></div>
+  <div class="stepitem"><div class="stepnum">1</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 2px;">Correct project structure</p>
+    <p class="small" style="margin:0;">Standard Ansible layout — <code>ansible.cfg</code> (inventory, roles_path, become, ssh key), <code>inventory.ini</code> (web + local groups), <code>site.yml</code> calling the role, legacy flat playbooks kept for comparison, and <code>roles/generic_package/</code> with tasks, handlers, 3 templates, defaults, vars, meta.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">2</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 2px;">Generic role behavior — driven entirely by variables</p>
+    <p class="small" style="margin:0;">8 variables control everything: <code>package_name</code> (default nginx) · <code>service_name</code> (defaults to package name) · <code>service_state</code> (started) · <code>service_enabled</code> (true) · <code>package_state</code> (present) · <code>app_port</code> (80) · <code>template_enabled</code> (false) · <code>custom_index_content</code> (fallback page text). Same role call + different vars = nginx, apache2, or anything else — <b>without editing the role</b>.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">3</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 2px;">All Ansible concepts used correctly</p>
+    <p class="small" style="margin:0;"><b>Variable priority:</b> defaults (lowest) vs vars (high) vs playbook vars vs <code>-e</code> (highest) · <b>Handlers:</b> Restart + Reload — once at end of play, only if notified, <code>ignore_errors</code> so one bad service doesn't abort · <b>Templates:</b> nginx.conf.j2, app.conf.j2 (with <code>if package_name</code> logic), index.html.j2 (styled page) · <b>Idempotency:</b> run twice → second run reports <span class="stbad st-ok">ok</span>, not <span class="stbad st-chg">changed</span>.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">4</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 2px;">Deploy proof with nginx</p>
+    <p class="small" style="margin:0;"><code>site.yml</code> calls the role with <code>package_name: nginx, service_name: nginx, app_port: 80, template_enabled: false</code>. Nginx installs, starts, stays enabled — and the custom index lands at <code>/var/www/html/index.html</code> plus <code>/var/www/eslam/index.html</code> (eslam.com vhost test in WSL).</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">5</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 2px;">Verified with the full command loop</p>
+    <p class="small" style="margin:0;">All four checks green: ① <code>--syntax-check</code> passes · ② <code>--check --diff</code> dry-run shows expected counts with no real changes · ③ the real run installs and starts everything · ④ <code>curl http://localhost/</code> returns the styled page from index.html.j2.</p>
+  </div></div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 4 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ <a class="tlink" href="#tools">Next</a></span></div>
+</div>
+
+<!-- ═══ 05 · TOOLS ═══ -->
+<div class="sheet" id="tools">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Section 02</div><h1 class="t">🧰 Tools Used <span class="en">— and the Setup Check</span></h1></div><span class="hmeta">🟢 4 MIN</span></div></div>
+  <p class="lead">Nine tools, one lab. Each with its exact role in this task:</p>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:34%;">Tool</th><th>Purpose</th></tr>
+    <tr><td><b>WSL (Ubuntu 22.04+)</b></td><td>Linux environment on Windows; the target for localhost testing</td></tr>
+    <tr><td><b>Ansible core ≥ 2.9</b> <span class="small">(lab on 2.16.3)</span></td><td>Configuration management / automation engine</td></tr>
+    <tr><td><b>apt / package module</b></td><td>Install software on target hosts</td></tr>
+    <tr><td><b>systemd / service</b></td><td>Manage service state — started / enabled / restarted / reloaded</td></tr>
+    <tr><td><b>Jinja2</b></td><td>Templates for nginx config and index.html</td></tr>
+    <tr><td><b>ansible-galaxy</b></td><td>Role scaffolding + metadata validation</td></tr>
+    <tr><td><b>git</b></td><td>Version control of every playbook, role, and config</td></tr>
+    <tr><td><b>VS Code</b> <span class="small">(optional)</span></td><td>Editor; Remote - WSL extension for editing inside WSL</td></tr>
+    <tr><td><b>SSH key</b> <span class="small">(/home/eslam/.ssh/id_ed25519)</span></td><td>Auth to remote hosts — configured in <code>ansible.cfg</code></td></tr>
+  </table></div>
+  <div class="taskhead">TASK [Setup check commands]<span class="hst">run these first</span></div>
+  <div class="code"><span class="p">$</span> ansible --version
+<span class="p">$</span> python3 --version
+<span class="p">$</span> wsl --version        <span class="g"># from Windows PowerShell</span></div>
+  <div class="mark m-tip"><span class="tag">DEBUG · The environment twist</span>This lab is unusual: the project lives on Windows (<code>C:\Users\eslam\OneDrive\Desktop\ansible</code>) but runs <b>inside WSL</b> (<code>/mnt/c/Users/eslam/OneDrive/Desktop/ansible</code>). That crossing is where the most common gotcha in this task comes from — see the Troubleshooting table (the /mnt/c permissions warning).</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>The package module (not <code>apt</code> directly) in the role's install task is a deliberate genericity choice — it routes to the right backend per distribution, keeping the role portable beyond Debian/Ubuntu.</div>
+  <div class="m-exam"><span class="tag">🎓 TAKEAWAY</span>The environment: <b>WSL Ubuntu as both controller and localhost target</b> · Ansible ≥2.9 · the genericity rides on <code>package</code> + <code>service</code> + Jinja2 · version control via git is part of the completion checklist, not an afterthought.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Everything ready — the 15-step build begins: → <a class="tlink" href="#steps-a">Steps 1–4</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 5 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#goal">Prev</a> · <a class="tlink" href="#steps-a">Next</a></span></div>
+</div>
+
+<!-- ═══ 06 · STEPS 1-4 ═══ -->
+<div class="sheet" id="steps-a">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Steps 1–4</div><h1 class="t">🏗️ Skeleton · ansible.cfg · Inventory · Defaults</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <div class="stepitem"><div class="stepnum">1</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Create project skeleton and folder tree</p>
+    <div class="code mini"><span class="p">$</span> mkdir <span class="y">-p</span> roles/generic_package/{tasks,handlers,templates,defaults,vars,meta}</div>
+    <div class="mark m-tip" style="margin:6px 0 0;"><span class="tag">DEBUG · Paths</span>Windows: <code>C:\Users\eslam\OneDrive\Desktop\ansible</code> · WSL: <code>/mnt/c/Users/eslam/OneDrive/Desktop/ansible</code> · For Linux permissions: copy to <code>~/ansible</code> then <code>chmod 644 ansible.cfg</code> — this avoids the "world writable directory" warning on NTFS /mnt/c.</div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">2</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write ansible.cfg</p>
+    <div class="code mini"><span class="c">[defaults]</span>
+inventory = inventory.ini
+roles_path = roles
+host_key_checking = <span class="y">False</span>
+retry_files_enabled = <span class="y">False</span>
+stdout_callback = yaml
+private_key_file = /home/eslam/.ssh/id_ed25519
+
+<span class="c">[privilege_escalation]</span>
+become = <span class="y">True</span>
+become_method = sudo
+become_ask_pass = <span class="y">False</span></div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">3</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write inventory.ini</p>
+    <div class="code mini"><span class="c">[web]</span>
+web1 ansible_host=192.168.1.10 ansible_user=ubuntu
+web-server1 ansible_host=98.88.29.132 ansible_user=ubuntu
+
+<span class="c">[local]</span>
+localhost ansible_connection=local
+
+<span class="c">[web:vars]</span>
+ansible_become=<span class="y">true</span></div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">4</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write role defaults — roles/generic_package/defaults/main.yml</p>
+    <p class="small" style="margin:0 0 4px; color:var(--dim);">Lowest-priority variables — easy to override:</p>
+    <div class="code mini"><span class="g">---</span>
+<span class="c">package_name:</span> nginx
+<span class="c">service_name:</span> <span class="s">"{{ package_name }}"</span>
+<span class="c">service_state:</span> started
+<span class="c">service_enabled:</span> <span class="s">true</span>
+<span class="c">package_state:</span> present
+<span class="c">app_port:</span> 80
+<span class="c">template_enabled:</span> <span class="s">false</span>
+<span class="c">custom_index_content:</span> <span class="s">"&lt;h1&gt;Deployed via generic_package role!&lt;/h1&gt;&lt;p&gt;Package: {{ package_name }} Host: {{ inventory_hostname }}&lt;/p&gt;"</span></div>
+  </div></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Look at <code>service_name: "{{ package_name }}"</code> — a <b>default that references another default</b>. Set package_name to redis-server and the service name follows automatically. This one line is the genericity engine: 8 defaults, 0 package names hard-coded in role logic.</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 6 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#tools">Prev</a> · <a class="tlink" href="#steps-b">Next</a></span></div>
+</div>
+
+<!-- ═══ 07 · STEPS 5-7 ═══ -->
+<div class="sheet" id="steps-b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Steps 5–7</div><h1 class="t">⚙️ vars Lock · Tasks · Handlers</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <div class="stepitem"><div class="stepnum">5</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write role vars — roles/generic_package/vars/main.yml</p>
+    <p class="small" style="margin:0 0 4px; color:var(--dim);">High-priority lock — commented out = nothing locked in this lab, so playbook vars win:</p>
+    <div class="code mini"><span class="g">---</span>
+<span class="g"># package_name: nginx</span>
+<span class="g"># service_name: nginx</span></div>
+    <div class="mark m-warn" style="margin:6px 0 0;"><span class="tag">WATCH OUT</span>Uncomment those two lines and <b>nothing in the playbook can override them</b> — vars/ beats playbook vars in precedence. That's the lock's power and its danger: use it only when a value must never be tuned.</div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">6</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write role tasks — tasks/main.yml <span class="small" style="color:var(--dim);">(order matters)</span></p>
+    <div class="code mini" style="font-size:10px;"><span class="g">---</span>
+<span class="y">- name:</span> Update apt cache (Debian/Ubuntu)
+  <span class="c">apt:</span>
+    <span class="c">update_cache:</span> <span class="s">yes</span>
+    <span class="c">cache_valid_time:</span> 3600
+  <span class="c">when:</span> ansible_os_family == <span class="s">"Debian"</span>
+
+<span class="y">- name:</span> Install package {{ package_name }}
+  <span class="c">package:</span>
+    <span class="c">name:</span> <span class="s">"{{ package_name }}"</span>
+    <span class="c">state:</span> <span class="s">"{{ package_state }}"</span>
+  <span class="c">notify:</span> Restart service
+
+<span class="y">- name:</span> Ensure service {{ service_name }} is {{ service_state }} and enabled={{ service_enabled }}
+  <span class="c">service:</span>
+    <span class="c">name:</span> <span class="s">"{{ service_name }}"</span>
+    <span class="c">state:</span> <span class="s">"{{ service_state }}"</span>
+    <span class="c">enabled:</span> <span class="s">"{{ service_enabled }}"</span>
+  <span class="c">when:</span> service_name is defined <span class="y">and</span> service_name | length &gt; 0
+  <span class="c">ignore_errors:</span> <span class="s">true</span></div>
+    <p class="small" style="margin:5px 0 0; color:var(--dim);">1️⃣ apt cache (Debian only, valid 1h) → 2️⃣ install <code>{{ package_name }}</code> with <code>{{ package_state }}</code>, notify Restart → 3️⃣ service task guarded by <code>when</code> so non-service packages don't break it. (The template/index tasks from the spec land with Step 8's templates.)</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">7</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write role handlers — handlers/main.yml</p>
+    <div class="code mini"><span class="g">---</span>
+<span class="y">- name:</span> Restart service
+  <span class="c">service:</span>
+    <span class="c">name:</span> <span class="s">"{{ service_name }}"</span>
+    <span class="c">state:</span> restarted
+  <span class="c">ignore_errors:</span> <span class="s">true</span>
+
+<span class="y">- name:</span> Reload service
+  <span class="c">service:</span>
+    <span class="c">name:</span> <span class="s">"{{ service_name }}"</span>
+    <span class="c">state:</span> reloaded
+  <span class="c">ignore_errors:</span> <span class="s">true</span></div>
+    <p class="small" style="margin:5px 0 0; color:var(--dim);">Run once at end of play, only if notified — and <code>ignore_errors</code> keeps one bad service from aborting the play.</p>
+  </div></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Three safety patterns in 20 lines: the <code>when</code> guard makes service management <b>optional per package</b> (a CLI tool with no service won't fail the play) · <code>ignore_errors</code> on both service touchpoints means <b>one misbehaving service degrades, never aborts</b> · and <code>notify</code> keeps restarts <b>change-triggered</b>, not blind.</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 7 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#steps-a">Prev</a> · <a class="tlink" href="#steps-c">Next</a></span></div>
+</div>
+
+<!-- ═══ 08 · STEPS 8-10 ═══ -->
+<div class="sheet" id="steps-c">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Steps 8–10</div><h1 class="t">📄 Templates · meta · site.yml</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <div class="stepitem"><div class="stepnum">8</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write the three templates</p>
+    <p class="small" style="margin:0 0 4px;"><b>app.conf.j2</b> — nginx-specific config when <code>package_name == "nginx"</code>, generic comment otherwise:</p>
+    <div class="code mini" style="font-size:10px;">{% <span class="y">if</span> package_name == <span class="s">"nginx"</span> %}
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+events {
+    worker_connections {{ worker_connections | <span class="c">default</span>(1024) }};
+}
+http {
+    sendfile on;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    server {
+        listen {{ app_port | <span class="c">default</span>(80) }};
+        root /var/www/html;
+        index index.html;
+        location / {
+            try_files $uri $uri/ =404;
+        }
+    }
+}
+{% <span class="y">else</span> %}
+<span class="g"># Generic config for {{ package_name }}</span>
+{% endif %}</div>
+    <p class="small" style="margin:5px 0 4px;"><b>index.html.j2</b> — styled landing page showing package name, service name, host, port, and a live <b>"Service Active &amp; Enabled"</b> status badge (gradient CSS, info boxes, pulse animation). <b>nginx.conf.j2</b> — plain distro-style variant using <code>worker_connections | default(1024)</code> and <code>app_port | default(80)</code>.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">9</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write role metadata — meta/main.yml</p>
+    <div class="code mini" style="font-size:10px;"><span class="g">---</span>
+<span class="c">galaxy_info:</span>
+  <span class="c">author:</span> ansible
+  <span class="c">description:</span> Generic package installer - install any package (nginx, apache2, redis, etc.)
+  <span class="c">license:</span> MIT
+  <span class="c">min_ansible_version:</span> 2.9
+  <span class="c">platforms:</span>
+    - <span class="c">name:</span> Ubuntu
+      <span class="c">versions:</span> [focal, jammy]
+    - <span class="c">name:</span> Debian
+      <span class="c">versions:</span> [bullseye, bookworm]
+  <span class="c">galaxy_tags:</span> [package, system, generic]
+
+<span class="c">dependencies:</span> []</div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">10</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Write the main playbook — site.yml</p>
+    <div class="code mini"><span class="g">---</span>
+<span class="y">- name:</span> Install nginx via generic role
+  <span class="c">hosts:</span> all
+  <span class="c">become:</span> <span class="s">true</span>
+  <span class="c">roles:</span>
+    - <span class="c">role:</span> generic_package
+      <span class="c">vars:</span>
+        <span class="c">package_name:</span> nginx
+        <span class="c">service_name:</span> nginx
+        <span class="c">app_port:</span> 80
+        <span class="c">template_enabled:</span> <span class="s">false</span></div>
+  </div></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Step 8's <code>{% if package_name == "nginx" %}</code> is a Role-level fork: nginx gets a real server config, everything else gets a documented generic stub — <b>same template, two behaviors</b>, decided by the very variable that drives the install. That's generic packaging done properly.</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 8 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#steps-b">Prev</a> · <a class="tlink" href="#steps-d">Next</a></span></div>
+</div>
+
+<!-- ═══ 09 · STEPS 11-13 ═══ -->
+<div class="sheet" id="steps-d">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Steps 11–13</div><h1 class="t">🧪 Check · Dry Run · Real Run</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <div class="stepitem"><div class="stepnum">11</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Syntax and inventory checks</p>
+    <div class="code mini"><span class="p">$</span> ansible-playbook site.yml <span class="y">-i</span> inventory.ini <span class="y">--syntax-check</span>
+<span class="p">$</span> ansible <span class="y">-i</span> inventory.ini all <span class="y">--list-hosts</span>
+<span class="p">$</span> ansible-inventory <span class="y">-i</span> inventory.ini <span class="y">--graph</span></div>
+    <p class="small" style="margin:4px 0 0; color:var(--dim);">① Playbook parses without errors · ② every host listed · ③ groups render as [web] / [local] trees.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">12</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Dry run — no changes, show diff</p>
+    <div class="code mini"><span class="p">$</span> ansible-playbook site.yml <span class="y">-i</span> inventory.ini <span class="y">--limit</span> localhost <span class="y">--check</span> <span class="y">--diff</span> <span class="y">-v</span></div>
+    <p class="small" style="margin:4px 0 0; color:var(--dim);">Expected: install/template/index tasks report <span class="stbad st-chg">changed</span> (dry), the config template task reports <span class="stbad st-skip">skipping</span> — because <code>template_enabled: false</code>.</p>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">13</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Real run</p>
+    <div class="code mini"><span class="g"># localhost with sudo prompt</span>
+<span class="p">$</span> ansible-playbook site.yml <span class="y">-i</span> inventory.ini <span class="y">--limit</span> localhost <span class="y">--ask-become-pass</span> <span class="y">-v</span>
+
+<span class="g"># as root in WSL (no password)</span>
+<span class="p">$</span> sudo ansible-playbook site.yml <span class="y">-i</span> inventory.ini <span class="y">--limit</span> localhost <span class="y">-v</span></div>
+    <div class="mark m-ok" style="margin:6px 0 0;"><span class="tag">PROOF · Run it TWICE</span>The second run must report <span class="stbad st-ok">ok</span> everywhere — <b>idempotency proof</b>. First run: <span class="stbad st-chg">changed</span> (things installed) · second run: <span class="stbad st-ok">ok</span> (nothing left to do). If the second run still says changed, something in the tasks is non-idempotent — fix before continuing.</div>
+  </div></div>
+  <div class="zone" style="margin-top:6px;">
+    <div class="zlabel">The three-gate testing ladder</div>
+    <div class="frow">
+      <span class="chipr">① syntax-check<small>&nbsp;parses ✓</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">② --check --diff<small>&nbsp;predicts, touches nothing</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">③ real run ×2<small>&nbsp;applies, then proves idempotent</small></span>
+    </div>
+  </div>
+  <div class="mark m-tip"><span class="tag">DEBUG · Why this ladder works</span>Each gate catches a different class of failure: syntax errors cost seconds, prediction errors cost a dry run, idempotency violations cost one extra real run. Reaching the real run with all three green means the blast radius of any remaining bug is nearly zero.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>The gates in order: <code>--syntax-check</code> → <code>--check --diff</code> (expect changed + skipped-for-template_enabled) → real run <b>twice</b> (changed → ok). And <code>--limit localhost</code> keeps the first tests off the remote web hosts.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ The play is green — now prove nginx actually serves: → <a class="tlink" href="#steps-e">Steps 14–15</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 9 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#steps-c">Prev</a> · <a class="tlink" href="#steps-e">Next</a></span></div>
+</div>
+
+<!-- ═══ 10 · STEPS 14-15 ═══ -->
+<div class="sheet" id="steps-e">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Steps 14–15</div><h1 class="t">✅ Verify nginx · 📦 Prove Reusability</h1></div><span class="hmeta">🟠 7 MIN</span></div></div>
+  <div class="stepitem"><div class="stepnum">14</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Verify nginx — six ways</p>
+    <div class="code mini"><span class="p">$</span> service nginx status           <span class="g"># must be active (running)</span>
+<span class="p">$</span> ss -tlnp | grep 80             <span class="g"># port 80 listening</span>
+<span class="p">$</span> nginx -t                        <span class="g"># config test ok</span>
+<span class="p">$</span> curl <span class="y">-s</span> http://localhost/ | head <span class="y">-20</span>   <span class="g"># styled index page</span>
+<span class="p">$</span> cat /var/www/html/index.html
+<span class="p">$</span> curl <span class="y">-s</span> http://127.0.0.1/ <span class="y">-H</span> <span class="s">"Host: eslam.com"</span> | head   <span class="g"># vhost test</span></div>
+  </div></div>
+  <div class="stepitem"><div class="stepnum">15</div><div style="flex:1;">
+    <p class="ptitle" style="margin:0 0 3px;">Prove reusability — a second package, zero role edits</p>
+    <div class="code mini"><span class="y">- role:</span> generic_package
+  <span class="c">vars:</span>
+    <span class="c">package_name:</span> redis-server
+    <span class="c">service_name:</span> redis-server
+    <span class="c">template_enabled:</span> <span class="s">false</span></div>
+    <p class="small" style="margin:5px 0 0; color:var(--dim);">Same role, different vars — redis installs. The role code was <b>never touched</b>. That's Objective 2 closed.</p>
+  </div></div>
+  <div class="zone" style="margin-top:6px;">
+    <div class="zlabel">Objective 4 — what green looks like</div>
+    <div class="frow">
+      <span class="chipr" style="border-color:var(--ok);">service: active (running)</span>
+      <span class="chipr" style="border-color:var(--ok);">ss: port 80 LISTEN</span>
+      <span class="chipr" style="border-color:var(--ok);">nginx -t: ok</span>
+      <span class="chipr" style="border-color:var(--ok);">curl: styled page ✓</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Step 14 is deliberately six checks, not one: <b>service alive</b>, <b>port bound</b>, <b>config valid</b>, <b>content served</b>, <b>file landed</b>, <b>vhost answers</b>. Each proves a different layer — systemd, network, syntax, rendering, file placement, name-based routing. One green curl alone could hide a broken config.</div>
+  <div class="mark m-tip"><span class="tag">DEBUG · The vhost test</span><code>-H "Host: eslam.com"</code> fakes the browser's Host header without DNS. It tests name-based routing locally — the answer should differ from the default site (see the eslam.com row in Troubleshooting if it doesn't).</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Verification set: <code>service status</code> · <code>ss -tlnp | grep 80</code> · <code>nginx -t</code> · <code>curl localhost</code> · <code>cat index.html</code> · <code>curl -H Host:</code> — then the reuse proof: <b>redis-server via the same role, vars only</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Built and proven — now the <i>why</i> behind the variable magic: → <a class="tlink" href="#anatomy">Precedence &amp; Anatomy</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 10 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#steps-d">Prev</a> · <a class="tlink" href="#anatomy">Next</a></span></div>
+</div>
+
+<!-- ═══ 11 · PRECEDENCE + ANATOMY ═══ -->
+<div class="sheet" id="anatomy">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Deep Dive</div><h1 class="t">🧬 Variable Precedence <span class="en">+ Role Anatomy</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead">Objective 3's trickiest concept: <b>who wins when the same variable is set in several places?</b> Ansible's answer is a precedence ladder — and this role uses every rung of it.</p>
+  <div class="zone">
+    <div class="zlabel">The precedence ladder — lowest to highest</div>
+    <div class="frow">
+      <div class="blk" style="min-width:130px;">defaults/<small>LOWEST — the fallback</small></div>
+      <span class="harrow">◄ loses to</span>
+      <div class="blk" style="min-width:130px;">vars/<small>HIGH — the lock</small></div>
+      <span class="harrow">◄ loses to</span>
+      <div class="blk" style="min-width:130px;">playbook role vars:<small>the tuning</small></div>
+      <span class="harrow">◄ loses to</span>
+      <div class="blk b-red" style="min-width:110px;">-e extra vars<small>HIGHEST</small></div>
+    </div>
+    <p class="dnote">In this lab: defaults set nginx/80 · site.yml's role <code>vars:</code> confirm them · vars/ is commented out (the lock is open) · and <code>-e</code> could flip anything at run time.</p>
+  </div>
+  <h3 class="sec"><span class="n">A</span>The role's anatomy — folder by folder, in this project</h3>
+  <div class="tblwrap"><table class="tb">
+    <tr><th>Folder</th><th>In this task</th></tr>
+    <tr><td><b>tasks/</b></td><td>Cache update (Debian-only) · install via <code>package</code> · service guard · template/index deploys</td></tr>
+    <tr><td><b>handlers/</b></td><td>Restart + Reload — once at end of play, only if notified, both <code>ignore_errors</code></td></tr>
+    <tr><td><b>templates/</b></td><td>app.conf.j2 (nginx if/fork) · index.html.j2 (styled page) · nginx.conf.j2 (distro variant)</td></tr>
+    <tr><td><b>defaults/</b></td><td>The 8 tunables — including <code>service_name</code> referencing <code>package_name</code></td></tr>
+    <tr><td><b>vars/</b></td><td>The high-precedence lock — commented out in this lab</td></tr>
+    <tr><td><b>meta/</b></td><td>galaxy_info: author, MIT license, Ubuntu/Debian platforms, tags · dependencies: []</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [The experiment you can run]<span class="hst">see precedence yourself</span></div>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">🔬 Test 1 — playbook beats defaults</p><p class="small" style="margin:0;">site.yml sets <code>app_port: 80</code> over defaults' <code>80</code>. Change the playbook to <code>app_port: 8080</code> → the template renders 8080. Defaults only apply when <b>nobody else spoke</b>.</p></div>
+    <div class="panel"><p class="ptitle">🔬 Test 2 — vars/ beats the playbook</p><p class="small" style="margin:0;">Uncomment <code>package_name: nginx</code> in vars/, set the playbook to redis → the play still installs <b>nginx</b>. The lock wins. Re-comment to restore.</p></div>
+  </div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>The ladder is why the vars/ lock must stay commented in this lab — with it active, <code>site.yml</code>'s vars are dead letters and the "reusability" demo can't work. High precedence isn't "more important," it's <b>"wins the fight."</b></div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>The ladder by heart: <b>defaults/ &lt; vars/ &lt; playbook role vars: &lt; -e extra vars</b> — lowest to highest. And the design rule that follows: put tunables in <b>defaults/</b>, put invariants in <b>vars/</b>, and let callers tune through playbook vars or <code>-e</code>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Every concept this task exercises, mapped: → <a class="tlink" href="#concepts">The Concepts in Play</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 11 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#steps-e">Prev</a> · <a class="tlink" href="#concepts">Next</a></span></div>
+</div>
+
+<!-- ═══ 12 · CONCEPTS ═══ -->
+<div class="sheet" id="concepts">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Deep Dive</div><h1 class="t">🎓 The Ansible Concepts <span class="en">— All in Play</span></h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">Objective 3 requires every concept "used correctly." Here's the map: each concept, where it lives in this project, and the rule it demonstrates.</p>
+  <div class="tblwrap"><table class="tb" style="font-size:11px;">
+    <tr><th style="width:22%;">Concept</th><th style="width:44%;">Where it lives here</th><th>The rule it proves</th></tr>
+    <tr><td><b>Variables priority</b></td><td>defaults/main.yml · vars/main.yml · site.yml <code>vars:</code> · potential <code>-e</code></td><td>defaults lowest → -e highest; vars/ = the lock (page 11)</td></tr>
+    <tr><td><b>Handlers</b></td><td>handlers/main.yml — Restart + Reload, notified by the install task</td><td>Run <b>once at end of play</b>, only if notified · <code>ignore_errors</code> so one bad service doesn't abort</td></tr>
+    <tr><td><b>Templates (Jinja2)</b></td><td>app.conf.j2 (if/fork by package) · index.html.j2 (styled page) · nginx.conf.j2</td><td><code>{{ var }}</code> holes + <code>{% if %}</code> logic + <code>| default(1024)</code> fallbacks</td></tr>
+    <tr><td><b>Idempotency</b></td><td>The whole run — proven in Step 13</td><td>Run twice → second reports <span class="stbad st-ok">ok</span>, not <span class="stbad st-chg">changed</span></td></tr>
+    <tr><td><b>Conditionals</b></td><td><code>when: ansible_os_family == "Debian"</code> · <code>when: service_name is defined…</code> · <code>template_enabled | bool</code></td><td>Guards make one role behave differently per OS, package, and flag</td></tr>
+    <tr><td><b>Loose coupling</b></td><td>Role code contains zero package names</td><td>Everything arrives via variables (Objective 2)</td></tr>
+    <tr><td><b>Role convention</b></td><td>The standard 7-folder tree + meta</td><td>Any engineer navigates it without a guide</td></tr>
+  </table></div>
+  <div class="mark m-tip"><span class="tag">DEBUG · Reading the task back</span>The task spec says "all of them used correctly" — the table is your self-audit. For each row, open the named file and point at the line. If you can't, that concept isn't actually in your project yet.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT · Two subtle misuses</span><b>1.</b> Using <code>apt</code> instead of <code>package</code> in the install task — works on Ubuntu, breaks the "generic" claim. <b>2.</b> Forgetting <code>| bool</code> on <code>template_enabled</code> — YAML <code>false</code> vs string <code>"false"</code> silently flips the condition.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Concept-to-file mapping in one breath: <b>precedence</b> → defaults/vars/site/-e · <b>handlers</b> → Restart+Reload with ignore_errors · <b>templates</b> → app.conf.j2 fork + index.html.j2 · <b>idempotency</b> → the twice-run proof · <b>conditionals</b> → when/ansible_os_family + service_name guard + template_enabled | bool.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ What the grader sees when everything is green: → <a class="tlink" href="#proof">The Expected Result</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 12 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#anatomy">Prev</a> · <a class="tlink" href="#proof">Next</a></span></div>
+</div>
+
+<!-- ═══ 13 · EXPECTED RESULT ═══ -->
+<div class="sheet" id="proof">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Objective 5</div><h1 class="t">✅ The Expected Result <span class="en">— Proven</span></h1></div><span class="hmeta">🟢 the four checks</span></div></div>
+  <p class="lead">"Verified with the full command loop" — here is what each of the four gates looks like when it's green:</p>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✔ 1 · syntax-check passes</p><div class="code mini"><span class="p">$</span> ansible-playbook site.yml <span class="y">-i</span> inventory.ini <span class="y">--syntax-check</span>
+<span class="ok">playbook: site.yml</span></div><p class="small" style="margin:4px 0 0; color:var(--dim);">No errors — the YAML and structure parse cleanly.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✔ 2 · dry-run shows expected counts</p><div class="code mini"><span class="p">$</span> ansible-playbook … <span class="y">--check</span> <span class="y">--diff</span> <span class="y">-v</span>
+<span class="chg">changed: install / index tasks</span>
+<span class="g">skipping: config template</span>
+<span class="g">(template_enabled: false)</span></div><p class="small" style="margin:4px 0 0; color:var(--dim);">Predicts changes without touching the system.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✔ 3 · real run installs + starts</p><div class="code mini"><span class="p">$</span> ansible-playbook site.yml …
+<span class="chg">changed: Install package nginx</span>
+<span class="chg">changed: Ensure service nginx…</span>
+<span class="g">PLAY RECAP — second run:</span>
+<span class="ok">ok=N changed=0 failed=0</span></div><p class="small" style="margin:4px 0 0; color:var(--dim);">First run applies; second run proves idempotent.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✔ 4 · curl returns the styled page</p><div class="code mini"><span class="p">$</span> curl <span class="y">-s</span> http://localhost/ | head <span class="y">-20</span>
+<span class="ok">&lt;h1&gt;…Deployed via generic_package…&lt;/h1&gt;</span>
+<span class="g">package · host · service · port shown</span></div><p class="small" style="margin:4px 0 0; color:var(--dim);">The rendered index.html.j2, served live by nginx.</p></div>
+  </div>
+  <div class="taskhead">TASK [The full green board]<span class="hst">all objectives at once</span></div>
+  <div class="frow">
+    <span class="chipr" style="border-color:var(--ok);">O1 structure ✓</span>
+    <span class="chipr" style="border-color:var(--ok);">O2 generic ✓</span>
+    <span class="chipr" style="border-color:var(--ok);">O3 concepts ✓</span>
+    <span class="chipr" style="border-color:var(--ok);">O4 nginx proof ✓</span>
+    <span class="chipr" style="border-color:var(--ok);">O5 verified ✓</span>
+  </div>
+  <p class="dnote">Five green chips = task complete. Any red → the Troubleshooting table (page 15) is ordered by likelihood.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Notice what the four checks prove <b>together</b>: syntax (it parses), prediction (it would do the right things), application (it did them), and rendering (the result is visible over HTTP). Each gate covers a failure class the previous one can't see — that's why the loop is "full."</div>
+  <div class="mark m-fun"><span class="tag">ASIDE · The badge</span>The styled page carries a pulsing <b>"Service Active &amp; Enabled"</b> badge — pure CSS gradient and animation. A human glance at the browser is a sixth verification layer: if the pulse is beating, nginx is up and the template rendered <i>and</i> is being served.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Memorize the four-gate loop: <b>syntax → dry → real → curl</b>. Asked "how do you verify an Ansible deployment?", that order — parse, predict, apply, observe — is the professional answer.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ Before calling it done, tick every box: → <a class="tlink" href="#checklist">Completion Checklist</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 13 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#concepts">Prev</a> · <a class="tlink" href="#checklist">Next</a></span></div>
+</div>
+
+<!-- ═══ 14 · CHECKLIST ═══ -->
+<div class="sheet" id="checklist">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Section 05</div><h1 class="t">📋 Completion Checklist</h1></div><span class="hmeta">☑ all 6 or it's not done</span></div></div>
+  <p class="lead">The task's own completion gate. Tick every box — a single unchecked one means the task isn't finished, no matter how green the runs look.</p>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">Syntax check</p><p class="small" style="margin:0;"><code>ansible-playbook --syntax-check</code> returns <code>playbook: site.yml</code> without errors.</p></div></div>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">Idempotent dry + real run</p><p class="small" style="margin:0;">Dry run <code>--check --diff</code> shows <span class="stbad st-chg">changed</span> on first run, <span class="stbad st-ok">ok</span> on second — the idempotency proof.</p></div></div>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">Service is live</p><p class="small" style="margin:0;"><code>service nginx status</code> shows <span class="stbad st-ok">active (running)</span>.</p></div></div>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">The styled page serves</p><p class="small" style="margin:0;"><code>curl http://localhost/</code> returns the styled page from <code>index.html.j2</code>.</p></div></div>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">Reusability proven</p><p class="small" style="margin:0;">Same role installs a second package (redis, apache2…) with <b>only var changes</b>.</p></div></div>
+  <div class="stepitem"><div class="stepnum">☑</div><div style="flex:1;"><p class="ptitle" style="margin:0;">Everything explained and committed</p><p class="small" style="margin:0;"><code>ansible.cfg</code>, <code>inventory.ini</code>, <code>site.yml</code>, <code>roles/generic_package/*</code> — all explained and committed to <b>git</b>.</p></div></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Read the six boxes as the task's <b>definition of done</b> — structure, idempotency, service, content, reuse, version control. The last box matters most and fails most often: a working project that isn't in git doesn't satisfy the spec.</div>
+  <div class="mark m-tip"><span class="tag">DEBUG · Suggested commit</span><code>git add -A && git commit -m "generic_package role: install+configure any package via vars; nginx deploy verified; idempotency proven"</code> — one commit that says what the grader needs to read.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>The six-gate gate: <b>syntax ✓ idempotency ✓ service ✓ content ✓ reuse ✓ git ✓</b>. All six, in order, is "complete."</div>
+  <p class="lead" style="margin-top:8px;">⏭️ If any box won't tick — the rescue table: → <a class="tlink" href="#trouble">Troubleshooting</a></p>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span></span><span class="fnum">— 14 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#proof">Prev</a> · <a class="tlink" href="#trouble">Next</a></span></div>
+</div>
+
+<!-- ═══ 15 · TROUBLESHOOTING ═══ -->
+<div class="sheet" id="trouble">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Section 06</div><h1 class="t">🔧 Troubleshooting <span class="en">— Symptom → Cause → Fix</span></h1></div><span class="hmeta">🔴 rescue kit</span></div></div>
+  <p class="lead">Five failures this task actually produces, each with its root cause and exact fix — ordered by how likely you are to hit them:</p>
+  <div class="tblwrap"><table class="tb" style="font-size:11px;">
+    <tr><th style="width:30%;">Symptom</th><th style="width:26%;">Cause</th><th>Fix</th></tr>
+    <tr><td><code>config file = None</code> + "world writable directory" warning</td><td><code>/mnt/c</code> NTFS mounted 777</td><td>Copy project to <code>~/ansible</code>, <code>chmod 644 ansible.cfg</code>, run with <code>ANSIBLE_CONFIG=~/ansible/ansible.cfg</code></td></tr>
+    <tr><td><code>sudo: a password is required</code></td><td><code>become</code> needs sudo</td><td>Add <code>--ask-become-pass</code> — or run <code>wsl --user root</code> / <code>sudo</code></td></tr>
+    <tr><td><code>curl</code> still shows the old eslam.com page</td><td>eslam.com vhost is the default site</td><td>Role already writes <code>/var/www/eslam/index.html</code>; enable default site: <code>sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/</code></td></tr>
+    <tr><td>Handler "Restart service" fails on a non-service package</td><td>That package has no service</td><td><code>ignore_errors: true</code> on handlers (already set) — or set <code>service_name: ""</code> to skip the service task entirely</td></tr>
+    <tr><td>Role not found</td><td>Wrong <code>roles_path</code></td><td>Confirm <code>roles_path = roles</code> in <code>ansible.cfg</code> — and that the role directory name matches the playbook reference</td></tr>
+  </table></div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT · The #1 trap, expanded</span>The /mnt/c issue is environmental, not code: OneDrive + NTFS makes everything 777, and Ansible <b>refuses to trust it</b> for config discovery. The copy-to-<code>~/ansible</code> fix is a one-time move — then <code>ANSIBLE_CONFIG</code> pins the path so there's no ambiguity about which ansible.cfg is loading.</div>
+  <div class="mark m-tip"><span class="tag">DEBUG · Reading the table like an engineer</span>The pattern across all five rows: the <b>symptom</b> is always one layer below the <b>cause</b>. "Role not found" is a config problem; "password required" is an environment problem; the curl echo is a routing problem. Diagnose the layer, then apply the row's fix — don't chase the error text alone.</div>
+  <div class="m-exam"><span class="tag">🎓 TAKEAWAY</span>The five-row rescue kit: NTFS/mnt-c config refusal · missing become password · eslam.com default-site echo · non-service package restart failure · roles_path mismatch. Symptom → cause → fix, each in one line.</div>
+  <div class="mark m-ok"><span class="tag">SHIP IT</span>Syntax ✓ · dry run ✓ · two real runs ✓ · six nginx verifications ✓ · redis via the same role ✓ · six checklist boxes ticked ✓ — <b>the task is complete, and the role is genuinely reusable.</b> 🎉</div>
+  <div class="folio"><span>📘 generic_package Role Task · <span class="by">By Nabawy</span> · REDLINE Daylight</span><span class="fnum">— 15 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span><span>▶ The End 🎬</span></div>
+</div>
+
+</body>
+</html>

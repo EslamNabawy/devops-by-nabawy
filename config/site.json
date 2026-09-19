@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "title": "DevOps By Nabawy",
+  "shortTitle": "DevOps By Nabawy",
+  "language": "en",
+  "direction": "ltr",
+  "maintainerMode": true,
+  "defaultView": "library",
+  "defaultTheme": "system",
+  "contentVersion": "auto",
+  "showPendingSlots": true
+}

@@ -1,0 +1,930 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Higher-Level Workloads — Kubernetes Book 06</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm;background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.road{position:relative; margin:14px 0 6px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 11px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:9px 13px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch01 h3.sec{margin:10px 0 6px}
+#ch01 .callout,#ch01 .cka{margin:7px 0;padding:8px 11px}
+#ch01 .term,#ch01 .mtree,#ch01 table.tb{margin:8px 0}
+#ch01 .term,#ch01 .mtree{padding:9px 12px}
+#ch01 p.lead{margin:0 0 7px}
+#ch01 .grid2,#ch01 .grid3{margin:8px 0;gap:10px}
+#ch01 .card,#ch01 .zone,#ch01 .labstep{padding:9px 11px}
+#ch01 .qz{margin:6px 0;padding:6px 9px}
+#ch01 .gl{margin:3px 0;padding:4px 8px}
+#ch01 .rowc{margin:7px 0}
+#ch02 h3.sec{margin:10px 0 6px}
+#ch02 .callout,#ch02 .cka{margin:7px 0;padding:8px 11px}
+#ch02 .term,#ch02 .mtree,#ch02 table.tb{margin:8px 0}
+#ch02 .term,#ch02 .mtree{padding:9px 12px}
+#ch02 p.lead{margin:0 0 7px}
+#ch02 .grid2,#ch02 .grid3{margin:8px 0;gap:10px}
+#ch02 .card,#ch02 .zone,#ch02 .labstep{padding:9px 11px}
+#ch02 .qz{margin:6px 0;padding:6px 9px}
+#ch02 .gl{margin:3px 0;padding:4px 8px}
+#ch02 .rowc{margin:7px 0}
+#ch03 h3.sec{margin:10px 0 6px}
+#ch03 .callout,#ch03 .cka{margin:7px 0;padding:8px 11px}
+#ch03 .term,#ch03 .mtree,#ch03 table.tb{margin:8px 0}
+#ch03 .term,#ch03 .mtree{padding:9px 12px}
+#ch03 p.lead{margin:0 0 7px}
+#ch03 .grid2,#ch03 .grid3{margin:8px 0;gap:10px}
+#ch03 .card,#ch03 .zone,#ch03 .labstep{padding:9px 11px}
+#ch03 .qz{margin:6px 0;padding:6px 9px}
+#ch03 .gl{margin:3px 0;padding:4px 8px}
+#ch03 .rowc{margin:7px 0}
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+#ch06 h3.sec{margin:10px 0 6px}
+#ch06 .callout,#ch06 .cka{margin:7px 0;padding:8px 11px}
+#ch06 .term,#ch06 .mtree,#ch06 table.tb{margin:8px 0}
+#ch06 .term,#ch06 .mtree{padding:9px 12px}
+#ch06 p.lead{margin:0 0 7px}
+#ch06 .grid2,#ch06 .grid3{margin:8px 0;gap:10px}
+#ch06 .card,#ch06 .zone,#ch06 .labstep{padding:9px 11px}
+#ch06 .qz{margin:6px 0;padding:6px 9px}
+#ch06 .gl{margin:3px 0;padding:4px 8px}
+#ch06 .rowc{margin:7px 0}
+#ch07 h3.sec{margin:10px 0 6px}
+#ch07 .callout,#ch07 .cka{margin:7px 0;padding:8px 11px}
+#ch07 .term,#ch07 .mtree,#ch07 table.tb{margin:8px 0}
+#ch07 .term,#ch07 .mtree{padding:9px 12px}
+#ch07 p.lead{margin:0 0 7px}
+#ch07 .grid2,#ch07 .grid3{margin:8px 0;gap:10px}
+#ch07 .card,#ch07 .zone,#ch07 .labstep{padding:9px 11px}
+#ch07 .qz{margin:6px 0;padding:6px 9px}
+#ch07 .gl{margin:3px 0;padding:4px 8px}
+#ch07 .rowc{margin:7px 0}
+#lab4 h3.sec{margin:10px 0 6px}
+#lab4 .callout,#lab4 .cka{margin:7px 0;padding:8px 11px}
+#lab4 .term,#lab4 .mtree,#lab4 table.tb{margin:8px 0}
+#lab4 .term,#lab4 .mtree{padding:9px 12px}
+#lab4 p.lead{margin:0 0 7px}
+#lab4 .grid2,#lab4 .grid3{margin:8px 0;gap:10px}
+#lab4 .card,#lab4 .zone,#lab4 .labstep{padding:9px 11px}
+#lab4 .qz{margin:6px 0;padding:6px 9px}
+#lab4 .gl{margin:3px 0;padding:4px 8px}
+#lab4 .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#ch01 p.small,#ch01 li{font-size:12.2px;line-height:1.42}
+#ch01 .callout,#ch01 .cka{font-size:12.2px;line-height:1.44}
+#ch01 .qz{font-size:11.3px;line-height:1.42}
+#ch01 .gl{font-size:10.8px;line-height:1.36}
+#ch01 .term{font-size:11.6px;line-height:1.55}
+#ch01 .mtree{font-size:11.8px;line-height:1.6}
+#ch01 table.tb{font-size:11.7px} #ch01 .tb td{padding:5px 8px}
+#ch03 p.small,#ch03 li{font-size:12.2px;line-height:1.42}
+#ch03 .callout,#ch03 .cka{font-size:12.2px;line-height:1.44}
+#ch03 .qz{font-size:11.3px;line-height:1.42}
+#ch03 .gl{font-size:10.8px;line-height:1.36}
+#ch03 .term{font-size:11.6px;line-height:1.55}
+#ch03 .mtree{font-size:11.8px;line-height:1.6}
+#ch03 table.tb{font-size:11.7px} #ch03 .tb td{padding:5px 8px}
+#ch04 p.small,#ch04 li{font-size:12.2px;line-height:1.42}
+#ch04 .callout,#ch04 .cka{font-size:12.2px;line-height:1.44}
+#ch04 .qz{font-size:11.3px;line-height:1.42}
+#ch04 .gl{font-size:10.8px;line-height:1.36}
+#ch04 .term{font-size:11.6px;line-height:1.55}
+#ch04 .mtree{font-size:11.8px;line-height:1.6}
+#ch04 table.tb{font-size:11.7px} #ch04 .tb td{padding:5px 8px}
+#ch06 p.small,#ch06 li{font-size:12.2px;line-height:1.42}
+#ch06 .callout,#ch06 .cka{font-size:12.2px;line-height:1.44}
+#ch06 .qz{font-size:11.3px;line-height:1.42}
+#ch06 .gl{font-size:10.8px;line-height:1.36}
+#ch06 .term{font-size:11.6px;line-height:1.55}
+#ch06 .mtree{font-size:11.8px;line-height:1.6}
+#ch06 table.tb{font-size:11.7px} #ch06 .tb td{padding:5px 8px}
+#ch07 p.small,#ch07 li{font-size:12.2px;line-height:1.42}
+#ch07 .callout,#ch07 .cka{font-size:12.2px;line-height:1.44}
+#ch07 .qz{font-size:11.3px;line-height:1.42}
+#ch07 .gl{font-size:10.8px;line-height:1.36}
+#ch07 .term{font-size:11.6px;line-height:1.55}
+#ch07 .mtree{font-size:11.8px;line-height:1.6}
+#ch07 table.tb{font-size:11.7px} #ch07 .tb td{padding:5px 8px}
+/* MICRO nudge for borderline pages (L2-insufficient, pre-split attempt) */
+#ch01 .callout,#ch01 .cka{margin:6px 0;padding:7px 10px}
+#ch01 .labstep{padding:7px 10px;margin:8px 0}
+#ch01 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch01 .tabbody{font-size:11px;padding:8px 11px}
+#ch01 .zone{padding:7px 9px}
+#ch01 .rowc{margin:5px 0;gap:7px}
+#ch01 .grid2,#ch01 .grid3{gap:8px}
+#ch01 .kchip{padding:4px 10px}
+#ch01 ul.tick li{padding:3px 0 3px 2px}
+#ch06 .callout,#ch06 .cka{margin:6px 0;padding:7px 10px}
+#ch06 .labstep{padding:7px 10px;margin:8px 0}
+#ch06 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch06 .tabbody{font-size:11px;padding:8px 11px}
+#ch06 .zone{padding:7px 9px}
+#ch06 .rowc{margin:5px 0;gap:7px}
+#ch06 .grid2,#ch06 .grid3{gap:8px}
+#ch06 .kchip{padding:4px 10px}
+#ch06 ul.tick li{padding:3px 0 3px 2px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🦾</div>
+<h1>HIGHER-LEVEL<br>WORKLOADS</h1>
+<div class="sub">Book 06 of the series — completing the workload zoo: DaemonSets (a Pod on every node), Jobs &amp; CronJobs (run-to-completion and schedules), StatefulSets in full (ordered lifecycle + partition canaries), and the autoscaling trio — HPA, VPA, Cluster Autoscaler.</div>
+<div class="row">
+<div class="glass">📡 DaemonSet<small>one Pod per node</small></div>
+<div class="glass">⏳ Job<small>run to done</small></div>
+<div class="glass">🗓️ CronJob<small>on a schedule</small></div>
+<div class="glass">🪪 StatefulSet<small>full lifecycle</small></div>
+</div>
+<div class="row">
+<div class="glass">📈 HPA<small>more replicas</small></div>
+<div class="glass">📏 VPA<small>bigger replicas</small></div>
+<div class="glass">🖥️ Cluster Autoscaler<small>more nodes</small></div>
+<div class="glass">🕊️ Canaries<small>partition updates</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 06 · CONTINUES BOOKS 01–05 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">6 parts · 19 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · DaemonSets</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>DaemonSet — One Pod Per Node<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>DaemonSet — Updates &amp; Node Lifecycle<span class="dots"></span><span class="tp">p.4</span></a>
+<div class="tocpart">Part II · Jobs &amp; CronJobs</div>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Jobs — Run to Completion<span class="dots"></span><span class="tp">p.5</span></a>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>CronJobs — Schedules &amp; Concurrency<span class="dots"></span><span class="tp">p.6</span></a>
+<div class="tocpart">Part III · StatefulSets in Full</div>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Ordered Lifecycle &amp; Stable Identity<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Update Strategies — Partition Canaries<span class="dots"></span><span class="tp">p.8</span></a>
+<div class="tocpart">Part IV · Autoscaling</div>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>HPA — Horizontal Pod Autoscaler<span class="dots"></span><span class="tp">p.9</span></a>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>VPA — Vertical Autoscaler (Overview)<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>Cluster Autoscaler — Nodes on Demand<span class="dots"></span><span class="tp">p.11</span></a>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>The Trio Together — When to Use Which<span class="dots"></span><span class="tp">p.12</span></a>
+<div class="tocpart">Part V · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>DaemonSet on Every Node<span class="dots"></span><span class="tp">p.13</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Jobs &amp; a Manual CronJob Trigger<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>HPA — Watch It Scale Under Load<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>StatefulSet Partition Canary<span class="dots"></span><span class="tp">p.16</span></a>
+<div class="tocpart">Part VI · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 07<span class="dots"></span><span class="tp">p.21</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–05.</b> You've already <i>met</i> everything here in passing: daemon-like agents skipped your drains (Book 04 · CH 10), Promtail/node-exporter ride DaemonSets (your observability stack!), and Book 05 built the StatefulSet storage half. This book finishes each story — then makes workloads <b>run themselves</b>.</div></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">📡 DaemonSet — One Pod Per Node</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A Deployment says <i>"run N replicas, I don't care where."</i> A DaemonSet says <i>"run exactly ONE Pod on EVERY node — new node joins, Pod spawns; node leaves, Pod vanishes."</i> Infrastructure agents live here.</p>
+<div class="zone zone-wk" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">Deployment vs DaemonSet — the placement question</div>
+<div class="rowc">
+<div class="kchip">Deployment<small>&nbsp;"3 total, anywhere"</small></div><span class="harr">⇄</span>
+<div class="kchip">DaemonSet<small>&nbsp;"1 per node, everywhere"</small></div>
+</div>
+<div class="rowc" style="margin-top:4px;">
+<div class="pod">🫛 node1</div><div class="pod">🫛 node2</div><div class="pod">🫛 node3</div><span class="harr">←</span><div class="nb c-teal" style="min-width:170px;">📡 DaemonSet<small>every node, exactly one</small></div>
+</div>
+</div>
+<div class="term"><span class="c">apiVersion</span>: apps/v1
+<span class="c">kind</span>: DaemonSet
+<span class="c">metadata</span>: { <span class="c">name</span>: log-agent }
+<span class="c">spec</span>:
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: log-agent } }
+  <span class="c">template</span>:                       <span class="g"># no `replicas:` field — the NODE LIST decides</span>
+    <span class="c">metadata</span>: { <span class="c">labels</span>: { <span class="c">app</span>: log-agent } }
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - <span class="c">name</span>: agent
+        <span class="c">image</span>: fluent/fluent-bit:2.2
+        <span class="c">volumeMounts</span>:
+        - { <span class="c">name</span>: logs, <span class="c">mountPath</span>: <span class="m">/var/log/pods</span>, <span class="c">readOnly</span>: <span class="y">true</span> }
+      <span class="c">volumes</span>:
+      - <span class="c">name</span>: logs
+        <span class="c">hostPath</span>: { <span class="c">path</span>: <span class="m">/var/log/pods</span> }   <span class="g"># node-local files (Book 05 · CH 02!)</span></div>
+<table class="tb">
+<tr><th>The four classic tenants</th><th>Why per-node is mandatory</th></tr>
+<tr><td>📜 <b>Log collectors</b> — Fluent Bit, Promtail</td><td>container logs are files <b>on each node's disk</b> — only a local Pod can tail them (Book 01 · CH 03c logic)</td></tr>
+<tr><td>📈 <b>Metric agents</b> — node-exporter, Datadog agent</td><td>host metrics only exist at the node</td></tr>
+<tr><td>🌐 <b>Networking</b> — CNI plugins, kube-proxy</td><td>every node needs routing rules</td></tr>
+<tr><td>💾 <b>Storage</b> — CSI node plugins, Longhorn, GlusterFS</td><td>every node needs the mount machinery (Book 05 · CH 11!)</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>You've been commanding DaemonSets for two books:</b> <code>drain --ignore-daemonsets</code> (Book 04 · CH 10) — their Pods are node-bound, so drain skips them. And your Loki stack's <b>Promtail runs as a DaemonSet</b> for exactly the /var/log/pods reason above.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a DaemonSet is <i>"infrastructure agents as YAML"</i> — one Pod per node, born on join, gone on leave, no replicas field because <b>the node list IS the replica count</b>.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Updates, taints, and node churn — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: DaemonSet Lifecycle</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">🔄 DaemonSet — Updates &amp; Node Lifecycle</h2><span class="dbadge">🟡 5 MIN</span></div>
+<h3 class="sec">🆕 Node churn — the automatic part</h3>
+<div class="mtree"><b>node4 joins</b>  <span class="g">→ kubelet registers → DaemonSet controller notices →</span> <u>Pod spawns</u> <span class="p">within seconds</span>
+<b>node4 dies</b>   <span class="g">→ node object removed (or heartbeat lost) →</span> <u>Pod garbage-collected</u>
+<b>node tainted?</b> <span class="g">→ DaemonSets auto-tolerate the <em>infrastructure</em> taints:</span>
+   <span class="g">not-ready · unreachable · disk-pressure · memory-pressure</span> <span class="y">✓ auto</span>
+   <span class="r">control-plane:NoSchedule ✗ NOT auto</span> <span class="g">— add the toleration yourself</span></div>
+<div class="term mini"><span class="g"># run your DS on control-plane nodes too (Book 04 · CH 05 taints, in action):</span>
+<span class="c">tolerations</span>:
+- { <span class="c">key</span>: node-role.kubernetes.io/control-plane, <span class="c">operator</span>: <span class="y">Exists</span>, <span class="c">effect</span>: NoSchedule }</div>
+<h3 class="sec">🎞️ updateStrategy — rolling your agents</h3>
+<table class="tb">
+<tr><th>Strategy</th><th>Behavior</th><th>Notes</th></tr>
+<tr><td><b>RollingUpdate</b> <span class="stbadge st-comp">default</span></td><td>node by node, controlled by <code>maxUnavailable</code></td><td>no <code>maxSurge</code> for DaemonSets — agents replace in place, brief per-node gap is fine for infra</td></tr>
+<tr><td><b>OnDelete</b></td><td>updated only when <i>you</i> delete each Pod</td><td>manual control for scary infrastructure (CNI!)</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubectl set image ds/log-agent agent=fluent/fluent-bit:2.3
+daemonset.apps/log-agent image updated
+<span class="p">$</span> kubectl rollout status ds/log-agent
+<span class="p">daemon set "log-agent" successfully rolled out</span></div>
+<ul class="tick">
+<li>🎛️ <b>nodeSelector / affinity respected:</b> add <code>nodeSelector: {gpu: "true"}</code> → the DaemonSet only covers GPU nodes — <i>"one Pod per <b>matching</b> node"</i> is the honest definition</li>
+<li>🗂️ <code>revisionHistoryLimit</code> keeps old controller revisions — <code>rollout undo</code> works on DaemonSets too</li>
+</ul>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Handle the control-plane exception:</b> forgetting the toleration above means your "cluster-wide" agent silently runs on <i>workers only</i> — and on single-node minikube (one control-plane node), it runs <b>nowhere</b>. Lab 1 rides this trap on purpose.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> DaemonSets ride the node lifecycle automatically — <i>join → spawn, leave → collect</i> — auto-tolerate infrastructure sickness but <b>not the control-plane taint</b>, and roll out node-by-node like Deployments minus the surge.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Workloads that END — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: Jobs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">⏳ Jobs — Run to Completion</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Everything so far runs <i>forever</i> — servers don't exit. A <b>Job</b> runs Pods to <b>completion</b>: migrate a schema, render a video, process yesterday's files. Success = exit 0. Then it stops.</p>
+<div class="term"><span class="c">apiVersion</span>: batch/v1
+<span class="c">kind</span>: Job
+<span class="c">metadata</span>: { <span class="c">name</span>: nightly-etl }
+<span class="c">spec</span>:
+  <span class="c">completions</span>: <span class="y">5</span>              <span class="g"># run 5 SUCCESSFUL pods total</span>
+  <span class="c">parallelism</span>: <span class="y">2</span>              <span class="g"># …but only 2 at a time</span>
+  <span class="c">backoffLimit</span>: <span class="y">4</span>              <span class="g"># allow 4 failures before the JOB fails</span>
+  <span class="c">activeDeadlineSeconds</span>: <span class="y">3600</span>  <span class="g"># hard wall-clock kill-switch</span>
+  <span class="c">ttlSecondsAfterFinished</span>: <span class="y">86400</span>  <span class="g"># auto-cleanup 24h after done</span>
+  <span class="c">template</span>:
+    <span class="c">spec</span>:
+      <span class="c">restartPolicy</span>: <span class="y">Never</span>     <span class="g"># OnFailure or Never — NEVER Always!</span>
+      <span class="c">containers</span>:
+      - <span class="c">name</span>: etl
+        <span class="c">image</span>: myorg/etl:3.1</div>
+<table class="tb">
+<tr><th>Field</th><th>Question it answers</th></tr>
+<tr><td><code>completions</code> / <code>parallelism</code></td><td>how many successes total / how many concurrent — omitted → 1 and 1</td></tr>
+<tr><td><code>backoffLimit</code></td><td>how many failed Pods before declaring the whole Job failed</td></tr>
+<tr><td><code>activeDeadlineSeconds</code></td><td>when to give up regardless of retries</td></tr>
+<tr><td><code>ttlSecondsAfterFinished</code></td><td>when the Job and its Pods clean themselves up</td></tr>
+<tr><td><code>completionMode: Indexed</code></td><td>each Pod gets index <code>JOB_COMPLETION_INDEX</code> — sharding a work queue</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubectl get job,pods -w
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPLETIONS&nbsp;&nbsp;DURATION&nbsp;&nbsp;AGE</span>
+nightly-etl&nbsp;&nbsp;&nbsp;&nbsp;2/5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;45s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;45s
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;RESTARTS</span>
+nightly-etl-<span class="c">abc</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;&nbsp;0
+nightly-etl-<span class="c">def</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">Running</span>&nbsp;&nbsp;&nbsp;0
+nightly-etl-<span class="c">ghi</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="stbadge st-comp" style="font-size:9px;">Completed</span>&nbsp;&nbsp;0&nbsp;&nbsp;<span class="g"># exit 0 — counts toward 5</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>restartPolicy must be Never or OnFailure</b> — a Job template with <code>Always</code> is rejected. Think about it: a <i>completed</i> workload can't have an "always restart" policy. The Book 01 · CH 15 standalone-Pod problem also applies: a Job whose <b>node dies</b> gets its Pod recreated <i>by the Job controller</i> — a plain Pod wouldn't be.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a Job is <i>a batch workload with an exit condition</i> — it counts <b>successes</b> (<code>completions</code>), bounds <b>failure</b> (<code>backoffLimit</code>), caps <b>time</b> (<code>activeDeadlineSeconds</code>), and cleans up after itself (<code>ttlSecondsAfterFinished</code>).</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The same thing, on a clock — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: CronJobs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🗓️ CronJobs — Schedules &amp; Concurrency</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A CronJob creates a <b>Job on a schedule</b> — cron syntax you already know, wrapped around everything CH 03 taught.</p>
+<div class="term"><span class="c">apiVersion</span>: batch/v1
+<span class="c">kind</span>: CronJob
+<span class="c">metadata</span>: { <span class="c">name</span>: db-backup }
+<span class="c">spec</span>:
+  <span class="c">schedule</span>: <span class="m">"30 2 * * *"</span>          <span class="g"># 02:30 daily (min hour dom month dow)</span>
+  <span class="c">timeZone</span>: <span class="m">"Europe/Berlin"</span>        <span class="g"># stable zone — don't trust node clocks</span>
+  <span class="c">concurrencyPolicy</span>: <span class="y">Forbid</span>       <span class="g"># ★ the policy that saves databases</span>
+  <span class="c">startingDeadlineSeconds</span>: <span class="y">300</span>    <span class="g"># missed &gt; 5 min ago → skip, don't stampede</span>
+  <span class="c">suspend</span>: <span class="y">false</span>                   <span class="g"># true = pause the schedule, keep the object</span>
+  <span class="c">successfulJobsHistoryLimit</span>: <span class="y">3</span>
+  <span class="c">failedJobsHistoryLimit</span>: <span class="y">1</span>
+  <span class="c">jobTemplate</span>:                     <span class="g"># ← everything from CH 03 lives in here</span>
+    <span class="c">spec</span>:
+      <span class="c">backoffLimit</span>: <span class="y">2</span>
+      <span class="c">template</span>:
+        <span class="c">spec</span>:
+          <span class="c">restartPolicy</span>: Never
+          <span class="c">containers</span>:
+          - <span class="c">name</span>: dump
+            <span class="c">image</span>: postgres:16
+            <span class="c">command</span>: [<span class="m">pg_dump</span>, <span class="m">-f</span>, <span class="m">/backup/dump.sql</span>, <span class="m">$DATABASE_URL</span>]</div>
+<table class="tb">
+<tr><th>concurrencyPolicy</th><th>If the previous run is still going…</th><th>Use for</th></tr>
+<tr><td><code>Allow</code> <span class="stbadge st-comp">default</span></td><td>start another anyway — runs overlap</td><td>idempotent jobs (cache warmers)</td></tr>
+<tr><td><code>Forbid</code></td><td><b>skip</b> this tick</td><td>backups, billing — two overlapping runs = disaster</td></tr>
+<tr><td><code>Replace</code></td><td><b>kill</b> the old run, start new</td><td>"latest state wins" jobs</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The overlap trap:</b> a backup that takes 25 min on a 15-min schedule, with <code>Allow</code>, silently runs <i>two backups against the same database</i>. <code>Forbid</code> is the professional default for anything touching shared state — and <code>startingDeadlineSeconds</code> prevents a recovered controller from firing 47 missed ticks at once.</div></div>
+<div class="term mini"><span class="g"># fire a schedule right now — the tester's cheat code:</span>
+<span class="p">$</span> kubectl create job backup-test <span class="y">--from</span>=cronjob/db-backup
+job.batch/backup-test created
+<span class="p">$</span> kubectl get jobs&nbsp;&nbsp;<span class="g"># backup-test 0/1 → 1/1 — full CH 03 machinery</span></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a CronJob = <b>cron schedule + Job template + a concurrency policy</b> — and the entire craft is choosing <code>Allow/Forbid/Replace</code> correctly, because overlapping batch runs are where data gets hurt.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part III: the cattle-and-names workload, in full — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: StatefulSets</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🪪 StatefulSets — Ordered Lifecycle &amp; Identity</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Book 05 gave StatefulSets their storage (<code>volumeClaimTemplates</code>, per-replica claims). This page completes the other half: <b>ordered lifecycle</b> and <b>stable identity</b> — the two things a replica set of a database can't live without.</p>
+<div class="mtree"><b>StatefulSet db · replicas: 3</b>
+<span class="g">SCALE UP (ordered):</span>
+  db-<b>0</b> created → <u>waits for Running &amp; Ready</u> → db-<b>1</b> → … → db-<b>2</b>
+<span class="g">SCALE DOWN (reverse):</span>
+  db-<b>2</b> deleted first → then db-<b>1</b> → db-<b>0</b> last  <span class="g">(primary dies last!)</span>
+<span class="g">DELETION of the STS:</span> same reverse order — and claims SURVIVE (Book 05 · CH 10)</div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">Stable network identity</div>
+<div class="term mini" style="margin:0;"><span class="g"># via the HEADLESS svc (Book 05 · CH 09):</span>
+db-<b>0</b>.db.shop.svc.cluster.local
+db-<b>1</b>.db.shop.svc.cluster.local
+db-<b>2</b>.db.shop.svc.cluster.local
+<span class="g"># names survive rescheduling —
+# "follow db-0" is a TRUE forever</span></div></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;">
+<div class="zlabel" style="text-align:left;">podManagementPolicy</div>
+<div class="term mini" style="margin:0;"><span class="y">OrderedReady</span> <span class="g">(default)</span>
+<span class="g">strict sequence, wait-for-Ready —
+correct for most databases</span>
+<span class="y">Parallel</span>
+<span class="g">spawn/kill all at once — for
+peers that self-coordinate
+(e.g. some distributed DBs)</span></div></div>
+</div>
+<ul class="tick">
+<li>🐣 <b>Why ordered matters:</b> a primary must be <i>Ready</i> before followers attach to it — Parallel would race followers against a half-booted primary</li>
+<li>🔁 <b>Re-created in place:</b> kill db-1 → the <b>same name</b> returns, reattaches <code>data-db-1</code> (Book 05 · Lab 3 proved the data comes back) — the identity is the contract</li>
+<li>🪢 <b>Cascade control:</b> <code>kubectl delete sts db --cascade=orphan</code> leaves the Pods running — hand-migrate them, then adopt</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> StatefulSets = <b>ordered birth/reverse-order death + wait-for-Ready between steps + names and DNS that never change</b> — storage (Book 05) plus sequence plus identity, the full definition of "stateful."</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Updating these delicate creatures safely — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: Partition Canaries</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🕊️ StatefulSet Updates — Partition Canaries</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Rolling a database's image is scarier than rolling nginx. StatefulSets answer with <b>partitioned rollouts</b>: update a controlled slice first, verify, then let it finish.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">updateStrategy</span>:
+    <span class="c">type</span>: <span class="y">RollingUpdate</span>          <span class="g"># or: OnDelete (manual, like DaemonSets)</span>
+    <span class="c">rollingUpdate</span>:
+      <span class="c">partition</span>: <span class="y">2</span>               <span class="g"># ONLY pods with ordinal ≥ 2 update</span></div>
+<div class="zone zone-cp" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">partition: 2 on a 3-replica StatefulSet — after <code>set image</code></div>
+<div class="rowc">
+<div class="nb c-slate" style="min-width:150px;">db-0<small>postgres:16 · <b>old</b></small></div>
+<div class="nb c-slate" style="min-width:150px;">db-1<small>postgres:16 · <b>old</b></small></div>
+<div class="nb c-emerald" style="min-width:150px;">db-2<small>postgres:<b>17</b> · NEW 🕊️</small></div>
+</div>
+<p class="dnote">the canary flies solo — verify it, then lower the partition to release the rest</p>
+</div>
+<div class="term mini"><span class="g"># the canary release, step by step:</span>
+<span class="p">$</span> kubectl patch sts db <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"updateStrategy":{"rollingUpdate":{"partition":2}}}}'</span>
+<span class="p">$</span> kubectl set image sts/db db=postgres:<span class="y">17</span>
+<span class="p">$</span> kubectl get pod db-2 -o jsonpath=<span class="m">'{.spec.containers[0].image}'</span>
+postgres:<span class="y">17</span>&nbsp;&nbsp;&nbsp;<span class="g"># db-0/db-1 untouched ✓</span>
+<span class="p">$</span> <span class="g"># …run your checks against db-2… then release:</span>
+<span class="p">$</span> kubectl patch sts db <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"updateStrategy":{"rollingUpdate":{"partition":0}}}}'</span>
+<span class="p">$</span> kubectl get pods -w
+<span class="y">db-2&nbsp;&nbsp;1/1&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g">(already new)</span></span>
+<span class="y">db-1&nbsp;&nbsp;0/1&nbsp;&nbsp;Terminating&nbsp;&nbsp;→&nbsp;1/1&nbsp;<span class="g">on :17</span></span>&nbsp;&nbsp;<span class="g"># highest ordinal first!</span>
+<span class="y">db-0&nbsp;&nbsp;0/1&nbsp;&nbsp;Terminating&nbsp;&nbsp;→&nbsp;1/1&nbsp;<span class="g">on :17</span></span></div>
+<ul class="tick">
+<li>🔻 <b>Roll direction is highest-ordinal-first</b> — replicas (followers) update before the primary (db-0). Followers run the new version against the old primary — the safe direction for replication compat</li>
+<li>🕊️ <code>partition = replicas</code> → <b>nothing updates</b> (freeze). Lower gradually: 2 → 1 → 0</li>
+<li>✋ <b>OnDelete</b> — full manual: delete each Pod yourself to pull the new template (CNI/CSI-adjacent caution)</li>
+</ul>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Compare to Deployments:</b> Deployments have <code>maxUnavailable/maxSurge</code> (Book 01 · CH 20) — availability control. StatefulSets have <code>partition</code> — <b>blast-radius control</b>. One Pod at a time, ordered, canary-able: exactly what replicas of a database deserve.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <code>partition</code> turns a StatefulSet rollout into a <b>graduated canary from the top down</b> — verify one replica on the new version before you let the primary anywhere near it.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part IV: workloads that resize themselves — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: HPA</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">📈 HPA — Horizontal Pod Autoscaler</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The HPA watches a metric and edits <code>spec.replicas</code> for you — <b>more copies under load, fewer when quiet</b>. One controller, one loop (Book 01's reconciliation, aimed at sizing).</p>
+<div class="term"><span class="c">apiVersion</span>: autoscaling/v2
+<span class="c">kind</span>: HorizontalPodAutoscaler
+<span class="c">metadata</span>: { <span class="c">name</span>: web-hpa }
+<span class="c">spec</span>:
+  <span class="c">scaleTargetRef</span>:
+    { <span class="c">apiVersion</span>: apps/v1, <span class="c">kind</span>: Deployment, <span class="c">name</span>: web }
+  <span class="c">minReplicas</span>: <span class="y">2</span>                 <span class="g"># floor — never below (HA!)</span>
+  <span class="c">maxReplicas</span>: <span class="y">10</span>                <span class="g"># ceiling — your wallet's guard rail</span>
+  <span class="c">metrics</span>:
+  - <span class="c">type</span>: Resource
+    <span class="c">resource</span>:
+      <span class="c">name</span>: cpu
+      <span class="c">target</span>: { <span class="c">type</span>: <span class="y">Utilization</span>, <span class="c">averageUtilization</span>: <span class="y">60</span> }
+      <span class="g"># "keep average CPU at 60% OF EACH POD'S REQUEST"</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>HPA needs <code>requests</code> set (Book 02 · CH 14).</b> Utilization = <i>actual usage ÷ request</i> — no request means no denominator, and the HPA sits <span class="stbadge st-pend">unknown</span>. It also needs the <b>metrics-server</b> installed (<code>minikube addons enable metrics-server</code>) — the component that aggregates real usage.</div></div>
+<h3 class="sec">🧮 The math (it's one formula)</h3>
+<div class="mtree"><b>desiredReplicas = ceil[ currentReplicas × (currentMetric ÷ targetMetric) ]</b>
+<span class="g">4 pods at 90% CPU, target 60%:</span>  ceil(4 × 90/60) = <span class="p">6 pods</span>
+<span class="g">2 pods at 15%, target 60%:</span>    ceil(2 × 15/60) = <span class="p">1 pod</span>
+<span class="g">…but within a ±10% tolerance band — no flapping on noise.
+…always clamped to [minReplicas, maxReplicas].</span></div>
+<ul class="tick">
+<li>⏱️ <b>Asymmetric by design:</b> check every ~15s; <b>scale-up is fast</b>, <b>scale-down waits</b> (default stabilization window 5 min) — traffic spikes shouldn't mass-terminate Pods they may need again</li>
+<li>📊 <b>Metric sources:</b> <code>Resource</code> (cpu/memory per-pod) · <code>Pods</code> (custom per-pod: requests/sec) · <code>External</code> (queue depth, cloud LB RPS)</li>
+<li>🚫 Scale targets: Deployment, ReplicaSet, StatefulSet — <b>not</b> DaemonSets (node-bound by definition)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the HPA is a <b>replica thermostat</b> — it divides observed load by your <code>requests</code>-based target and scales within your min/max rails, fast up, slow down. Lab 3 makes the needle move in front of you.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Scaling a different axis — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: VPA</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">📏 VPA — Vertical Autoscaler (Overview)</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">The HPA answers <i>"wrong NUMBER of copies."</i> The VPA answers <i>"wrong SIZE of copy"</i> — it watches actual usage and adjusts each Pod's <b>requests/limits</b> (Book 02 · CH 14).</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">Horizontal (HPA)</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">🫛 🫛 🫛  <span class="g">→ load →</span>  🫛 🫛 🫛 🫛 🫛 🫛
+<span class="g">same size, more of them</span></div></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;"><div class="zlabel" style="text-align:left;">Vertical (VPA)</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">🫛(200m)  <span class="g">→ load →</span>  🫛(500m)
+<span class="g">same count, bigger each</span></div></div>
+</div>
+<div class="term mini"><span class="g"># the VPA object — installed separately (CRDs + recommender component):</span>
+<span class="c">apiVersion</span>: autoscaling.k8s.io/v1
+<span class="c">kind</span>: VerticalPodAutoscaler
+<span class="c">metadata</span>: { <span class="c">name</span>: web-vpa }
+<span class="c">spec</span>:
+  <span class="c">targetRef</span>: { <span class="c">apiVersion</span>: apps/v1, <span class="c">kind</span>: Deployment, <span class="c">name</span>: web }
+  <span class="c">updatePolicy</span>:
+    <span class="c">updateMode</span>: <span class="y">Auto</span>      <span class="g"># Off | Initial | Recreate (Auto)</span></div>
+<table class="tb">
+<tr><th>Mode</th><th>Behavior</th></tr>
+<tr><td><code>Off</code></td><td><b>recommendations only</b> — the right starting point: read <code>kubectl describe vpa</code>, tune your YAML yourself</td></tr>
+<tr><td><code>Initial</code></td><td>apply recommended requests only to <b>newly created</b> Pods — no disruption</td></tr>
+<tr><td><code>Auto</code> / <code>Recreate</code></td><td><b>evicts</b> Pods to apply new sizes (Book 01's eviction, by an autoscaler this time)</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The classic conflict:</b> HPA on <b>cpu</b> + VPA on <b>cpu</b> = a feedback fight (VPA raises requests → utilization % falls → HPA scales down…). Allowed combo: <b>HPA on custom/external metrics + VPA on cpu/memory</b> — different signals, no loop. This is also why "just install everything" autoscaling is a mistake.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the VPA is a <b>right-sizing engine</b> — same knob as Book 02's requests/limits, turned automatically; start in <code>Off</code> mode and treat its recommendations as the end of guesswork, not as an autopilot.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ And when the NODES run out — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: Cluster Autoscaler</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🖥️ Cluster Autoscaler — Nodes on Demand</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">HPA and VPA resize <i>within</i> the cluster's capacity. The <b>Cluster Autoscaler (CA)</b> resizes the capacity itself — adding and removing <b>nodes</b>, driven by two signals:</p>
+<div class="mtree"><b>SCALE UP trigger:</b>  Pods stuck <span class="r">Pending</span> <span class="g">— Book 04's funnel found NO feasible node —
+                    (requests don't fit / taints / affinity)</span>
+      <span class="g">CA asks the cloud provider (node group / ASG / MIG) for one more node →
+      node joins → those Pending pods schedule ✓</span>
+
+<b>SCALE DOWN trigger:</b> a node is <span class="y">underutilized ~10+ min</span> AND every Pod on it
+      <span class="g">can be safely rescheduled onto other nodes → drain-style eviction →
+      node removed → bill shrinks ✓</span></div>
+<table class="tb">
+<tr><th>Pods CA will NOT evict (block scale-down)</th><th>Why</th></tr>
+<tr><td>Pods under a restrictive <b>PDB</b> (Book 04 · CH 10)</td><td>voluntary-disruption protection is honored</td></tr>
+<tr><td>Pods with <b>local storage</b> (emptyDir/hostPath) — unless <code>cluster-autoscaler.kubernetes.io/safe-to-evict: "true"</code></td><td>eviction = data loss (Book 05 · CH 02!)</td></tr>
+<tr><td><b>High-priority</b> / system Pods (Book 04 · CH 09)</td><td>pecking order respected</td></tr>
+<tr><td>Pods the controller wouldn't recreate elsewhere (anti-affinity pinned, standalone)</td><td>they'd strand</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Configuration is per cloud, per node group:</b> you annotate/label node groups with <code>min</code>/<code>max</code> sizes and deploy the CA with your provider's flags — it's cloud-native by design. <b>On minikube it doesn't function</b> (no expandable node group behind it) — this is a production-environment component, which is why this chapter is an overview.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the CA is <b>node-count automation</b> — Pending Pods are its "buy more" signal, idle nodes its "sell some" signal, and PDBs/local-storage/priority are the fences it will never jump (Book 04's safety rules, enforced by an accountant).</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Three scalers, one stack — <a href="#ch10" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 10: The Trio Together</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🧩 The Trio Together — When to Use Which</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<p class="lead">Three autoscalers, three <b>different questions</b>. Confusing them is how clusters get expensive or fall over.</p>
+<table class="tb">
+<tr><th></th><th>📈 HPA</th><th>📏 VPA</th><th>🖥️ Cluster Autoscaler</th></tr>
+<tr><td><b>Question</b></td><td>how many copies?</td><td>how big is a copy?</td><td>how many nodes?</td></tr>
+<tr><td><b>Adjusts</b></td><td><code>spec.replicas</code></td><td>requests/limits (via eviction)</td><td>node-group size (cloud)</td></tr>
+<tr><td><b>Signal</b></td><td>cpu/mem utilization, custom metrics</td><td>observed usage history</td><td>Pending Pods / idle nodes</td></tr>
+<tr><td><b>Layer</b></td><td>Pods</td><td>Pods</td><td>Nodes</td></tr>
+<tr><td><b>Latency</b></td><td>~15 s checks</td><td>recommend + evict (minutes)</td><td>minutes (cloud API)</td></tr>
+</table>
+<h3 class="sec">🏗️ How they stack (the beautiful part)</h3>
+<div class="zone zone-wk" style="max-width:160mm;margin:0 auto;">
+<div class="rowc">
+<div class="nb c-amber" style="min-width:180px;">📈 HPA<small>replicas 3 → 9 under load</small></div>
+<span class="harr">──►</span>
+<div class="kchip">no node fits the new Pods → <span class="r">Pending</span></div>
+<span class="harr">──►</span>
+<div class="nb c-slate" style="min-width:180px;">🖥️ CA<small>adds a node → Pending clears</small></div>
+</div>
+<p class="dnote">HPA creates the demand · CA creates the room — they compose by design; VPA right-sizes underneath (on different metrics!)</p>
+</div>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #3b82f6;"><p class="small"><b>Traffic-shaped load?</b><br>→ HPA (resource or custom metric)</p></div>
+<div class="card center" style="border-top:3.5px solid #8b5cf6;"><p class="small"><b>Steady load, badly sized pods?</b><br>→ VPA in <code>Off</code> → fix YAML, maybe <code>Initial</code></p></div>
+<div class="card center" style="border-top:3.5px solid #64748b;"><p class="small"><b>Batch bursts, cost control?</b><br>→ CA with sane group min/max</p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The two classic misconfigurations:</b> (1) HPA + VPA on the <b>same resource metric</b> — feedback war (CH 08). (2) HPA <code>minReplicas</code> higher than the cluster can host, with no CA — <b>permanent Pending</b> (Book 04 · CH 01's funnel, now self-inflicted by an autoscaler).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Remember the ladder:</b> <i>HPA counts copies · VPA sizes copies · CA buys the building floor they stand on</i> — pick per question, never stack two scalers on the same signal, and the whole stack runs on Book 02's honest <code>requests</code>.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Prove all of it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part V: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 DaemonSet on Every Node</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Deploy an agent — and feel the control-plane taint</div>
+<div class="term mini"><span class="p">$</span> kubectl create ds agent --image=busybox:1.36 \
+&nbsp;&nbsp;-- sh -c <span class="m">'sleep 9999'</span>
+<span class="p">$</span> kubectl get ds agent
+<span class="y">NAME&nbsp;&nbsp;&nbsp;DESIRED&nbsp;&nbsp;CURRENT&nbsp;&nbsp;READY</span>
+agent&nbsp;&nbsp;<span class="r">0</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;<span class="g"># ZERO?! single control-plane node,
+# no toleration → runs NOWHERE (CH 02's trap!)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Add the toleration — it appears</div>
+<div class="term mini"><span class="p">$</span> kubectl patch ds agent <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"template":{"spec":{"tolerations":[{"key":
+  "node-role.kubernetes.io/control-plane","operator":"Exists",
+  "effect":"NoSchedule"}]}}}}'</span>
+<span class="p">$</span> kubectl get ds agent
+<span class="y">NAME&nbsp;&nbsp;&nbsp;DESIRED&nbsp;&nbsp;CURRENT&nbsp;&nbsp;READY&nbsp;&nbsp;NODE SELECTOR</span>
+agent&nbsp;&nbsp;<span class="p">1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;none&gt;&nbsp;<span class="g"># one per node — minikube has one node</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 LIMIT TO A SUBSET</div><div class="tabbody"><span class="p">$</span> kubectl patch ds agent <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"template":{"spec":{"nodeSelector":
+  {"role":"gpu"}}}}}'</span>
+<span class="p">$</span> kubectl get ds agent
+<span class="y">DESIRED</span>
+<span class="r">0</span>&nbsp;&nbsp;<span class="g"># no node has role=gpu —
+# "1 per MATCHING node" (CH 02)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 ROLL IT</div><div class="tabbody"><span class="p">$</span> kubectl set image ds/agent \
+&nbsp;&nbsp;busybox=busybox:1.36-musl
+<span class="p">$</span> kubectl rollout status ds/agent
+<span class="p">successfully rolled out</span>
+<span class="g"># same machinery as deployments,
+# node by node (CH 02)</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> DaemonSets count nodes, auto-tolerate nothing for the control plane, honor nodeSelector, and roll like Deployments. <b>Teardown:</b> <code>kubectl delete ds agent</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔬 Jobs &amp; a Manual CronJob Trigger</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · A counted Job — 4 successes, 2 at a time</div>
+<div class="term mini"><span class="p">$</span> kubectl create job counted --image=busybox:1.36 \
+&nbsp;&nbsp;-- sh -c <span class="m">'echo working; sleep 5'</span>
+<span class="p">$</span> kubectl patch job counted <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"completions":4,"parallelism":2}}'</span>
+<span class="p">$</span> kubectl get job counted -w
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COMPLETIONS</span>
+counted&nbsp;&nbsp;<span class="p">4/4</span>&nbsp;&nbsp;<span class="g"># successes counted — pods came and went</span>
+<span class="p">$</span> kubectl get pods | <span class="c">grep</span> counted
+<span class="g">(pods remain as history — Completed; that's what TTL is for)</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#dc2626;">💥 FAILURE PATH</div><div class="tabbody"><span class="p">$</span> kubectl create job broken \
+&nbsp;&nbsp;--image=busybox:1.36 \
+&nbsp;&nbsp;-- sh -c <span class="m">'exit 1'</span>
+<span class="p">$</span> kubectl get job broken -w
+<span class="y">COMPLETIONS&nbsp;&nbsp;DURATION&nbsp;&nbsp;AGE</span>
+0/1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;30s
+<span class="p">$</span> kubectl describe job broken | tail -1
+<span class="r">Job has reached the
+specified backoff limit
+(default 6)</span>
+<span class="g"># 6 failed pods → JOB failed.
+# backoffLimit in action</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🗓️ CRONJOB, FIRED BY HAND</div><div class="tabbody"><span class="p">$</span> kubectl create cronjob ticker \
+&nbsp;&nbsp;--image=busybox:1.36 \
+&nbsp;&nbsp;--schedule=<span class="m">"*/1 * * * *"</span> \
+&nbsp;&nbsp;-- sh -c <span class="m">'date'</span>
+<span class="p">$</span> kubectl create job tick-now \
+&nbsp;&nbsp;<span class="y">--from</span>=cronjob/ticker
+<span class="p">$</span> kubectl get jobs
+<span class="y">tick-now&nbsp;&nbsp;1/1&nbsp;&nbsp;Complete</span>
+<span class="g"># schedule skipped —
+# same machinery, on demand</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> completions/parallelism counting, backoffLimit killing a hopeless Job, and the <code>--from=cronjob/</code> test trigger. <b>Teardown:</b> <code>kubectl delete job counted broken tick-now; kubectl delete cronjob ticker</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">📈 HPA — Watch It Scale Under Load</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Metrics-server + a burner deployment</div>
+<div class="term mini"><span class="p">$</span> minikube addons enable metrics-server
+<span class="p">$</span> kubectl top nodes&nbsp;&nbsp;<span class="g"># wait ~1 min — proves the pipeline works</span>
+<span class="p">$</span> kubectl create deploy burner --image=polinux/stress \
+&nbsp;&nbsp;-- stress --cpu 1 --timeout 900s
+<span class="p">$</span> kubectl set resources deploy burner <span class="y">--requests</span>=cpu=<span class="y">100m</span>
+<span class="g"># request 100m, burns 1000m → 1000% utilization</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Arm the HPA — target 50%</div>
+<div class="term mini"><span class="p">$</span> kubectl autoscale deploy burner <span class="y">--min</span>=1 <span class="y">--max</span>=<span class="y">6</span> <span class="y">--cpu-percent</span>=<span class="y">50</span>
+horizontalpodautoscaler.autoscaling/burner autoscaled
+<span class="p">$</span> kubectl get hpa burner -w
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;REFERENCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TARGETS&nbsp;&nbsp;&nbsp;REPLICAS</span>
+burner&nbsp;&nbsp;Deployment/burner&nbsp;&nbsp;<span class="r">1030%/50%</span>&nbsp;&nbsp;1&nbsp;&nbsp;<span class="g"># usage vs REQUEST (CH 07!)</span>
+burner&nbsp;&nbsp;Deployment/burner&nbsp;&nbsp;1030%/50%&nbsp;&nbsp;<span class="p">6</span>&nbsp;&nbsp;<span class="g"># ceil(1 × 1030/50) = 21 → clamped to max 6</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 WATCH THE MATH</div><div class="tabbody"><span class="g"># each pod still burns 1000%
+# of its 100m request →
+# with 6 pods, avg ≈ 1000%
+# desired = ceil(6 × 20) = 120
+# → stays pinned at max 6.
+# THE CEILING HOLDS (wallet rail)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">📉 COOL-DOWN (slow down!)</div><div class="tabbody"><span class="p">$</span> kubectl delete deploy burner&nbsp;<span class="g"># or wait out the 900s</span>
+<span class="g"># on real cool-down: scale-DOWN
+# waits ~5 min (stabilization
+# window) — CH 07's asymmetry,
+# protecting against spikes</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> utilization is measured against <code>requests</code>; the formula overshoots and clamps at <code>maxReplicas</code>; metrics-server feeds it all. <b>Teardown:</b> <code>kubectl delete hpa burner; kubectl delete deploy burner</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ LAB 4 ═══ -->
+<div class="page" id="lab4"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">🔬 StatefulSet Partition Canary</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · A 3-replica StatefulSet (Book 05 · Lab 3 pattern, condensed)</div>
+<div class="term mini"><span class="p">$</span> kubectl create deploy web --image=nginx:1.25 --replicas=3 2&gt;/dev/null
+<span class="p">$</span> kubectl delete deploy web 2&gt;/dev/null
+<span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: apps/v1
+<span class="c">kind</span>: StatefulSet
+<span class="c">metadata</span>: { <span class="c">name</span>: web }
+<span class="c">spec</span>:
+  <span class="c">serviceName</span>: web
+  <span class="c">replicas</span>: <span class="y">3</span>
+  <span class="c">selector</span>: { <span class="c">matchLabels</span>: { <span class="c">app</span>: webs } }
+  <span class="c">template</span>:
+    <span class="c">metadata</span>: { <span class="c">labels</span>: { <span class="c">app</span>: webs } }
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - { <span class="c">name</span>: nginx, <span class="c">image</span>: <span class="m">nginx:1.25</span> }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get sts web&nbsp;&nbsp;<span class="g"># READY 3/3 — ordered birth (CH 05)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Set the partition BEFORE the new image</div>
+<div class="term mini"><span class="p">$</span> kubectl patch sts web <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"updateStrategy":{"rollingUpdate":{"partition":2}}}}'</span>
+<span class="p">$</span> kubectl set image sts/web nginx=<span class="y">nginx:1.26</span>
+<span class="p">$</span> kubectl get pods -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image
+<span class="y">NAME&nbsp;&nbsp;&nbsp;IMAGE</span>
+web-0&nbsp;&nbsp;nginx:<span class="r">1.25</span>&nbsp;&nbsp;<span class="g"># frozen — ordinal &lt; partition</span>
+web-1&nbsp;&nbsp;nginx:<span class="r">1.25</span>&nbsp;&nbsp;<span class="g"># frozen</span>
+web-2&nbsp;&nbsp;nginx:<span class="p">1.26</span>&nbsp;&nbsp;<span class="g"># THE CANARY 🕊️</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Release — highest ordinal rolls first</div>
+<div class="term mini"><span class="p">$</span> kubectl patch sts web <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"updateStrategy":{"rollingUpdate":{"partition":0}}}}'</span>
+<span class="p">$</span> kubectl get pods -w
+<span class="g"># web-1 replaces first, THEN web-0 — replicas before primary (CH 06)</span>
+<span class="p">$</span> kubectl get pods -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image
+<span class="y">web-0&nbsp;&nbsp;nginx:1.26</span>&nbsp;&nbsp;web-1&nbsp;&nbsp;nginx:1.26&nbsp;&nbsp;web-2&nbsp;&nbsp;nginx:1.26&nbsp;&nbsp;<span class="p">✓</span></div></div>
+<p class="small"><b>Proved:</b> partition gates the rollout by ordinal; release = lowering the partition; direction is top-down. <b>Teardown:</b> <code>kubectl delete sts web</code> (no PVCs here — none were created).</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>A DaemonSet's Pod count is determined by…<br><b>A.</b> spec.replicas &nbsp; <b>B.</b> the number of matching nodes &nbsp; <b>C.</b> the HPA &nbsp; <b>D.</b> the highest ordinal ever created</div>
+<div class="qz"><span class="qn">Q2.</span>Valid restartPolicy for a Job template?<br><b>A.</b> Always &nbsp; <b>B.</b> Always or Never &nbsp; <b>C.</b> Never or OnFailure &nbsp; <b>D.</b> none — Jobs don't restart</div>
+<div class="qz"><span class="qn">Q3.</span>CronJob with <code>concurrencyPolicy: Replace</code>, previous run still active, new tick fires:<br><b>A.</b> old run is killed, new run starts &nbsp; <b>B.</b> new tick is skipped &nbsp; <b>C.</b> both run overlapped &nbsp; <b>D.</b> CronJob suspends itself</div>
+<div class="qz"><span class="qn">Q4.</span>StatefulSet RollingUpdate with <code>partition: 2</code>, 3 replicas, image changed:<br><b>A.</b> all pods update &nbsp; <b>B.</b> only db-0 updates &nbsp; <b>C.</b> nothing updates &nbsp; <b>D.</b> only db-2 updates</div>
+<div class="qz"><span class="qn">Q5.</span>When a StatefulSet rollout completes (partition 0), the update order is…<br><b>A.</b> db-0 → db-1 → db-2 &nbsp; <b>B.</b> db-2 → db-1 → db-0 (highest ordinal first) &nbsp; <b>C.</b> random &nbsp; <b>D.</b> all simultaneously</div>
+<div class="qz"><span class="qn">Q6.</span>An HPA with <code>type: Utilization</code> shows <code>unknown</code>. Most likely cause?<br><b>A.</b> Pods lack resource <code>requests</code> (or metrics-server missing) &nbsp; <b>B.</b> maxReplicas too low &nbsp; <b>C.</b> wrong apiVersion &nbsp; <b>D.</b> the Deployment is behind a Service</div>
+<div class="qz"><span class="qn">Q7.</span>DaemonSet Pods automatically tolerate which taints?<br><b>A.</b> all taints including control-plane &nbsp; <b>B.</b> none — explicit only &nbsp; <b>C.</b> infrastructure conditions (not-ready, disk-pressure…) but NOT control-plane &nbsp; <b>D.</b> only PreferNoSchedule</div>
+<div class="qz"><span class="qn">Q8.</span>The Cluster Autoscaler adds nodes primarily when…<br><b>A.</b> CPU per node exceeds 80% &nbsp; <b>B.</b> Pods are Pending because no node can fit them &nbsp; <b>C.</b> the HPA hits maxReplicas &nbsp; <b>D.</b> a node reports NotReady</div>
+<div class="qz"><span class="qn">Q9.</span>VPA in <code>Auto</code> mode applies new requests by…<br><b>A.</b> editing the Deployment template in place, no restarts &nbsp; <b>B.</b> only new pods &nbsp; <b>C.</b> asking the HPA &nbsp; <b>D.</b> evicting Pods so replacements start with the recommended size</div>
+<div class="qz"><span class="qn">Q10.</span>HPA + Cluster Autoscaler together:<br><b>A.</b> conflict — choose one &nbsp; <b>B.</b> both manage replicas &nbsp; <b>C.</b> compose — HPA creates more Pods, CA adds nodes to fit them &nbsp; <b>D.</b> only work on StatefulSets</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#lab4">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>B</b></td><td>No replicas field — the (matching) node list decides — CH 01</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>Always is illegal for run-to-completion work — CH 03</td></tr>
+<tr><td>3</td><td><b>A</b></td><td>Replace = kill old, start new; Forbid skips; Allow overlaps — CH 04</td></tr>
+<tr><td>4</td><td><b>D</b></td><td>Partition gates by ordinal: only pods ≥ partition update — CH 06</td></tr>
+<tr><td>5</td><td><b>B</b></td><td>Highest-ordinal-first — followers before the primary — CH 06</td></tr>
+<tr><td>6</td><td><b>A</b></td><td>Utilization = usage ÷ request; missing pieces → unknown — CH 07</td></tr>
+<tr><td>7</td><td><b>C</b></td><td>Infrastructure taints auto; control-plane is opt-in — CH 02, Lab 1</td></tr>
+<tr><td>8</td><td><b>B</b></td><td>Pending-for-no-room is the buy signal — CH 09</td></tr>
+<tr><td>9</td><td><b>D</b></td><td>requests can't be edited live — evict & recreate — CH 08</td></tr>
+<tr><td>10</td><td><b>C</b></td><td>Different layers: replicas (HPA) vs nodes (CA) — CH 10</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 07</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–4, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q4/Q5?</b> Partition + roll direction is <i>the</i> StatefulSet update mental model — canary from the top down. Missed Q6? HPA without <code>requests</code> is the #1 "why won't it scale" ticket in the wild.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>DaemonSet</b> — one Pod per matching node; node joins spawn, node leaves collect; agent workloads (logs, metrics, CNI, CSI node plugins).</div>
+<div class="gl"><b>updateStrategy (DS)</b> — RollingUpdate (maxUnavailable; no maxSurge) or OnDelete.</div>
+<div class="gl"><b>Job</b> — run-to-completion workload: completions, parallelism, backoffLimit, activeDeadlineSeconds, ttlSecondsAfterFinished, completionMode Indexed.</div>
+<div class="gl"><b>CronJob</b> — schedule + Job template; concurrencyPolicy (Allow/Forbid/Replace), startingDeadlineSeconds, suspend, timeZone.</div>
+<div class="gl"><b>StatefulSet</b> — ordered lifecycle, stable names/DNS, per-replica storage (Book 05); podManagementPolicy OrderedReady/Parallel.</div>
+<div class="gl"><b>partition</b> — StatefulSet canary gate: only ordinals ≥ partition update; roll direction highest-first.</div>
+<div class="gl"><b>OnDelete</b> — update strategy: template applies only when you delete each Pod manually.</div>
+<div class="gl"><b>HorizontalPodAutoscaler</b> — scales replicas from metrics; v2 API; needs metrics-server + Pod requests; min/max rails; fast up, slow down (stabilization window).</div>
+<div class="gl"><b>Utilization</b> — actual usage ÷ resource request; the default HPA metric basis.</div>
+<div class="gl"><b>VerticalPodAutoscaler</b> — recommends/applies requests+limits; modes Off / Initial / Auto(Recreate); conflicts with HPA on the same metric.</div>
+<div class="gl"><b>Cluster Autoscaler</b> — node-count automation: adds nodes for Pending Pods, removes underutilized nodes ~10 min; respects PDBs, local storage (safe-to-evict annotation), priority.</div>
+<div class="gl"><b>metrics-server</b> — the in-cluster usage pipeline (kubectl top, HPA Resource metrics).</div>
+<div class="gl"><b>ttlSecondsAfterFinished</b> — automatic cleanup age for finished Jobs.</div>
+<div class="gl"><b>JOB_COMPLETION_INDEX</b> — env var in Indexed Jobs for sharded work queues.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🦾 Workloads — commands</div><div class="term mini"><span class="p">$</span> kubectl get ds,job,cronjob,hpa
+<span class="p">$</span> kubectl create job test --from=cronjob/x
+<span class="p">$</span> kubectl set image ds/agent img=v2
+<span class="p">$</span> kubectl rollout status ds/agent
+<span class="p">$</span> kubectl autoscale deploy web --min=2 --max=10 --cpu-percent=60
+<span class="p">$</span> kubectl get hpa -w
+<span class="p">$</span> kubectl top pods&nbsp;<span class="g"># needs metrics-server</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🕊️ STS canary pattern</div><div class="term mini"><span class="c">updateStrategy</span>:
+  <span class="c">rollingUpdate</span>: { <span class="c">partition</span>: <span class="y">N-1</span> }
+<span class="g"># set image → top pod only</span>
+<span class="g"># verify → lower partition</span>
+2 → 1 → 0
+<span class="g"># roll = highest ordinal first
+# (replicas before primary)</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🧩 Scaler chooser</div><table class="tb" style="margin:0;"><tr><th>Symptom</th><th>Scaler</th></tr><tr><td>load spikes, pods pegged</td><td>HPA (replicas)</td></tr><tr><td>pods sized wrong, steady</td><td>VPA (requests)</td></tr><tr><td>nothing fits, Pending</td><td>Cluster Autoscaler (nodes)</td></tr><tr><td>HPA + VPA same metric</td><td>❌ feedback war — split signals</td></tr></table></div>
+<div class="card"><div class="zlabel" style="text-align:left;">📌 Field quick-ref</div><div class="term mini"><span class="g">Job:</span> completions · parallelism ·
+&nbsp;&nbsp;backoffLimit · activeDeadlineSeconds ·
+&nbsp;&nbsp;ttlSecondsAfterFinished · restartPolicy Never/OnFailure
+<span class="g">CronJob:</span> schedule · concurrencyPolicy
+&nbsp;&nbsp;(Forbid for backups!) · startingDeadlineSeconds
+<span class="g">HPA math:</span> ceil(replicas × used/target)
+&nbsp;&nbsp;±10% tolerance · clamped min/max</div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>DaemonSet: node list = replica count; auto-tolerates infra taints but NOT control-plane; drain skips its Pods</li>
+<li>Jobs count successes and bound failures — restartPolicy must be Never/OnFailure; CronJob's real decision is Allow vs Forbid vs Replace</li>
+<li>StatefulSet rollouts: highest-ordinal-first; partition = graduated canary, frozen while partition = replicas</li>
+<li>HPA needs requests + metrics-server; utilization = usage ÷ request; fast up, 5-min-stabilized down</li>
+<li>VPA right-sizes by eviction; HPA+VPA on the same metric = war — use custom metrics + resources instead</li>
+<li>CA buys nodes for Pending Pods and sells idle ones — PDBs, local storage, and priority are its fences</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 06 complete</span></div>
+<p class="lead">Books 01–05 built, dressed, connected, placed, and persisted your workloads — Book 06 <b>completed the zoo and taught it to run itself</b>.</p>
+<div class="mtree"><b>🦾 THE FULL WORKLOAD ZOO:</b>
+├── <u>Deployment</u>     <span class="g">stateless replicas · rolling + undo (Book 01)</span>
+├── <u>DaemonSet</u>      <span class="g">agent per node · node list = count</span>
+├── <u>Job / CronJob</u>  <span class="g">run-to-done · schedules · concurrency policies</span>
+├── <u>StatefulSet</u>    <span class="g">identity + storage + ORDERED + partition canaries</span>
+└── <u>Autoscaling</u>    <span class="g">HPA (count) · VPA (size) · CA (nodes) — a stack</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Ship node agents as DaemonSets — and explain why your log collector and CNI had no choice</li>
+<li>Run batch work with real failure semantics, and schedule backups that can't overlap themselves to death</li>
+<li>Roll database images with partition canaries — one replica verified before the primary ever moves</li>
+<li>Wire an HPA the right way (requests + metrics-server) and predict its replica math</li>
+<li>Choose among HPA/VPA/CA per question, and stack them without feedback wars</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 07 · Observability &amp; Operations:</b> your workloads now scale themselves — but <i>how do you know they're healthy?</i> Probes (the hole Book 01 flagged), Metrics Server &amp; <code>kubectl top</code>, Prometheus + Grafana, logging architecture, and cluster-scope debugging. Your own Loki/Prometheus/Grafana stack maps straight onto it — now you'll see the whole discipline from the Kubernetes side.</div></div>
+<div class="center" style="margin-top:18px;font-size:20px;">— End of Book 06 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 06 · Higher-Level Workloads</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 21</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

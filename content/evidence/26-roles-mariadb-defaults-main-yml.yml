@@ -1,0 +1,29 @@
+---
+# roles/mariadb/defaults/main.yml
+# Override any of these from your playbook vars, group_vars, or -e on the CLI.
+
+# --- Configuration location (task 3) ---
+mariadb_config_dir: /opt/mariadb
+mariadb_conf_file: "{{ mariadb_config_dir }}/my.cnf"
+mariadb_initdb_file: "{{ mariadb_config_dir }}/initdb.sql"
+
+# --- my.cnf tuning (rendered into templates/my.cnf.j2) ---
+mariadb_bind_address: "127.0.0.1"
+mariadb_port: 3306
+mariadb_max_connections: 151
+mariadb_character_set_server: utf8mb4
+mariadb_collation_server: utf8mb4_unicode_ci
+mariadb_innodb_buffer_pool_size: "256M"
+
+# --- Database / user to create (tasks 6-7) ---
+mariadb_db_name: myapp_db
+mariadb_db_user: myapp_user
+# Prefer passing this via --ask-vault-pass / ansible-vault, group_vars/vault.yml,
+# or -e mariadb_db_password=... on the CLI. Do not commit a real password.
+mariadb_db_password: "CHANGE_ME"
+mariadb_db_user_host: "localhost"
+
+# --- Seed data for the DB (task 8) ---
+# Set to true if initdb.sql should create its own table(s)/rows;
+# false if you only want the database created and left empty.
+mariadb_run_initdb: true

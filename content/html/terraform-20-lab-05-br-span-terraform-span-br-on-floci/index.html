@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAB 05 — Terraform on FLOCI | CI/CD Pipeline Control Room</title>
+<style>
+:root{--paper:#f5f6f4;--white:#fff;--ink:#161a19;--muted:#68706d;--line:#d5dad7;--panel:#111614;--panel-2:#1a201d;--text-light:#e8eeeb;--text-muted:#9ca8a3;--accent:#00b87c;--accent-dark:#008f61;--blue:#4387ff;--amber:#d99a24;--red:#d94b4b;--artifact:#8b6cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0f0e;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4;margin:0}
+.page{width:210mm;min-height:297mm;padding:16mm 16mm 14mm;margin:8mm auto;position:relative;background:var(--paper);page-break-after:always;overflow:hidden;display:flex;flex-direction:column}
+.page:last-child{page-break-after:auto}
+@media print{body{background:#fff}.page{margin:0;box-shadow:none}h3.sec,.phead h2{break-after:avoid}.terminal,.step,.callout,.kv,.pipeline,.lanes,.arch,.gate,.flowgrid,table.cmp{break-inside:avoid}}
+.phead{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.phead .ch{color:var(--accent-dark);font-weight:700}
+.phead h2{font-size:18px;letter-spacing:1px;color:var(--ink);margin:2px 0 6px;text-transform:uppercase}
+.phead hr{border:none;border-top:1.5px solid var(--ink);margin-bottom:10px}
+.pfoot{margin-top:auto;padding-top:8px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--line);letter-spacing:1px}
+h3.sec{font-size:16px;margin:14px 0 7px;text-transform:uppercase;letter-spacing:.5px;break-after:avoid}
+h3.sec .n{color:var(--accent-dark);font-family:"Cascadia Code",Consolas,monospace;font-size:12px;margin-right:10px}
+p.body{font-size:11.5px;line-height:1.65;margin:7px 0}
+code,.mono{font-family:"SFMono-Regular","Cascadia Code",Consolas,monospace}
+.cover{background:var(--panel);color:var(--text-light);justify-content:flex-start}
+.cover .brand{font-size:8.5px;letter-spacing:4px;color:var(--text-muted);text-transform:uppercase}
+.cover h1{font-size:44px;line-height:.95;margin:10px 0 6px;letter-spacing:1px;font-weight:800}
+.cover h1 span{color:var(--accent)}
+.cover .sub{font-size:11.5px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;max-width:158mm}
+.cover .tri{font-size:9px;letter-spacing:2.2px;color:var(--accent);margin-bottom:14px;line-height:1.9}
+.cover .sig{font-family:"Brush Script MT","Segoe Script","Snell Roundhand",cursive;font-size:26px;color:var(--accent);transform:rotate(-4deg);text-shadow:0 0 14px rgba(0,184,124,.45);white-space:nowrap}
+.darkflow{background:var(--panel-2);border:1px solid #26302c;border-radius:10px;padding:14px 14px 12px;margin:6px 0 10px}
+.darkflow .lbl{font-size:8px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.darkflow .lbl:before{content:"";width:28px;height:2px;background:var(--accent);display:inline-block}
+.flowgrid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:center}
+.fbox{background:#0f1411;border:1px solid #26302c;border-radius:8px;padding:10px 8px;text-align:center}
+.fbox img{width:22px;height:22px;object-fit:contain;display:block;margin:0 auto 5px}
+.fbox b{font-size:9.5px;letter-spacing:1px;display:block;color:var(--text-light)}
+.fbox small{font-size:9px;color:var(--text-muted);line-height:1.4}
+.fbox.hl{border-color:rgba(0,184,124,.5);box-shadow:0 0 0 1px rgba(0,184,124,.18)}
+.farrow{color:var(--text-muted);font-size:16px;text-align:center}
+.merge{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 2px}
+.merge .line{height:1px;background:#2c3531;flex:1}
+.merge span{font-size:8px;letter-spacing:1.5px;color:var(--accent);border:1px solid rgba(0,184,124,.35);padding:3px 8px;border-radius:20px;background:rgba(0,184,124,.08)}
+.opener .bignum{font-size:58px;font-weight:800;line-height:1;color:var(--ink)}
+.opener .ctitle{font-size:28px;letter-spacing:3px;margin:2px 0 8px}
+.opener .lede{font-size:13px;line-height:1.65;max-width:155mm;margin:6px 0}
+.opener .lede em{color:var(--accent-dark);font-style:normal;font-weight:700}
+.kv{background:var(--white);border:1px solid var(--line);padding:10px 12px;margin:8px 0;font-size:11.5px;line-height:1.6}
+.kv b{color:var(--accent-dark)}
+.callout{border-left:3px solid var(--accent);background:var(--white);padding:10px 12px;margin:9px 0}
+.callout h4{font-size:9px;letter-spacing:2px;color:var(--accent-dark);margin-bottom:4px}
+.callout p{font-size:11.5px;line-height:1.6}
+.callout.amber{border-left-color:var(--amber)}.callout.amber h4{color:var(--amber)}
+.callout.red{border-left-color:var(--red)}.callout.red h4{color:var(--red)}
+.callout.blue{border-left-color:var(--blue)}.callout.blue h4{color:var(--blue)}
+.terminal{background:#101413;color:#d6e2dc;border-radius:8px;padding:11px 13px;font-family:"SFMono-Regular","Cascadia Code",Consolas,monospace;font-size:9.2px;line-height:1.65;margin:8px 0;overflow-x:auto;white-space:pre}
+.terminal .c{color:#8b9a94}.terminal .g{color:var(--accent)}.terminal .a{color:var(--amber)}.terminal .r{color:var(--red)}.terminal .b{color:var(--blue)}.terminal .p{color:var(--artifact)}
+.step{background:var(--white);border:1px solid var(--line);padding:10px 12px;margin:7px 0;font-size:11.5px;line-height:1.65}
+.step h4{font-size:10.5px;letter-spacing:.8px;margin-bottom:3px}
+.step h4 .tag{color:var(--accent-dark)}
+ul.tight,ol.tight{font-size:11.5px;line-height:1.65;margin:6px 0 6px 18px}
+ul.tight li,ol.tight li{margin-bottom:3px}
+table.cmp{width:100%;border-collapse:collapse;font-size:10.5px;margin:8px 0}
+table.cmp th{background:var(--panel);color:var(--text-light);font-size:8.5px;letter-spacing:1px;padding:6px 8px;text-align:left}
+table.cmp td{border:1px solid var(--line);padding:6px 8px;background:var(--white);line-height:1.5}
+table.cmp td:first-child{font-weight:700;background:#eef0ee}
+.pipeline{display:flex;align-items:center;gap:6px;margin:10px 0;flex-wrap:wrap}
+.pipeline .stage{background:var(--white);border:1px solid var(--line);border-left:3px solid var(--accent);padding:7px 9px;min-width:78px;flex:1}
+.pipeline .stage.wait{border-left-color:var(--amber)}
+.pipeline .stage.artifact{border-left-color:var(--artifact)}
+.pipeline .stage strong{font-size:9.5px;letter-spacing:1px;display:block}
+.pipeline .stage small{font-size:8.5px;color:var(--muted)}
+.pipeline .stage .no{font-family:"Cascadia Code",Consolas,monospace;font-size:8px;color:var(--muted);letter-spacing:1px}
+.pipeline .conn{width:16px;height:2px;background:var(--line);position:relative;flex:none}
+.pipeline .conn:after{content:"›";position:absolute;right:-6px;top:-8px;color:var(--muted);font-size:12px}
+.lanes{margin:8px 0}
+.lanes .lane{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);background:var(--white);margin-bottom:6px;font-size:11px}
+.lanes .lane .env{font-weight:700;font-size:9px;letter-spacing:1.5px;min-width:62px}
+.lanes .lane.dev{border-left:3px solid var(--blue)}
+.lanes .lane.stg{border-left:3px solid var(--amber)}
+.lanes .lane.prod{border-left:3px solid var(--accent)}
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:center;margin:10px 0}
+.arch .box{background:var(--white);border:1px solid var(--line);padding:9px 8px;text-align:center}
+.arch .box b{font-size:10px;letter-spacing:1px;display:block}
+.arch .box small{font-size:9px;color:var(--muted);line-height:1.45}
+.arch .arrow{color:var(--muted);font-size:16px;text-align:center}
+.gate{display:grid;grid-template-columns:1fr 34px 1fr;gap:8px;align-items:stretch;margin:10px 0}
+.gate .col{background:var(--white);border:1px solid var(--line);padding:9px 10px}
+.gate .col h4{font-size:9px;letter-spacing:1.5px;margin-bottom:5px}
+.gate .col.auto{border-left:3px solid var(--blue)}
+.gate .col.human{border-left:3px solid var(--amber);background:#fdf8eb}
+.gate .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.gate .mid .bar{width:2px;height:22px;background:var(--amber)}
+.gate .mid .diamond{width:26px;height:26px;background:var(--amber);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(217,154,36,.45)}
+.gate .mid .diamond span{transform:rotate(-45deg)}
+.gate .mid small{font-size:7.5px;letter-spacing:1px;color:var(--amber);font-weight:700}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;font-weight:700}
+.status .dot{width:8px;height:8px;border-radius:50%}
+.status.pass{color:var(--accent-dark)}.status.pass .dot{background:var(--accent)}
+.status.fail{color:var(--red)}.status.fail .dot{background:var(--red)}
+.status.wait{color:var(--amber)}.status.wait .dot{background:var(--amber)}
+.status.run{color:var(--blue)}.status.run .dot{background:var(--blue)}
+.badge{font-size:8px;letter-spacing:1.2px;padding:3px 7px;border-radius:10px;border:1px solid var(--line);background:var(--white);font-weight:700}
+.badge.green{border-color:var(--accent);color:var(--accent-dark)}
+.badge.amber{border-color:var(--amber);color:#8a6a10}
+.badge.red{border-color:var(--red);color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.card{background:var(--white);border:1px solid var(--line);padding:10px 11px}
+.card h4{font-size:10px;letter-spacing:1.2px;margin-bottom:4px}
+.card p{font-size:11px;line-height:1.6;color:var(--muted)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0;font-size:9px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;border:1px solid var(--line);display:inline-block}
+.printnote{font-size:9px;color:var(--muted);border:1px dashed var(--line);padding:8px 10px;margin-top:10px;line-height:1.6}
+.vpipe{display:flex;flex-direction:column;margin:8px 0}
+.vnode{display:flex;align-items:center;gap:10px}
+.vnode .dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 10px rgba(0,184,124,.45);flex:none}
+
+.cover .vnode img{filter:drop-shadow(0 0 0.9px #18E299) drop-shadow(0 0 4px rgba(24,226,153,.22));}
+.cover .vnode img[src*="github"]{background:none;border-radius:0;padding:0;box-shadow:none;filter:drop-shadow(0 0 0.9px #18E299) drop-shadow(0 0 5px rgba(24,226,153,.28));}
+.cover .vnode img[src*="github"]{background:none;border-radius:0;padding:0;box-shadow:none;filter:drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white) drop-shadow(0.7px 0.7px 0 white) drop-shadow(-0.7px -0.7px 0 white) drop-shadow(-0.7px 0.7px 0 white) drop-shadow(0.7px -0.7px 0 white);}
+/* icon: github white on dark, black on light — no halo */
+.cover .vnode img[src*="github"]{filter:invert(1) brightness(1.05);background:none;box-shadow:none;border-radius:0;padding:0;}
+.cover .vnode img:not([src*="github"]){filter:none;}
+/* icon: outline/black icons white on dark covers */
+.cover .vnode img[src*="github"], .cover .vnode img[src*="workflow"], .cover .vnode img[src*="hammer"], .cover .vnode img[src*="package"], .cover .vnode img[src*="database"], .cover .vnode img[src*="puzzle"], .cover .vnode img[src*="server"], .cover .vnode img[src*="terminal"], .cover .vnode img[src*="shield"], .cover .vnode img[src*="activity"], .cover .vnode img[src*="webhook"], .cover .vnode img[src*="wrench"], .cover .vnode img[src*="flask"], .cover .vnode img[src*="rocket"]{filter:invert(1) brightness(1.05);}
+.vnode img{width:22px;height:22px;flex:none;object-fit:contain}
+.vnode b{font-size:11px;letter-spacing:1.6px}
+.vnode small{font-size:9px;color:var(--text-muted)}
+.vline{width:2px;height:14px;background:#2c3531;margin-left:4.5px}
+@media screen and (max-width:700px){.page{width:auto;min-height:0;margin:0 auto;padding:16px 14px 20px}.grid2{grid-template-columns:1fr}.arch,.flowgrid{grid-template-columns:1fr}.arch .arrow,.farrow{transform:rotate(90deg)}.gate{grid-template-columns:1fr}.gate .mid{flex-direction:row}}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 COVER -->
+<div class="page cover">
+<div class="brand">CI/CD Systems &nbsp;·&nbsp; Pipeline Control Room &nbsp;·&nbsp; Lab 05</div>
+<h1>LAB 05<br><span>TERRAFORM</span><br>ON FLOCI</h1>
+<div class="sub">Jenkins drives Terraform — <b style="color:var(--text-light)">init → workspace → plan → human approve → apply</b> — against <b style="color:var(--text-light)">FLOCI</b>, a simulated AWS. Same CI/CD loop, infrastructure payload. Safe, auditable, cost-free.</div>
+<div class="tri">GITHUB WEBHOOK · TERRAFORM WORKSPACE · INPUT GATE · FLOCI SIMULATION · MAIL ON FAIL</div>
+
+<div class="darkflow">
+<div class="lbl"><img src="../assets/icons/general/terraform.svg" alt="tf" style="width:16px;height:16px;opacity:.9"> IaC source — three files, one intent</div>
+<div class="flowgrid">
+<div class="fbox hl"><img src="../assets/icons/general/terraform.svg" alt="VPC"><b>VPC.tf</b><small>VPC · Subnets<br>EC2 · S3 Bucket</small></div>
+<div class="farrow">+</div>
+<div class="fbox hl"><img src="../assets/icons/general/database.svg" alt="vars"><b>Variables.tf</b><small>input variables<br>types & defaults</small></div>
+<div class="farrow">+</div>
+<div class="fbox hl" style="border-color:var(--artifact)"><img src="../assets/icons/deployment/rocket.svg" alt="provider"><b>Provider.tf</b><small>provider → <b style="color:var(--artifact)">FLOCI</b><br>simulated AWS API</small></div>
+</div>
+<div class="merge"><span class="line"></span><span>COMPOSE → TERRAFORM GRAPH</span><span class="line"></span></div>
+<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:8px">
+<div class="fbox" style="padding:8px"><img src="../assets/icons/git/github.svg" alt="gh" style="filter:invert(1) brightness(1.4)"><b>Jenkinsfile</b><small>Checkout → Init → Workspace<br>→ Plan → Approve → Apply → Post</small></div>
+<div class="farrow">→</div>
+<div class="fbox" style="border-color:var(--amber)"><img src="../assets/icons/jenkins/jenkins.svg" alt="jk"><b>FLOCI TARGET</b><small>Simulated VPC / Subnets<br>EC2 / S3 · no real AWS</small></div>
+</div>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;font-size:8.5px;color:var(--text-muted);letter-spacing:1px">
+<span style="border:1px solid #2c3531;border-radius:20px;padding:4px 8px;background:#0f1411"><span style="color:var(--accent)">●</span> ENV tfvars → workspace isolated state</span>
+<span style="border:1px solid #2c3531;border-radius:20px;padding:4px 8px;background:#0f1411"><span style="color:var(--amber)">◆</span> AMBER GATE = human input()</span>
+<span style="border:1px solid #2c3531;border-radius:20px;padding:4px 8px;background:#0f1411"><span style="color:var(--artifact)">■</span> PLAN ARTIFACT = tfplan</span>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:8px;margin:2px 0 0">
+<div style="flex:1;height:1px;background:#23302b"></div>
+<span style="font-size:8px;letter-spacing:2px;color:var(--text-muted)">PIPELINE CONTROL ROOM · INFRA AS PIPELINE</span>
+<div style="flex:1;height:1px;background:#23302b"></div>
+</div>
+
+<div style="margin-top:auto;padding-top:14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:1px solid #1e2622">
+<span style="font-size:9px;letter-spacing:2px;color:var(--text-muted)">CHAPTER 05 &nbsp;·&nbsp; JENKINS + TERRAFORM + FLOCI &nbsp;·&nbsp; A4 · 06 PAGES</span>
+<span class="sig">Nabawy</span>
+</div>
+</div>
+
+<!-- PAGE 2 OPENER + ARCHITECTURE -->
+<div class="page opener">
+<div class="phead"><span class="ch">CI/CD Systems</span> &nbsp; Pipeline Control Room<hr><h2>Lab 05 — Terraform on FLOCI</h2>Infrastructure as a gated pipeline</div>
+<div class="bignum">05</div>
+<div class="ctitle">TERRAFORM ON FLOCI</div>
+<p class="lede">Infrastructure is not a ticket — it is a <em>pipeline</em>. Webhook triggers it, Terraform plans it, a human approves it, FLOCI receives it. No real AWS, no surprise bill, full audit trail.</p>
+
+<h3 class="sec"><span class="n">01 /</span> What This Lab Proves</h3>
+<div class="kv"><b>PROOF —</b> The same CI/CD loop that builds apps can provision infrastructure: <span class="mono">terraform init / workspace select / plan -var-file / apply tfplan</span> behind a Jenkins <span class="mono">input</span> gate, with <span class="mono">Provider.tf</span> pointing at <b>FLOCI</b> instead of real AWS. Workspace + <span class="mono">tfvars</span> isolates <b>dev / stg / prod</b> state.</div>
+
+<h3 class="sec"><span class="n">02 /</span> Architecture — GitHub → Jenkins → FLOCI Simulated AWS</h3>
+<div class="arch">
+<div class="box"><img src="../assets/icons/git/github.svg" alt="GitHub" style="width:22px;height:22px"><b>GITHUB REPOSITORY</b><small>VPC.tf · Variables.tf · Provider.tf<br><span class="mono">dev / stg.tfvars / Prod</span> · Jenkinsfile</small></div>
+<div class="arrow">→</div>
+<div class="box" style="border-left:3px solid var(--accent)"><img src="../assets/icons/jenkins/jenkins.svg" alt="Jenkins" style="width:22px;height:22px"><b>JENKINS CI/CD</b><small>Pipeline: Checkout → Init<br>Workspace → Plan → Approve → Apply<br>Post: Success / Fail → Mail</small></div>
+<div class="arrow">→</div>
+<div class="box" style="border-left:3px solid var(--artifact)"><img src="../assets/icons/general/terraform.svg" alt="FLOCI" style="width:22px;height:22px"><b>FLOCI</b><small style="color:var(--artifact)">Simulated AWS API</small><small>Simulated VPC + Subnets<br>Simulated EC2 + S3 Bucket<br><span class="mono">Provider.tf → FLOCI endpoint</span></small></div>
+</div>
+<div class="legend"><span><i style="background:var(--accent)"></i> passed / provisioned</span><span><i style="background:var(--amber)"></i> waiting / approval</span><span><i style="background:var(--artifact)"></i> plan artifact</span><span><i style="background:var(--red)"></i> blocked / failed</span></div>
+<p class="body">Webhook (Lab 01 pattern) triggers the pipeline. Terraform CLI runs <b>on the Jenkins agent</b> and calls the provider endpoint configured in <span class="mono">Provider.tf</span> — here, <b>FLOCI</b> instead of <span class="mono">aws</span>. FLOCI materialises the same resource graph without touching a real account.</p>
+
+<h3 class="sec"><span class="n">03 /</span> Full Flow in One Line</h3>
+<div class="pipeline">
+<div class="stage"><span class="no">01</span><strong>CHECKOUT</strong><small>checkout scm</small></div><div class="conn"></div>
+<div class="stage"><span class="no">02</span><strong>INIT</strong><small>terraform init</small></div><div class="conn"></div>
+<div class="stage"><span class="no">03</span><strong>WORKSPACE</strong><small>select / new</small></div><div class="conn"></div>
+<div class="stage artifact"><span class="no">04</span><strong>PLAN</strong><small>tfplan + tfvars</small></div><div class="conn"></div>
+<div class="stage wait"><span class="no">05</span><strong>APPROVE</strong><small>input gate</small></div><div class="conn"></div>
+<div class="stage"><span class="no">06</span><strong>APPLY</strong><small>to FLOCI</small></div><div class="conn"></div>
+<div class="stage artifact"><span class="no">07</span><strong>POST</strong><small>mail on fail</small></div>
+</div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 05 · TERRAFORM</span><span>02 / 06</span></div>
+</div>
+
+<!-- PAGE 3 PRE-FLIGHT + REPO + JENKINSFILE -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 05 — Terraform<hr><h2>Pre-Flight & Pipeline</h2>Verify before you mutate · Pipeline as code</div>
+
+<h3 class="sec"><span class="n">01 /</span> Step 0 — Pre-Flight Check (do this before Step 1)</h3>
+<table class="cmp"><tr><th style="width:22%">Check</th><th>Command / Location</th><th>Decision</th></tr>
+<tr><td>0.1 Tools</td><td><span class="mono">terraform -version</span> · <span class="mono">git --version</span> · <span class="mono">curl -s -o /dev/null -w "%{http_code}" http://localhost:8080</span><br>Jenkins: <b>Terraform</b> + <b>Pipeline</b> + <b>Mailer</b> plugins (<b>Manage Jenkins → Plugins</b>)</td><td>Terraform CLI must exist on the <b>agent</b> that runs <span class="mono">sh 'terraform ...'</span></td></tr>
+<tr><td>0.2 Credentials</td><td>FLOCI endpoint / API key / provider block format — <b>ask user</b><br><b>Manage Jenkins → Credentials</b> (FLOCI) · GitHub PAT / webhook · SMTP relay if mail wanted</td><td>Real AWS docs <b>do not apply</b>. FLOCI config is the #1 unknown.</td></tr>
+<tr><td>0.3 Repo / State</td><td><span class="mono">VPC.tf</span> · <span class="mono">Variables.tf</span> · <span class="mono">Provider.tf</span> · <span class="mono">dev / stg.tfvars / Prod</span> · <span class="mono">Jenkinsfile</span> exist?<br><span class="mono">terraform workspace list</span> · backend = local vs remote?</td><td>Workspaces <span class="mono">dev / stg / prod</span> exist or need <span class="mono">new</span>?</td></tr>
+</table>
+<div class="callout amber"><h4>0.4 ASK IN ONE BATCH — BEFORE STEP 1</h4><p>How does <span class="mono">Provider.tf</span> target FLOCI (endpoint + credentials + provider block format)? Which envs/workspaces + their <span class="mono">.tfvars</span> contents? Who approves the <span class="mono">input</span> gate? Mail recipient for <b>Fail → Mail</b>? Repo URL / branch.</p></div>
+
+<h3 class="sec"><span class="n">02 /</span> Steps 1–2 — Prepare Repo + Jenkinsfile</h3>
+<div class="step"><h4><span class="tag">STEP 01 —</span> GitHub repository <img src="../assets/icons/git/github.svg" alt="gh" style="width:14px;height:14px;vertical-align:-2px;margin-left:4px"></h4>Ensure at repo root: <span class="mono">VPC.tf</span> (VPC resource definitions), <span class="mono">Variables.tf</span> (input variables), <span class="mono">Provider.tf</span> (FLOCI endpoint — per 0.4 answer), env var files <span class="mono">dev / stg.tfvars / Prod</span> (one per workspace), and <span class="mono">Jenkinsfile</span>. Commit & push any missing pieces.</div>
+
+<div class="grid2" style="margin:7px 0">
+<div class="lanes" style="margin:0">
+<div class="lane dev"><span class="env">DEV</span><span class="mono" style="font-size:10px">dev.tfvars</span><span class="badge blue" style="margin-left:auto">workspace: dev</span></div>
+<div class="lane stg"><span class="env">STG</span><span class="mono" style="font-size:10px">stg.tfvars</span><span class="badge amber" style="margin-left:auto">workspace: stg</span></div>
+<div class="lane prod"><span class="env">PROD</span><span class="mono" style="font-size:10px">Prod.tfvars</span><span class="badge green" style="margin-left:auto">workspace: prod</span></div>
+</div>
+<div class="callout blue" style="margin:0"><h4>ISOLATION RULE</h4><p>Keep state per-env isolated via <b>workspaces</b> or separate state files so a <span class="mono">dev</span> apply cannot affect <span class="mono">stg / prod</span> state.</p></div>
+</div>
+
+<div class="step" style="padding-bottom:0"><h4><span class="tag">STEP 02 —</span> Jenkinsfile (declarative) — seven stages <img src="../assets/icons/jenkins/jenkins.svg" alt="jk" style="width:14px;height:14px;vertical-align:-2px;margin-left:4px"></h4></div>
+<div class="terminal">pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+    stage('Terraform Init') {
+      steps { sh 'terraform init' }
+    }
+    stage('Workspace Select') {
+      steps { sh 'terraform workspace select ${ENV_NAME} || terraform workspace new ${ENV_NAME}' }
+    }
+    stage('Plan') {
+      steps { sh 'terraform plan -var-file=${TFVARS_FILE} -out=tfplan' }
+    }
+    stage('Approve') {
+      steps { input message: 'Apply this Terraform plan?', ok: 'Approve' }
+    }
+    stage('Apply') {
+      steps { sh 'terraform apply -auto-approve tfplan' }
+    }
+  }
+  post {
+    success { echo 'Pipeline succeeded.' }
+    failure {
+      mail to: '&lt;recipient-from-0.4&gt;',
+           subject: "Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+           body: "Check console output at ${env.BUILD_URL}"
+    }
+  }
+}</div>
+<p class="body" style="font-size:10.5px;color:var(--muted)">Replace <span class="mono">${ENV_NAME}</span> / <span class="mono">${TFVARS_FILE}</span> via build parameters (<span class="mono">choice: dev / stg / prod</span>). <span class="mono">input</span> implements the <b>Approve / Abort</b> branch — declining aborts before <span class="mono">apply</span>.</p>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 05 · TERRAFORM</span><span>03 / 06</span></div>
+</div>
+
+<!-- PAGE 4 CONFIGURE + PROVIDER + APPROVAL GATE -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 05 — Terraform<hr><h2>Configure & Gate</h2>Job wiring · FLOCI provider · The amber checkpoint</div>
+
+<h3 class="sec"><span class="n">03 /</span> Steps 3–4 — Configure Job & Provider</h3>
+<div class="step"><h4><span class="tag">STEP 03 —</span> Pipeline job in Jenkins <img src="../assets/icons/jenkins/jenkins.svg" alt="jk" style="width:14px;height:14px;vertical-align:-2px;margin-left:4px"></h4>Create (or reuse) a Pipeline job pointing at the GitHub repo → <b>Pipeline script from SCM</b> so it reads the <span class="mono">Jenkinsfile</span> from the repo. Set up the <b>GitHub webhook</b> trigger (companion webhook task) so pushes trigger this pipeline automatically.</div>
+<div class="step"><h4><span class="tag">STEP 04 —</span> Provider.tf → FLOCI <img src="../assets/icons/general/terraform.svg" alt="tf" style="width:14px;height:14px;vertical-align:-2px;margin-left:4px"> <img src="../assets/icons/deployment/rocket.svg" alt="floci" style="width:14px;height:14px;vertical-align:-2px"></h4>Set the provider block to point at <b>FLOCI's simulated AWS API</b> per 0.4 details — not a real account/region/credentials. Confirm <span class="mono">terraform init</span> succeeds. <span class="badge amber">● FLOCI IS THE UNKNOWN — NEVER GUESS AWS CREDS</span></div>
+<div class="terminal"><span class="c"># Provider.tf — shape depends on FLOCI docs (get from user in Step 0.4)</span>
+<span class="c"># example pattern — replace with real FLOCI endpoint/auth</span>
+terraform {
+  required_providers { aws = { source = "hashicorp/aws" } }
+}
+provider "aws" {
+  region   = "us-east-1"
+  endpoints { ec2 = "https://floci.example.internal" } <span class="a"># ← FLOCI simulated API</span>
+  <span class="c"># credentials = FLOCI token / API key — not real IAM</span>
+}
+<span class="c"># then</span>
+$ terraform init
+<span class="g">Initializing provider plugins... success</span></div>
+
+<h3 class="sec"><span class="n">04 /</span> The Approval Gate — Amber Means Human</h3>
+<div class="gate">
+<div class="col auto"><h4 style="color:var(--blue)">AUTOMATED — BEFORE GATE</h4>
+<div style="font-family:monospace;font-size:9px;line-height:1.7">
+<span class="status run"><span class="dot"></span>CHECKOUT</span> → <span class="mono">scm</span><br>
+<span class="status run"><span class="dot"></span>INIT</span> → <span class="mono">terraform init</span><br>
+<span class="status run"><span class="dot"></span>WORKSPACE</span> → <span class="mono">select / new</span><br>
+<span class="status pass"><span class="dot"></span>PLAN</span> → <span class="mono">tfplan</span> <span style="color:var(--artifact)">■ artifact</span>
+</div>
+<p style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5">Knows <b>what will change</b>. Has not changed anything yet.</p>
+</div>
+<div class="mid"><div class="bar"></div><div class="diamond"><span>?</span></div><small>INPUT</small><div style="font-size:8px;letter-spacing:1px;color:var(--muted);text-align:center;line-height:1.4">Apply this<br>Terraform<br>plan?</div><div class="bar"></div></div>
+<div class="col human"><h4 style="color:var(--amber)">HUMAN — AT GATE</h4>
+<div style="font-size:10px;line-height:1.6">
+<b style="color:var(--amber)">Approve</b> → pipeline continues to <span class="mono">apply tfplan</span><br>
+<b style="color:var(--red)">Abort</b> → pipeline stops, <span class="mono">apply</span> never runs<br>
+<span style="color:var(--muted)">No auto-approve — gate exists to prevent unreviewed infra changes.</span>
+</div>
+<div style="margin-top:8px;display:flex;gap:6px">
+<span class="badge green">Approve → Apply</span>
+<span class="badge red">Abort → Stop</span>
+</div>
+</div>
+</div>
+<div class="callout amber"><h4>WHY THE GATE EXISTS</h4><p>Automation stops where <b>human risk judgment</b> is required. <span class="mono">input message: 'Apply this Terraform plan?'</span> is the amber checkpoint between <b>knowing</b> and <b>doing</b>. Do not auto-approve unless explicitly instructed.</p></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 05 · TERRAFORM</span><span>04 / 06</span></div>
+</div>
+
+<!-- PAGE 5 RUN + TERMINALS + VERIFY -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 05 — Terraform<hr><h2>Run & Validate</h2>End-to-end execution · Three terminals</div>
+
+<h3 class="sec"><span class="n">05 /</span> Step 5 — Run and Validate End-to-End</h3>
+<div class="pipeline">
+<div class="stage"><span class="no">01</span><strong>CHECKOUT</strong><small>scm</small></div><div class="conn"></div>
+<div class="stage"><span class="no">02</span><strong>INIT</strong><small>terraform init</small></div><div class="conn"></div>
+<div class="stage"><span class="no">03</span><strong>WORKSPACE</strong><small>stg</small></div><div class="conn"></div>
+<div class="stage artifact"><span class="no">04</span><strong>PLAN</strong><small>3 to add</small></div><div class="conn"></div>
+<div class="stage wait"><span class="no">05</span><strong>APPROVE</strong><small>input()</small></div><div class="conn"></div>
+<div class="stage"><span class="no">06</span><strong>APPLY</strong><small>FLOCI</small></div><div class="conn"></div>
+<div class="stage"><span class="no">07</span><strong>POST</strong><small>mail on fail</small></div>
+</div>
+
+<div class="terminal"><span class="c"># — terraform init —</span>
+$ terraform init
+<span class="g">Initializing the backend...</span>
+<span class="g">Initializing provider plugins...</span>
+- Finding hashicorp/aws versions matching ">= 4.0" ...
+- Installing hashicorp/aws v5.31.0...
+<span class="g">Terraform has been successfully initialized!</span></div>
+
+<div class="terminal"><span class="c"># — terraform workspace + plan —</span>
+$ terraform workspace select stg || terraform workspace new stg
+<span class="b">Switched to workspace "stg".</span>
+
+$ terraform plan -var-file=stg.tfvars -out=tfplan
+<span class="b">Refreshing state... (FLOCI endpoint)</span>
+Terraform will perform the following actions:
+
+  <span class="g"># aws_vpc.main</span> will be created
+  <span class="g"># aws_subnet.public[0]</span> will be created
+  <span class="g"># aws_instance.web</span> will be created
+  <span class="g"># aws_s3_bucket.data</span> will be created
+
+<span class="b">Plan: 4 to add, 0 to change, 0 to destroy.</span>
+<span class="c">Saved the plan to: tfplan</span></div>
+
+<div class="terminal"><span class="c"># — approval gate → apply —</span>
+[05] Approve  <span class="a">● WAITING</span>  <span class="a">input: Apply this Terraform plan? [Approve / Abort]</span>
+<span class="c"># → human clicks Approve</span>
+[05] Approve  <span class="g">● APPROVED</span>
+
+$ terraform apply -auto-approve tfplan
+<span class="g">aws_vpc.main: Creating...</span>
+<span class="g">aws_subnet.public[0]: Creating...</span>
+<span class="g">aws_instance.web: Creating...</span>
+<span class="g">aws_s3_bucket.data: Creating...</span>
+<span class="g">Apply complete! Resources: 4 added, 0 changed, 0 destroyed.</span>
+<span class="c">Simulated via FLOCI — no real AWS resources created.</span>
+
+<span class="c"># — abort path (alternative)</span>
+[05] Approve  <span class="r">● ABORTED</span>  <span class="c">plan discarded, Apply never runs</span>
+<span class="c"># — failure path</span>
+<span class="r">Error: Invalid Terraform syntax</span> → <span class="a">post { failure { mail ... } }</span> fires</div>
+
+<h3 class="sec"><span class="n">06 /</span> Verify Checklist</h3>
+<ul class="tight">
+<li>Each stage completes: <span class="status pass"><span class="dot"></span>CHECKOUT → INIT → WORKSPACE → PLAN</span> then pipeline <span class="status wait"><span class="dot"></span>PAUSES</span> at Approve.</li>
+<li>Select <span class="mono">stg</span> workspace → plan diff matches <span class="mono">stg.tfvars</span> (wrong diff = wrong workspace/tfvars or Provider still points to real AWS).</li>
+<li><b>Approve</b> → Apply runs and FLOCI reflects simulated VPC + Subnets + EC2 + S3.</li>
+<li><b>Abort</b> → Apply does not run, pipeline stops cleanly, plan discarded.</li>
+<li>Introduce invalid HCL → failure mail arrives at <span class="mono">&lt;recipient-from-0.4&gt;</span> (requires SMTP configured).</li>
+<li>Push a new commit → webhook re-triggers the same pipeline (Lab 01 trigger reused).</li>
+</ul>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 05 · TERRAFORM</span><span>05 / 06</span></div>
+</div>
+
+<!-- PAGE 6 FAILURE MAP + PROOF -->
+<div class="page">
+<div class="phead"><span class="ch">CI/CD Systems</span> &nbsp; Pipeline Control Room<hr><h2>Failure Map & Proof</h2>What breaks · How to recover · What was proved</div>
+
+<h3 class="sec"><span class="n">07 /</span> Failure → Recovery Map</h3>
+<table class="cmp"><tr><th style="width:28%">Failure</th><th>Where to Look</th><th>Fix</th></tr>
+<tr><td><span class="status fail"><span class="dot"></span>terraform init</span> failed</td><td>Console: provider init log</td><td><span class="mono">Provider.tf</span> endpoint/creds wrong for FLOCI; backend credentials missing; Terraform version mismatch</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>workspace select</span> failed</td><td>Stage Workspace Select log</td><td>Backend not initialized; <span class="mono">${ENV_NAME}</span> empty; state backend unreachable</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>plan diff wrong</span> <span class="badge amber">common</span></td><td><span class="mono">terraform plan</span> output</td><td>Wrong <span class="mono">-var-file</span> / workspace; Provider.tf still points to real AWS not FLOCI</td></tr>
+<tr><td><span class="status wait"><span class="dot"></span>Approve paused forever</span></td><td>Stage Approve (<span class="mono">input</span>)</td><td>Someone must click Approve/Abort; check authorized approvers / timeout</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>apply failed</span></td><td>Stage Apply log; FLOCI state</td><td>Invalid HCL; FLOCI quota/simulation error; tfplan stale (re-plan)</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>mail not sent</span></td><td>Jenkins Mailer config</td><td>SMTP not configured; recipient from 0.4 missing; check <b>Manage Jenkins → Configure System → E-mail</b></td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>webhook not triggering</span></td><td>GitHub Recent Deliveries</td><td>Public URL/tunnel; trailing slash <span class="mono">/github-webhook/</span>; branch filter</td></tr>
+</table>
+
+<div class="callout red"><h4>GOTCHA — FLOCI IS NOT AWS</h4><p>Do not paste real IAM roles, <span class="mono">~/.aws/credentials</span>, or account IDs into <span class="mono">Provider.tf</span> and expect FLOCI to work. FLOCI is a <b>simulation</b> — its provider block, endpoint, and auth are bespoke. Ask for them in Step 0.4 or the pipeline will target the wrong control plane.</p></div>
+
+<h3 class="sec"><span class="n">08 /</span> Proof — What This Lab Proved</h3>
+<div class="kv" style="border-left:3px solid var(--accent)"><b>PROOF —</b> Infrastructure under the <b>same lifecycle</b> as application code: <b>versioned</b> in Git, <b>planned</b> as an artifact (<span class="mono">tfplan</span>), <b>approved</b> by a human gate, <b>applied</b> to an environment, <b>observable</b> via FLOCI state, and <b>notified</b> on failure — without touching real AWS. Workspaces + <span class="mono">tfvars</span> keep <span class="mono">dev / stg / prod</span> isolated.
+<span class="badge green" style="margin-left:8px">● IAC PROVED</span> <span class="badge amber">◆ GATE PROVED</span> <span class="badge green">● FLOCI PROVED</span>
+</div>
+
+<div class="grid2">
+<div class="card"><h4><img src="../assets/icons/monitoring/activity.svg" alt="obs" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px">OBSERVE</h4><p>Plan shows 4 to add, 0 to change. Workspace is <span class="mono">stg</span>. Gate is amber.</p></div>
+<div class="card"><h4><img src="../assets/icons/general/database.svg" alt="state" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px">STATE</h4><p>FLOCI now reflects the new VPC/Subnets/EC2/S3 for that workspace. Real AWS unchanged.</p></div>
+</div>
+
+<h3 class="sec"><span class="n">09 /</span> System Map — One Loop</h3>
+<div class="vpipe" style="margin:6px 0">
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/git/github.svg" alt="gh"><b>SOURCE</b><small>GitHub push · VPC.tf / Variables.tf / Provider.tf / tfvars</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/jenkins/jenkins.svg" alt="jk"><b>PIPELINE</b><small>Jenkins: Checkout → Init → Workspace → Plan → Approve → Apply</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/general/terraform.svg" alt="tf"><b>PLAN ARTIFACT</b><small>tfplan — knows what will change, has not changed it</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/monitoring/activity.svg" alt="gate" style="filter:hue-rotate(35deg)"><b>APPROVAL GATE</b><small style="color:var(--amber)">amber · input() — human decision required</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/deployment/rocket.svg" alt="deploy"><b>FLOCI</b><small>simulated VPC · Subnets · EC2 · S3 Bucket</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/general/database.svg" alt="obs"><b>OBSERVE</b><small>console · FLOCI state · mail on fail → feedback → next commit</small></div>
+</div>
+<div style="font-size:9px;color:var(--accent-dark);letter-spacing:1.5px;margin-left:4.5px">└────────────→ FEEDBACK → NEXT PUSH</div>
+
+<div class="printnote"><b>SOURCE:</b> <span class="mono">jenkins labs/Terraform_Jenkins_FLOCI_CICD_Pipeline.md</span> &nbsp;·&nbsp; Icons: <span class="mono">terraform.svg</span> · <span class="mono">jenkins.svg</span> · <span class="mono">github.svg</span> · <span class="mono">rocket.svg</span> · <span class="mono">database.svg</span> · <span class="mono">activity.svg</span> &nbsp;·&nbsp; Print: <span class="mono">Ctrl/Cmd+P → Save as PDF → Background graphics ON → A4</span></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 05 · TERRAFORM · PROOF</span><span>06 / 06</span></div>
+</div>
+
+</body>
+</html>

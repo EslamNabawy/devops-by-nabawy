@@ -1,0 +1,323 @@
+# CICD BY Nabawy — Orchestration Manifest
+# Consumed by ORCHESTRATOR.md. Each task has an id, phase, prompt, inputs it
+# depends on, outputs it must produce, and a gate that decides pass/fail.
+# The orchestrator runs tasks in dependency order, halting at any failed gate.
+
+meta:
+  repo: EslamNabawy/cicd-by-nabawy-source
+  root: CI-CD/
+  branch: levelup/ui-ux-content
+  qc_command: "python scripts/qc-check.py"
+  build_command: "python website/scripts/build.py"
+
+phases:
+  - id: P0
+    name: Setup
+  - id: P1
+    name: Diagnose
+  - id: P2
+    name: UI/UX leveling
+  - id: P3
+    name: Content leveling
+  - id: P4
+    name: Close the loop
+
+tasks:
+
+  - id: P0.1
+    phase: P0
+    name: Branch + baseline QC
+    depends_on: []
+    action: |
+      cd CI-CD
+      git checkout -b levelup/ui-ux-content
+      python scripts/qc-check.py
+    gate:
+      type: exit_code_zero_and_output_contains
+      pattern: "ALL GREEN"
+    on_fail: "STOP. Do not proceed to P1. Baseline must be green before attribution of new failures is possible."
+    outputs: []
+
+  - id: P1.1
+    phase: P1
+    name: Cross-book structure audit
+    depends_on: [P0.1]
+    prompt: |
+      Read all 39 files in the content directories plus website/scripts/build.py.
+      Produce a table: book id | has WHAT/WHY/WHEN/HOW/WHAT-CAN-FAIL structure (Y/N) |
+      has an "Interview Check" section (Y/N) | has a "Gotcha" callout (Y/N) | icon count |
+      word count. Flag every book that's missing a pattern the others use consistently.
+      Don't fix anything yet — just report gaps as a checklist I can work through.
+      Write the table to AUDIT_STRUCTURE.md at repo root.
+    gate:
+      type: file_exists
+      path: AUDIT_STRUCTURE.md
+    outputs: [AUDIT_STRUCTURE.md]
+
+  - id: P1.2
+    phase: P1
+    name: UX heuristic audit of live site
+    depends_on: [P0.1]
+    prompt: |
+      Fetch https://eslamnabawy.github.io/cicd-by-nabawy/ (homepage),
+      https://eslamnabawy.github.io/cicd-by-nabawy/read/foundations.html (reader),
+      and https://eslamnabawy.github.io/cicd-by-nabawy/glossary.html (glossary).
+      Run a Nielsen heuristics pass specifically for: information scent (can a
+      stranger tell what book to read first), scan-ability of the shelf grid,
+      and reader-page navigation for someone who lands via search on a single
+      book with no context. List concrete friction points, ranked by how many
+      users they likely affect. Write to AUDIT_UX.md at repo root, ending with
+      a "Top 5 to fix" section — this list becomes the scope for Phase 2.
+    gate:
+      type: file_exists
+      path: AUDIT_UX.md
+    outputs: [AUDIT_UX.md]
+
+  - id: P1.gate
+    phase: P1
+    name: Human review checkpoint
+    depends_on: [P1.1, P1.2]
+    action: MANUAL — human reviews AUDIT_STRUCTURE.md and AUDIT_UX.md, confirms
+      the "Top 5" UX list and structure gap list before Phase 2/3 scope is locked.
+    gate:
+      type: manual_approval
+    on_fail: "STOP. Do not let the orchestrator invent scope beyond what's approved here."
+
+  - id: P2.1
+    phase: P2
+    name: First-time-visitor path (homepage)
+    depends_on: [P1.gate]
+    prompt: |
+      Using AUDIT_UX.md's top 5 list: the homepage has no explicit "start here"
+      path. Design (in build.py + books.json terms) a single "recommended path"
+      strip: 3-5 books in reading order for a total beginner, distinct from the
+      topic shelves. Show the HTML/CSS diff for the homepage template only —
+      don't touch the reader template. Apply the diff.
+    gate:
+      type: build_and_visual_diff
+      check: "homepage renders a recommended-path strip; existing shelves unchanged"
+    outputs: [homepage_diff]
+
+  - id: P2.2
+    phase: P2
+    name: Reader-page wayfinding
+    depends_on: [P2.1]
+    prompt: |
+      In the reader template, "NEXT →" only links forward within a fixed
+      sequence. Add: (a) a persistent breadcrumb showing which shelf/topic
+      this book belongs to, (b) a "prerequisite" chip if the book assumes a
+      prior one (derive from books.json's difficulty + category, or add a
+      `prereq` field and populate it for all 39 books), and (c) a progress
+      indicator across the current topic's book count. Keep it inside the
+      existing dark/light + text-size + width CSS variables — no new color
+      tokens. Apply the diff.
+    gate:
+      type: build_and_spotcheck
+      spotcheck_pages:
+        - read/jenkins-setup.html
+        - read/foundations.html
+        - read/lab-01.html
+    outputs: [reader_diff, books_json_prereq_field?]
+
+  - id: P2.3
+    phase: P2
+    name: Search quality
+    depends_on: [P2.2]
+    prompt: |
+      Show the current ⌘K search implementation in build.py/dist. Test it
+      against "rollback", "how do I sign an artifact", "blue green". If it's
+      title/description-only, extend it to index each book's section headers
+      too, and show a snippet of the matching section, not just the book
+      card. Keep it client-side, no backend. Apply the change and re-test the
+      same three queries.
+    gate:
+      type: query_test
+      queries: ["rollback", "how do I sign an artifact", "blue green"]
+      expect: "each returns at least one relevant section-level hit"
+    outputs: [search_index_diff]
+
+  - id: P2.4
+    phase: P2
+    name: Mobile reading pass
+    depends_on: [P2.2]
+    prompt: |
+      Check whether the reader (not the PDF) is comfortable on a 375px
+      viewport: are the pipeline diagrams (icon rows joined by →) in
+      foundations.html readable, or do they overflow/wrap badly? Propose a
+      mobile-specific layout for these icon-chain diagrams only, without
+      changing desktop. Apply the diff.
+    gate:
+      type: build_and_spotcheck
+      spotcheck_pages: [read/foundations.html, read/jenkins-architecture.html]
+      viewport: 375px
+    outputs: [mobile_css_diff]
+
+  - id: P2.5
+    phase: P2
+    name: Empty/edge state copy
+    depends_on: [P2.3]
+    prompt: |
+      Check every "no results" or loading state (search, shelf filters,
+      glossary lookup). Do they match the site's tone (terse, technical,
+      slightly wry — see the homepage's "No books found" copy)? Rewrite any
+      that are generic placeholder text. Apply the changes.
+    gate:
+      type: manual_spot_check
+    outputs: [copy_diff]
+
+  - id: P2.gate
+    phase: P2
+    name: Full rebuild + re-run UX audit
+    depends_on: [P2.1, P2.2, P2.3, P2.4, P2.5]
+    action: |
+      python website/scripts/build.py
+      Re-run the P1.2 prompt against the NEW homepage/reader output.
+      Confirm the Top 5 friction points from AUDIT_UX.md are actually resolved.
+    gate:
+      type: manual_approval
+    on_fail: "Return to the specific P2.x task whose fix didn't land, redo it, re-gate."
+
+  - id: P3.1
+    phase: P3
+    name: Backfill missing structure
+    depends_on: [P2.gate]
+    prompt: |
+      Using AUDIT_STRUCTURE.md, take every book flagged as missing an
+      "Interview Check" section. For each, write 2-3 Q&A pairs in the same
+      terse style as foundations.md's existing ones — test the single
+      hardest misconception in that book, not trivia. Output as md diffs,
+      one book at a time, applying each after I confirm it, then move to
+      the next book. Do not run build.py until all books in this batch are done.
+    gate:
+      type: per_file_confirmation
+    outputs: [content_diffs_interview_checks]
+
+  - id: P3.2
+    phase: P3
+    name: Cross-linking pass
+    depends_on: [P3.1]
+    prompt: |
+      Read TOPIC_INDEX.md, CONTENT_MAP.md, and all 39 docs. Find concepts
+      explained fully in one book but merely mentioned in another (e.g.
+      "digest" explained in foundations.md, referenced in artifacts.md and
+      delivery.md). Add inline cross-reference links using the site's
+      existing link conventions — don't duplicate explanations across books.
+      Apply the diffs.
+    gate:
+      type: build_and_link_check
+      check: "all new cross-reference links resolve to real anchors"
+    outputs: [cross_link_diffs]
+
+  - id: P3.3
+    phase: P3
+    name: Glossary completeness
+    depends_on: [P3.1]
+    prompt: |
+      Diff every bolded/defined term across all 39 docs against GLOSSARY.md.
+      List terms used in the books but absent from the glossary, and glossary
+      entries no book actually uses. Add the missing terms. For unused
+      entries, list them as candidates only — do not delete without approval.
+    gate:
+      type: manual_approval_for_deletions
+    outputs: [glossary_diff, unused_entries_candidates.md]
+
+  - id: P3.4
+    phase: P3
+    name: Difficulty ladder sanity check
+    depends_on: [P3.1]
+    prompt: |
+      List every book's stated difficulty (Beginner/Intermediate/Advanced)
+      next to what it actually assumes as prerequisite knowledge (terms used
+      without definition). Flag mismatches. Fix each by either reclassifying
+      difficulty in books.json or adding a one-line inline definition —
+      state which fix you chose and why for each mismatch.
+    gate:
+      type: manual_approval
+    outputs: [difficulty_fixes]
+
+  - id: P3.5
+    phase: P3
+    name: Vendor-neutral generics check
+    depends_on: [P3.2]
+    prompt: |
+      Audit git-branching.md, pipelines.md, delivery.md, and strategies.md
+      for any Jenkins/GitLab/GitHub-Actions-specific detail that leaked into
+      the generic docs — it should live only in 15-platforms-and-tools/ per
+      golden rule 4. List violations with line numbers, then move each into
+      the correct platform-specific file. Confirm the generic doc still
+      reads coherently after removal.
+    gate:
+      type: manual_approval
+    outputs: [generics_fix_diffs]
+
+  - id: P3.gate
+    phase: P3
+    name: Content phase rebuild
+    depends_on: [P3.3, P3.4, P3.5]
+    action: |
+      python website/scripts/build.py
+    gate:
+      type: build_success
+    on_fail: "Bisect: revert the most recent P3.x task's diffs and rebuild until green."
+
+  - id: P4.1
+    phase: P4
+    name: Full QC + rebuild diff summary
+    depends_on: [P3.gate]
+    action: |
+      python scripts/qc-check.py
+      python website/scripts/build.py
+      git diff --stat website/dist   # vs previous commit
+    prompt: |
+      Summarize the dist/ diff in plain language before I approve committing.
+    gate:
+      type: exit_code_zero_and_output_contains
+      pattern: "ALL GREEN"
+    outputs: [dist_diff_summary]
+
+  - id: P4.2
+    phase: P4
+    name: Regression spot-check
+    depends_on: [P4.1]
+    prompt: |
+      Spot-check 5 random books edited in this session against the live
+      reader templates to confirm frontmatter, icon ids, and section anchors
+      still resolve. Check assets/icons/README.md's mapping still shows 23/23.
+    gate:
+      type: manual_checklist
+      items:
+        - "icon mapping 23/23"
+        - "5 spot-checked books: frontmatter OK"
+        - "5 spot-checked books: anchors OK"
+        - "5 spot-checked books: icons render"
+    outputs: []
+
+  - id: P4.3
+    phase: P4
+    name: Deploy
+    depends_on: [P4.2]
+    action: |
+      git add -A && git commit -m "levelup: UI/UX + content pass"
+      git push origin levelup/ui-ux-content
+      # open PR -> merge to main -> automated deploy via .github/workflows/deploy.yml
+      # if GH_PAGES_PAT missing/failed, use manual fallback from PROJECT_HANDOVER.md
+    gate:
+      type: manual_approval
+      note: "Human merges the PR — orchestrator does not auto-merge to main."
+    outputs: []
+
+  - id: P4.4
+    phase: P4
+    name: Live verification
+    depends_on: [P4.3]
+    action: |
+      Check homepage recommended-path strip, one reader page's
+      breadcrumb/prereq chip, and ⌘K search with newly indexed content —
+      all on the live gh-pages URL, not dist/ locally.
+    gate:
+      type: manual_checklist
+      items:
+        - "recommended-path strip visible on live homepage"
+        - "breadcrumb + prereq chip visible on a live reader page"
+        - "search returns section-level hits on live site"
+    outputs: []

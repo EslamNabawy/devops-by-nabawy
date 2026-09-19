@@ -1,0 +1,1364 @@
+{
+ "1.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": 31.8,
+    "clipped": true
+   },
+   {
+    "page": 3,
+    "id": "ch00",
+    "overflowMm": 62.2,
+    "clipped": true
+   },
+   {
+    "page": 4,
+    "id": "ch01",
+    "overflowMm": -85.9,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch02",
+    "overflowMm": -41.7,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch03",
+    "overflowMm": -66.1,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch04",
+    "overflowMm": -109.6,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch05",
+    "overflowMm": -57.2,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch06",
+    "overflowMm": -103.5,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch07",
+    "overflowMm": -129.3,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch08",
+    "overflowMm": -74.5,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch09",
+    "overflowMm": -65.7,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch10",
+    "overflowMm": -106.4,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "ch11",
+    "overflowMm": -89.2,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "ch12",
+    "overflowMm": -74.2,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "ch13",
+    "overflowMm": -90.2,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "ch14",
+    "overflowMm": -51.4,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "ch15",
+    "overflowMm": -105.2,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "ch16",
+    "overflowMm": -95.3,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "ch17",
+    "overflowMm": -89.1,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "ch18",
+    "overflowMm": -94.3,
+    "clipped": false
+   },
+   {
+    "page": 22,
+    "id": "ch19",
+    "overflowMm": -78.2,
+    "clipped": false
+   },
+   {
+    "page": 23,
+    "id": "ch20",
+    "overflowMm": -94.7,
+    "clipped": false
+   },
+   {
+    "page": 24,
+    "id": "ch21",
+    "overflowMm": -108.1,
+    "clipped": false
+   },
+   {
+    "page": 25,
+    "id": "ch22",
+    "overflowMm": -78.6,
+    "clipped": false
+   },
+   {
+    "page": 26,
+    "id": "ch23",
+    "overflowMm": -105.6,
+    "clipped": false
+   },
+   {
+    "page": 27,
+    "id": "ch24",
+    "overflowMm": -79.1,
+    "clipped": false
+   },
+   {
+    "page": 28,
+    "id": "ch25",
+    "overflowMm": -65.1,
+    "clipped": false
+   },
+   {
+    "page": 29,
+    "id": "ch26",
+    "overflowMm": -102.6,
+    "clipped": false
+   },
+   {
+    "page": 30,
+    "id": "ch27",
+    "overflowMm": -116.1,
+    "clipped": false
+   },
+   {
+    "page": 31,
+    "id": "ch28",
+    "overflowMm": -109.7,
+    "clipped": false
+   },
+   {
+    "page": 32,
+    "id": "ch29",
+    "overflowMm": -89.9,
+    "clipped": false
+   },
+   {
+    "page": 33,
+    "id": "ch30",
+    "overflowMm": -81.5,
+    "clipped": false
+   },
+   {
+    "page": 34,
+    "id": "ch31",
+    "overflowMm": -79.2,
+    "clipped": false
+   },
+   {
+    "page": 35,
+    "id": "ch32",
+    "overflowMm": -74.8,
+    "clipped": false
+   },
+   {
+    "page": 36,
+    "id": "ch33",
+    "overflowMm": -25.5,
+    "clipped": false
+   },
+   {
+    "page": 37,
+    "id": "ch34",
+    "overflowMm": -67.5,
+    "clipped": false
+   },
+   {
+    "page": 38,
+    "id": "ch35",
+    "overflowMm": -91.1,
+    "clipped": false
+   },
+   {
+    "page": 39,
+    "id": "ch36",
+    "overflowMm": -86.6,
+    "clipped": false
+   },
+   {
+    "page": 40,
+    "id": "ch37",
+    "overflowMm": -70.9,
+    "clipped": false
+   },
+   {
+    "page": 41,
+    "id": "ch38",
+    "overflowMm": -72.8,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 193,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 41
+  }
+ },
+ "2.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -69.2,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -90.2,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -19.8,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -60.6,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -77.4,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -24.5,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -11.6,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -55.8,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -90.7,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -27.4,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -50.5,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch11",
+    "overflowMm": -24.8,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "ch12",
+    "overflowMm": -51.3,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "ch13",
+    "overflowMm": -76.8,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "ch14",
+    "overflowMm": -35.5,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "ch15",
+    "overflowMm": -82.3,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "lab1",
+    "overflowMm": -71.8,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "lab2",
+    "overflowMm": -81,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "lab3",
+    "overflowMm": -64,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "lab4",
+    "overflowMm": -73.5,
+    "clipped": false
+   },
+   {
+    "page": 22,
+    "id": "quiz",
+    "overflowMm": -26.3,
+    "clipped": false
+   },
+   {
+    "page": 23,
+    "id": "key",
+    "overflowMm": -76.6,
+    "clipped": false
+   },
+   {
+    "page": 24,
+    "id": "gloss",
+    "overflowMm": -65.5,
+    "clipped": false
+   },
+   {
+    "page": 25,
+    "id": "cheat",
+    "overflowMm": -57.3,
+    "clipped": false
+   },
+   {
+    "page": 26,
+    "id": "finale",
+    "overflowMm": -84.1,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 119,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 26
+  }
+ },
+ "3.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -60.7,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -68.9,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -10.5,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -84,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -20.8,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -3.6,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -15.2,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -46.6,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -74.9,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -38.8,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -8.4,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch11",
+    "overflowMm": -35.9,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "ch12",
+    "overflowMm": -46.1,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "ch13",
+    "overflowMm": -21,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "lab1",
+    "overflowMm": -25,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "lab2",
+    "overflowMm": -90.4,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "lab3",
+    "overflowMm": -17.6,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "lab4",
+    "overflowMm": -87.7,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "quiz",
+    "overflowMm": -35.6,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "key",
+    "overflowMm": -76.6,
+    "clipped": false
+   },
+   {
+    "page": 22,
+    "id": "gloss",
+    "overflowMm": -69.2,
+    "clipped": false
+   },
+   {
+    "page": 23,
+    "id": "cheat",
+    "overflowMm": -38.3,
+    "clipped": false
+   },
+   {
+    "page": 24,
+    "id": "finale",
+    "overflowMm": -75.9,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 109,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 24
+  }
+ },
+ "4.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -69.5,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -29.2,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -62.7,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -67.3,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -15.1,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -45.6,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -33.4,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -27.4,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -33.8,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -5.7,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -6.6,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch11",
+    "overflowMm": -57,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "lab1",
+    "overflowMm": -47,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "lab2",
+    "overflowMm": -69.3,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "lab3",
+    "overflowMm": -40.4,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "lab4",
+    "overflowMm": -39,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "quiz",
+    "overflowMm": -58.4,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "key",
+    "overflowMm": -86.1,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "gloss",
+    "overflowMm": -78.4,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "cheat",
+    "overflowMm": -45.2,
+    "clipped": false
+   },
+   {
+    "page": 22,
+    "id": "finale",
+    "overflowMm": -79.8,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 108,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 22
+  }
+ },
+ "5.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -67.1,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -40.4,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -5.7,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -5.9,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -12.4,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -16.4,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -14.8,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": 2.3,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -11.5,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -22.3,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -1.9,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch11",
+    "overflowMm": -7.1,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "lab1",
+    "overflowMm": -4.6,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "lab2",
+    "overflowMm": -49.8,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "lab3",
+    "overflowMm": 60.7,
+    "clipped": true
+   },
+   {
+    "page": 17,
+    "id": "lab4",
+    "overflowMm": -28.4,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "quiz",
+    "overflowMm": -21.6,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "key",
+    "overflowMm": -76.6,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "gloss",
+    "overflowMm": -28.1,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "cheat",
+    "overflowMm": -14.4,
+    "clipped": false
+   },
+   {
+    "page": 22,
+    "id": "finale",
+    "overflowMm": -61.4,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 109,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 22
+  }
+ },
+ "6.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -90.6,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -6.2,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -23.3,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -4.7,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -8.6,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -28.2,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -8.5,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -22,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -31.2,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -37.3,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -5.9,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "lab1",
+    "overflowMm": -51.6,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "lab2",
+    "overflowMm": -71,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "lab3",
+    "overflowMm": -61.5,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "lab4",
+    "overflowMm": -10.4,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "quiz",
+    "overflowMm": -30.9,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "key",
+    "overflowMm": -76.6,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "gloss",
+    "overflowMm": -79.9,
+    "clipped": false
+   },
+   {
+    "page": 20,
+    "id": "cheat",
+    "overflowMm": -25.3,
+    "clipped": false
+   },
+   {
+    "page": 21,
+    "id": "finale",
+    "overflowMm": -81.8,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 103,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 21
+  }
+ },
+ "7.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -56.8,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -61.3,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -17.9,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -14.7,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -17,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -73.7,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -12.2,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -24.1,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -25.2,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -23.3,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "ch10",
+    "overflowMm": -5.9,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "ch11",
+    "overflowMm": -51.5,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "ch12",
+    "overflowMm": -19.3,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "ch13",
+    "overflowMm": -74.7,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "ch14",
+    "overflowMm": -6.1,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "lab1",
+    "overflowMm": -16.9,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "lab2",
+    "overflowMm": -55.5,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "lab3",
+    "overflowMm": -155.8,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 101,
+   "deadCount": 6,
+   "dupeCount": 0,
+   "pageCount": 19
+  }
+ },
+ "8.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -83.5,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -49.7,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -5,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -8.5,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -6.9,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -7.7,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -9.2,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -17.5,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -31.9,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -3.2,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "lab1",
+    "overflowMm": -26.3,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "lab2",
+    "overflowMm": -17.5,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "lab3",
+    "overflowMm": -4.3,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "quiz",
+    "overflowMm": -17.7,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "key",
+    "overflowMm": -74.5,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "gloss",
+    "overflowMm": -43.7,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "cheat",
+    "overflowMm": -5.1,
+    "clipped": false
+   },
+   {
+    "page": 19,
+    "id": "finale",
+    "overflowMm": -55.5,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 92,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 19
+  }
+ },
+ "9.html": {
+  "overflow": [
+   {
+    "page": 1,
+    "id": "cover",
+    "overflowMm": 27.9,
+    "clipped": false
+   },
+   {
+    "page": 2,
+    "id": "toc",
+    "overflowMm": -90.6,
+    "clipped": false
+   },
+   {
+    "page": 3,
+    "id": "ch01",
+    "overflowMm": -3.3,
+    "clipped": false
+   },
+   {
+    "page": 4,
+    "id": "ch02",
+    "overflowMm": -10.1,
+    "clipped": false
+   },
+   {
+    "page": 5,
+    "id": "ch03",
+    "overflowMm": -5.3,
+    "clipped": false
+   },
+   {
+    "page": 6,
+    "id": "ch04",
+    "overflowMm": -7.9,
+    "clipped": false
+   },
+   {
+    "page": 7,
+    "id": "ch05",
+    "overflowMm": -33,
+    "clipped": false
+   },
+   {
+    "page": 8,
+    "id": "ch06",
+    "overflowMm": -47.6,
+    "clipped": false
+   },
+   {
+    "page": 9,
+    "id": "ch07",
+    "overflowMm": -46.7,
+    "clipped": false
+   },
+   {
+    "page": 10,
+    "id": "ch08",
+    "overflowMm": -57.4,
+    "clipped": false
+   },
+   {
+    "page": 11,
+    "id": "ch09",
+    "overflowMm": -4.1,
+    "clipped": false
+   },
+   {
+    "page": 12,
+    "id": "lab1",
+    "overflowMm": -47.8,
+    "clipped": false
+   },
+   {
+    "page": 13,
+    "id": "lab2",
+    "overflowMm": -39.3,
+    "clipped": false
+   },
+   {
+    "page": 14,
+    "id": "quiz",
+    "overflowMm": -26.3,
+    "clipped": false
+   },
+   {
+    "page": 15,
+    "id": "key",
+    "overflowMm": -76.6,
+    "clipped": false
+   },
+   {
+    "page": 16,
+    "id": "gloss",
+    "overflowMm": -101.6,
+    "clipped": false
+   },
+   {
+    "page": 17,
+    "id": "cheat",
+    "overflowMm": -8.7,
+    "clipped": false
+   },
+   {
+    "page": 18,
+    "id": "finale",
+    "overflowMm": -50.8,
+    "clipped": false
+   }
+  ],
+  "links": {
+   "total": 87,
+   "deadCount": 0,
+   "dupeCount": 0,
+   "pageCount": 18
+  }
+ }
+}

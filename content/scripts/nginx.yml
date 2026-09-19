@@ -1,0 +1,20 @@
+---
+- name: Install and start nginx
+  hosts: localhost
+  become: yes
+  vars:
+    nginx_package: nginx
+    nginx_service: nginx
+    nginx_port: 80
+  tasks:
+    - name: Update apt and install nginx
+      apt:
+        name: "{{ nginx_package }}"
+        state: present
+        update_cache: yes
+
+    - name: Start and enable nginx
+      service:
+        name: "{{ nginx_service }}"
+        state: started
+        enabled: yes

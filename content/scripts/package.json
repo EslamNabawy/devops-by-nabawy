@@ -1,0 +1,15 @@
+{
+  "name": "ansible-content",
+  "version": "1.0.0",
+  "description": "Standalone A4 print-ready PDF series. 3 PDFs. No website. Rendered via Playwright + headless Chromium (`page.pdf({ format:'A4', printBackground:true, preferCSSPageSize:true })`).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

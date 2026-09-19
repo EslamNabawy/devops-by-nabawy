@@ -1,0 +1,19 @@
+{
+  "externals": {
+    "ext-linux101": {
+      "title": "EslamOs",
+      "summary": "EslamOs - Linux101 cheat sheet, commands bank, NTI Linux course (RH124), labs, drills and curated resources. Learn and reference essential Linux commands.",
+      "enriched": true
+    },
+    "ext-terraform": {
+      "title": "TerraForm by Nabawy",
+      "summary": "The complete Terraform course as an online site.",
+      "enriched": true
+    },
+    "ext-cicd": {
+      "title": "CICD BY Nabawy",
+      "summary": "Home of the CI/CD library — merged handbooks plus ordered learning paths.",
+      "enriched": true
+    }
+  }
+}

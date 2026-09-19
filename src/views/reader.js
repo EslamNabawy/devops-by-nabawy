@@ -1,0 +1,139 @@
+﻿// reader.js — lesson/book/script reading: outline, copy, prev/next, done.
+NTI.define("views/reader", function () {
+  const { html, Component } = window.htmPreact;
+  const { Skeleton, EmptyState } = NTI.require("ui/primitives");
+  class Reader extends Component {
+    constructor(p) {
+      super(p);
+      this.state = { doc: null, failed: false, focus: false };
+    }
+    componentDidMount() { this.load(this.props); }
+    componentDidUpdate(prev) {
+      if (prev.id !== this.props.id ||
+          JSON.stringify(prev.query) !== JSON.stringify(this.props.query)) {
+        this.load(this.props);
+      }
+    }
+    async load({ id, query }) {
+      this.setState({ doc: null, failed: false });
+      const CC = NTI.require("core/catalog");
+      const w = CC.get(id);
+      const fmt = (query && query.fmt) ||
+        ((w && (w.formats || []).some((f) => f.type === "md" &&
+          f.status === "ready")) ? "md"
+          : (w && (w.formats || []).some((f) => f.type === "pdf" &&
+            f.status === "ready")) ? "pdf" : "md");
+      // PDF/local/script-external works never need the docs bundle.
+      if (!w || fmt === "pdf" || fmt === "local" || w.kind === "external") {
+        return;
+      }
+      const t0 = Date.now();
+      const show = () => {
+        const d = window.NTI.docs && window.NTI.docs[id];
+        if (d) this.setState({ doc: d });
+        else this.setState({ failed: true });
+      };
+      if (window.NTI.docs && window.NTI.docs[id]) { show(); return; }
+      const L = NTI.require("core/loader");
+      const Cat = NTI.require("core/catalog");
+      const v = (Cat.data && Cat.data.contentVersion) || "";
+      try {
+        await L.load(`content/docs/${id}.js?v=${v}`, 10000);
+        show();
+      } catch { this.setState({ failed: true }); }
+      void t0;
+    }
+    render({ id, store, query }, s) {
+      const Cat = NTI.require("core/catalog");
+      const copy = NTI.require("core/copy");
+      const R = NTI.require("core/router");
+      const w = Cat.get(id);
+      if (!w) return html`<${EmptyState} title="Not found" body="" />`;
+      if (w.kind === "external") {
+        return html`<div class="view"><h1>${w.title}</h1><p>${w.summary || ""}</p>
+          <a class="btn btn-primary" href="${w.external.url}" target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a></div>`;
+      }
+      const fmt = (query && query.fmt) ||
+        ((w.formats || []).some((f) => f.type === "md" && f.status === "ready")
+          ? "md" : (w.formats || []).some((f) => f.type === "pdf" &&
+            f.status === "ready") ? "pdf" : "md");
+      if (fmt === "pdf" || fmt === "local") {
+        const P = NTI.require("views/pdf");
+        return html`<${P.PdfReader} id=${id} store=${store} query=${query} />`;
+      }
+      const items = Cat.byTrack(w.track);
+      const i = items.findIndex((x) => x.id === id);
+      const prev = items[i - 1], next = items[i + 1];
+      const done = Cat.isDone(id, store.state.progress);
+      if (s.failed) {
+        return html`<div class="view"><h1>${copy.lessonFailed}</h1>
+          <p>${copy.lessonFailedBody}</p>
+          <button class="btn" onClick=${() => this.load({ id })}>${copy.tryAgain}</button>
+          <a class="btn" href="#/track/${w.track}">${copy.backTo((Cat.data.tracks.find((t) => t.id === w.track) || {}).title || w.track)}</a></div>`;
+      }
+      if (!s.doc) return html`<div class="view"><${Skeleton} /></div>`;
+      const anchor = query && query.a;
+      return html`<div class="view reader ${s.focus ? "focus" : ""}" data-track=${w.track}>
+        <h1 dir="auto">${w.title}</h1>
+        ${w.kind === "book" ? html`<p class="muted">${copy.originalStyle}
+          ${(w.formats || []).some((f) => f.type === "html" && f.status === "ready")
+            ? html` <a href="content/html/${id}/index.html" target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a>` : null}</p>` : null}
+        <div class="readbar">
+          <span class="muted">${w.kind} · ${w.minutes ? w.minutes + " min" : ""}</span>
+          <button class="btn btn-ghost" onClick=${() =>
+            this.setState({ focus: !s.focus })} aria-pressed=${s.focus}>Focus (f)</button>
+          <button class="btn btn-ghost" onClick=${() =>
+            store.toggleBookmark(id, anchor || null)}>
+            ${store.state.bookmarks.some((b) => b.workId === id) ? "★" : "☆"}</button>
+        </div>
+        ${(s.doc.toc || []).length ? html`<details class="outline"><summary>Outline</summary><ol>
+          ${(s.doc.toc || []).map((h) => html`<li><a href="#/read/${id}?a=${h.id}">${h.text}</a></li>`)}
+        </ol></details>` : null}
+        <article class="article" ref=${(el) => {
+          if (el && anchor) {
+            const t = el.querySelector("#" + CSS.escape(anchor));
+            if (t) t.scrollIntoView();
+          }
+          if (el) {
+            el.querySelectorAll("pre.code").forEach((pre) => {
+              if (pre.querySelector(".copybtn")) return;
+              const b = document.createElement("button");
+              b.className = "copybtn";
+              b.textContent = "Copy";
+              b.onclick = () => {
+                const c = pre.querySelector("code");
+                if (c) navigator.clipboard.writeText(c.innerText)
+                  .then(() => NTI.require("ui/primitives").toast(copy.copied));
+                NTI.require("core/a11y").announce(copy.copied);
+              };
+              pre.appendChild(b);
+            });
+            el.querySelectorAll("img").forEach((img) => {
+              img.loading = "lazy";
+              img.onclick = () => window.open(img.src, "_blank", "noopener");
+            });
+          }
+        }} dangerouslySetInnerHTML=${{ __html: s.doc.html }}></article>
+        <div class="readnav">
+          ${prev ? html`<a class="btn" href="#/read/${prev.id}">← ${prev.title}</a>` : html`<span></span>`}
+          ${next ? html`<button class="btn btn-primary" onClick=${() => {
+            store.setDone(id, true);
+            store.setLast({ workId: next.id, anchor: null, page: null,
+              at: new Date().toISOString() });
+            R.go(`#/read/${next.id}`);
+          }}>${copy.markDoneContinue}</button>`
+          : html`<button class="btn btn-primary" onClick=${() => {
+            store.setDone(id, true);
+            NTI.require("ui/primitives").toast(copy.markedDone,
+              { label: copy.undo, fn: () => store.setDone(id, false) });
+          }}>${done ? "Done ✓" : copy.markDone}</button>`}
+        </div>
+        ${prev || next ? html`<div class="readnav2">
+          ${prev ? html`<a href="#/read/${prev.id}">[${"prev"}]</a>` : null}
+          ${next ? html`<a href="#/read/${next.id}">[${"next"}]</a>` : null}
+        </div>` : null}
+      </div>`;
+    }
+  }
+  return { Reader };
+});

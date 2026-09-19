@@ -1,0 +1,355 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 10 0 R /F2 11 0 R /F3 12 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 3695 >>
+stream
+BT
+/F2 18 Tf
+54 720 Td
+(Jenkins + ngrok in WSL) Tj
+ET
+BT
+/F1 10 Tf
+54 707 Td
+(Setup steps completed on 2026-09-13. Jenkins container: jenkins. WSL: Ubuntu-24.04.) Tj
+ET
+BT
+/F2 13 Tf
+54 675 Td
+(1. Folder analysis) Tj
+ET
+BT
+/F1 11 Tf
+54 661 Td
+(Root folder contains a Python Docker demo, Jenkins Docker Hub pipeline, Node multibranch demo,) Tj
+ET
+BT
+/F1 11 Tf
+54 647 Td
+(local pipeline scripts, and Jenkins Docker Hub guide.) Tj
+ET
+BT
+/F1 11 Tf
+54 627 Td
+(Jenkins runs as Docker container jenkins in WSL. Jenkins UI uses port 8080. Jenkins agent uses) Tj
+ET
+BT
+/F1 11 Tf
+54 613 Td
+(port 50000. Demo app can use port 8081.) Tj
+ET
+BT
+/F2 13 Tf
+54 583 Td
+(2. Environment checks) Tj
+ET
+0.94 0.94 0.94 rg
+50 555 512 25 re f
+0 g
+BT
+/F3 9 Tf
+62 571 Td
+(wsl --list --verbose) Tj
+ET
+BT
+/F3 9 Tf
+62 559 Td
+(wsl -d Ubuntu-24.04 -- docker ps) Tj
+ET
+BT
+/F1 11 Tf
+54 537 Td
+(Checks confirmed Ubuntu-24.04 running, Jenkins container active, no ngrok installed, and sudo) Tj
+ET
+BT
+/F1 11 Tf
+54 523 Td
+(password required.) Tj
+ET
+BT
+/F2 13 Tf
+54 493 Td
+(3. Installed ngrok without sudo) Tj
+ET
+BT
+/F1 11 Tf
+54 479 Td
+(Used official ngrok Linux x64 archive and installed it under WSL user directory. Installed) Tj
+ET
+BT
+/F1 11 Tf
+54 465 Td
+(version: ngrok 3.39.11.) Tj
+ET
+0.94 0.94 0.94 rg
+50 347 512 109 re f
+0 g
+BT
+/F3 9 Tf
+62 447 Td
+(wsl -d Ubuntu-24.04 -- mkdir -p /home/eslam/.local/bin /tmp/ngrok-install) Tj
+ET
+BT
+/F3 9 Tf
+62 435 Td
+(wsl -d Ubuntu-24.04 -- curl -fL --retry 3) Tj
+ET
+BT
+/F3 9 Tf
+62 423 Td
+(  https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -o) Tj
+ET
+BT
+/F3 9 Tf
+62 411 Td
+(  /tmp/ngrok-v3-stable-linux-amd64.tgz) Tj
+ET
+BT
+/F3 9 Tf
+62 399 Td
+(wsl -d Ubuntu-24.04 -- tar -xzf /tmp/ngrok-v3-stable-linux-amd64.tgz -C) Tj
+ET
+BT
+/F3 9 Tf
+62 387 Td
+(  /tmp/ngrok-install) Tj
+ET
+BT
+/F3 9 Tf
+62 375 Td
+(wsl -d Ubuntu-24.04 -- install -m 0755 /tmp/ngrok-install/ngrok) Tj
+ET
+BT
+/F3 9 Tf
+62 363 Td
+(  /home/eslam/.local/bin/ngrok) Tj
+ET
+BT
+/F3 9 Tf
+62 351 Td
+(wsl -d Ubuntu-24.04 -- /home/eslam/.local/bin/ngrok version) Tj
+ET
+BT
+/F2 13 Tf
+54 319 Td
+(4. Configured ngrok auth token) Tj
+ET
+0.94 0.94 0.94 rg
+50 279 512 37 re f
+0 g
+BT
+/F3 9 Tf
+62 307 Td
+(wsl -d Ubuntu-24.04 -- /home/eslam/.local/bin/ngrok config add-authtoken) Tj
+ET
+BT
+/F3 9 Tf
+62 295 Td
+(  <NGROK_AUTHTOKEN>) Tj
+ET
+BT
+/F3 9 Tf
+62 283 Td
+(wsl -d Ubuntu-24.04 -- /home/eslam/.local/bin/ngrok config check) Tj
+ET
+BT
+/F1 11 Tf
+54 261 Td
+(Token stored only in /home/eslam/.config/ngrok/ngrok.yml. Token not written to Jenkins folder) Tj
+ET
+BT
+/F1 11 Tf
+54 247 Td
+(or repository.) Tj
+ET
+BT
+/F2 13 Tf
+54 217 Td
+(5. Started Jenkins tunnel) Tj
+ET
+0.94 0.94 0.94 rg
+50 177 512 37 re f
+0 g
+BT
+/F3 9 Tf
+62 205 Td
+(wsl -d Ubuntu-24.04 -- setsid -f /home/eslam/.local/bin/ngrok http http://localhost:8080) Tj
+ET
+BT
+/F3 9 Tf
+62 193 Td
+(  --log=/home/eslam/ngrok-jenkins.log --log-format=json) Tj
+ET
+BT
+/F3 9 Tf
+62 181 Td
+(wsl -d Ubuntu-24.04 -- curl -sS http://127.0.0.1:4040/api/tunnels) Tj
+ET
+BT
+/F1 11 Tf
+54 159 Td
+(Active public tunnel: https://jaybird-rare-mastiff.ngrok-free.dev. Local target:) Tj
+ET
+BT
+/F1 11 Tf
+54 145 Td
+(http://localhost:8080.) Tj
+ET
+BT
+/F2 13 Tf
+54 115 Td
+(6. Updated Jenkins public URL) Tj
+ET
+0.94 0.94 0.94 rg
+50 51 512 61 re f
+0 g
+BT
+/F3 9 Tf
+62 103 Td
+(wsl -d Ubuntu-24.04 -- docker exec jenkins cp) Tj
+ET
+BT
+/F3 9 Tf
+62 91 Td
+(  /var/jenkins_home/jenkins.model.JenkinsLocationConfiguration.xml) Tj
+ET
+BT
+/F3 9 Tf
+62 79 Td
+(  /var/jenkins_home/jenkins.model.JenkinsLocationConfiguration.xml.bak-ngrok) Tj
+ET
+BT
+/F3 9 Tf
+62 67 Td
+(wsl -d Ubuntu-24.04 -- docker exec jenkins sh -c "sed -i) Tj
+ET
+BT
+/F3 9 Tf
+62 55 Td
+(  's#http://localhost:8080/#https://jaybird-rare-mastiff.ngrok-free.dev/#g') Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 10 0 R /F2 11 0 R /F3 12 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1438 >>
+stream
+0.94 0.94 0.94 rg
+50 710 512 25 re f
+0 g
+BT
+/F3 9 Tf
+62 726 Td
+(  /var/jenkins_home/jenkins.model.JenkinsLocationConfiguration.xml") Tj
+ET
+BT
+/F3 9 Tf
+62 714 Td
+(wsl -d Ubuntu-24.04 -- docker restart jenkins) Tj
+ET
+BT
+/F1 11 Tf
+54 692 Td
+(Jenkins URL changed from http://localhost:8080/ to) Tj
+ET
+BT
+/F1 11 Tf
+54 678 Td
+(https://jaybird-rare-mastiff.ngrok-free.dev/. Config backup retained inside Jenkins container.) Tj
+ET
+BT
+/F2 13 Tf
+54 648 Td
+(7. Verified tunnel and Jenkins) Tj
+ET
+0.94 0.94 0.94 rg
+50 596 512 49 re f
+0 g
+BT
+/F3 9 Tf
+62 636 Td
+(wsl -d Ubuntu-24.04 -- curl -sS -o /dev/null -w "LOCAL %{http_code}") Tj
+ET
+BT
+/F3 9 Tf
+62 624 Td
+(  "http://localhost:8080/login") Tj
+ET
+BT
+/F3 9 Tf
+62 612 Td
+(wsl -d Ubuntu-24.04 -- curl -sS -o /dev/null -w "NGROK %{http_code}") Tj
+ET
+BT
+/F3 9 Tf
+62 600 Td
+(  "https://jaybird-rare-mastiff.ngrok-free.dev/login") Tj
+ET
+BT
+/F1 11 Tf
+54 578 Td
+(Local Jenkins login returned HTTP 200. Public ngrok Jenkins login returned HTTP 200.) Tj
+ET
+BT
+/F2 13 Tf
+54 548 Td
+(8. Webhook status) Tj
+ET
+BT
+/F1 11 Tf
+54 534 Td
+(GitHub plugin installed. Existing jobs had no GitHub push trigger. Generic webhook endpoint) Tj
+ET
+BT
+/F1 11 Tf
+54 520 Td
+(available: https://jaybird-rare-mastiff.ngrok-free.dev/github-webhook/.) Tj
+ET
+BT
+/F1 11 Tf
+54 500 Td
+(Jenkins authentication remains enabled. ngrok free URL changes on tunnel restart unless) Tj
+ET
+BT
+/F1 11 Tf
+54 486 Td
+(reserved domain configured.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000270 00000 n 
+0000004017 00000 n 
+0000004166 00000 n 
+0000005656 00000 n 
+0000005726 00000 n 
+0000005801 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+5869
+%%EOF

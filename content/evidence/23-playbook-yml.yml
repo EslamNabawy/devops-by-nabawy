@@ -1,0 +1,11 @@
+---
+# playbook.yml
+# Run with:
+#   ansible-playbook -i inventory.ini playbook.yml --ask-become-pass \
+#     -e mariadb_db_password='YourStrongPassword'
+
+- name: Provision MariaDB
+  hosts: db_servers
+  become: true
+  roles:
+    - mariadb

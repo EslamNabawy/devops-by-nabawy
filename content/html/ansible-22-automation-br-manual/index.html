@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Ansible Automation Manual — FOUNDATIONS — REDLINE v2</title>
+<style>
+:root{
+  --bg:#14161a; --panel:#1d2126; --panel2:#232830; --ink:#e8eaed; --dim:#9aa3ad; --line:#2e343b; --line2:#414a54;
+  --red:#ee0000; --red-deep:#c90000; --red-t:#ff8a8a; --red-fill:rgba(238,0,0,.12);
+  --ok:#4cc38a; --chg:#f0b429; --fail:#ff5c5c; --skip:#7a8490; --cyan:#38bdc8;
+  --t-red:rgba(238,0,0,.14); --t-ok:rgba(76,195,138,.12); --t-chg:rgba(240,180,41,.12); --t-fail:rgba(255,92,92,.12); --t-cyan:rgba(56,189,200,.12);
+  --shadow:4px 4px 0 rgba(0,0,0,.55);
+}
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#0d0f12; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.sheet{width:210mm; min-height:297mm; background:var(--bg); margin:9mm auto; padding:15mm 15mm 22mm; position:relative; border:1px solid var(--line2); page-break-after:always; overflow:visible;}
+.sheet::before{content:''; position:absolute; top:0; left:0; right:0; height:8px; background:linear-gradient(to bottom, var(--red) 0 6px, #000 6px 8px);}
+@media print{ body{background:#0d0f12;} .sheet{margin:0; border:none; box-shadow:none;} }
+@media print{ .sheet::before{background:linear-gradient(to bottom, var(--red-deep) 0 6px, #000 6px 8px);} }
+.pghead{margin:0 0 14px; border-bottom:2px solid var(--line2); padding-bottom:10px;}
+.hrow{display:flex; align-items:flex-start; gap:12px;}
+.kick{font:800 10.5px 'Cascadia Code','Consolas',monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--red-t); margin-bottom:3px;}
+.kick::before{content:'▶\00a0'; color:var(--red);}
+h1.t{font:700 24px/1.25 'Cascadia Code','Consolas',monospace; margin:0; border-left:6px solid var(--red); padding-left:12px;}
+.hmeta{margin-left:auto; align-self:flex-start; font:800 10.5px 'Cascadia Code',monospace; border:2px solid var(--red); color:#fff; border-radius:4px; padding:3px 10px; background:var(--red); white-space:nowrap;}
+.folio{position:absolute; bottom:8mm; left:15mm; right:15mm; display:flex; align-items:center; gap:10px; font:11px 'Cascadia Code',monospace; color:var(--dim);}
+.folio::before,.folio::after{content:''; flex:1; border-top:1px solid var(--line2);}
+.folio .fnum{color:var(--ink); font-weight:700;}
+.folio .rok{color:var(--ok);} .folio .rchg{color:var(--chg);}
+a.tocrow{color:inherit; text-decoration:none;}
+a.tocrow:hover .tp{color:var(--red-t);}
+a.tlink{color:var(--red-t); font-weight:700; text-decoration:none; border-bottom:2px dotted var(--red);}
+a.tlink:hover{background:var(--t-red);}
+a.backtoc{color:var(--dim); text-decoration:none; border:1.5px solid var(--line2); border-radius:4px; padding:1px 7px; font-weight:800; font-size:9.5px; background:var(--panel);}
+a.backtoc:hover{color:var(--red-t); border-color:var(--red);}
+.taskhead{display:flex; align-items:baseline; gap:10px; font:700 14.5px 'Cascadia Code',monospace; color:var(--ink); margin:16px 0 8px;}
+.taskhead::before{content:'▸'; color:var(--red);}
+.taskhead::after{content:''; flex:1; border-bottom:2px dotted var(--line2); transform:translateY(-3px);}
+.taskhead .hst{font-size:10px; color:var(--dim); font-weight:400;}
+.mark{border-radius:10px 6px 6px 10px; border-left:4px solid; padding:9px 13px; margin:10px 0; font-size:12.6px; line-height:1.55; background:var(--panel);}
+.mark .tag{display:block; font:800 10px 'Cascadia Code',monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:3px;}
+.mark .tag::before{content:'[ ';} .mark .tag::after{content:' ]';}
+.m-key{border-color:var(--red);} .m-key .tag{color:var(--red-t);}
+.m-ok{border-color:var(--ok); background:rgba(76,195,138,.08);} .m-ok .tag{color:var(--ok);}
+.m-tip{border-color:var(--cyan); background:rgba(56,189,200,.08);} .m-tip .tag{color:var(--cyan);}
+.m-warn{border-color:var(--chg); background:rgba(240,180,41,.08);} .m-warn .tag{color:var(--chg);}
+.m-fail{border-color:rgba(255,90,90,.8); background:rgba(255,90,90,.10);} .m-fail .tag{color:var(--red-t);}
+.m-exam{border:2px solid var(--line2); border-left:5px solid var(--red); background:var(--panel2); border-radius:0 6px 6px 0; box-shadow:var(--shadow); padding:9px 13px; margin:10px 0; font-size:12.6px; line-height:1.55;}
+.m-exam .tag{display:block; font:800 10px 'Cascadia Code',monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--red-t); margin-bottom:3px;}
+.panel{background:var(--panel); border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:12px 14px;}
+.ptitle{font:700 15px 'Cascadia Code',monospace; margin:0 0 7px;}
+.blk{display:inline-block; border:2px solid var(--line2); border-radius:6px; padding:7px 12px; font-weight:700; font-size:12.5px; text-align:center; box-shadow:3px 3px 0 rgba(0,0,0,.55); background:var(--panel2); color:var(--ink); max-width:100%;}
+.blk small{display:block; font-weight:500; font-size:10.5px; margin-top:2px; color:var(--dim);}
+.b-red{background:var(--red); border-color:#a80000; color:#fff; border-radius:6px;} .b-red small{color:#ffe3e3;}
+.b-ok{border-color:var(--ok); background:var(--t-ok);} .b-ok small{color:var(--ok);}
+.b-chg{border-color:var(--chg); background:var(--t-chg);} .b-chg small{color:var(--chg);}
+.b-fail{border-color:var(--fail); background:var(--t-fail);} .b-fail small{color:var(--fail);}
+.b-cyan{border-color:var(--cyan); background:var(--t-cyan);} .b-cyan small{color:var(--cyan);}
+.chipr{display:inline-flex; align-items:center; gap:6px; background:var(--panel); border:2px solid var(--line2); border-radius:4px; padding:4px 11px; font:700 11.5px 'Cascadia Code',monospace; box-shadow:2px 2px 0 rgba(0,0,0,.55);}
+.chipr small{color:var(--dim); font-weight:600;}
+.pill{display:inline-block; border:2px solid var(--red); color:var(--red-t); background:var(--t-red); border-radius:4px; padding:2px 10px; font:700 11px 'Cascadia Code',monospace;}
+.zone{border:2px solid var(--line2); border-radius:8px; padding:12px; background:var(--panel); box-shadow:var(--shadow);}
+.zlabel{font:800 10px 'Cascadia Code',monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--red-t); text-align:center; margin-bottom:8px;}
+.zlabel::before{content:'[ ';} .zlabel::after{content:' ]';}
+.code{background:#0d0f12; color:#e8eaed; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:12px 15px; font:12px/1.7 'Consolas','SF Mono',monospace; white-space:pre; overflow:hidden; max-width:100%; overflow-x:auto;}
+.code .p{color:#fbbf24;} .code .c{color:#93c5fd;} .code .y{color:#fcd34d;} .code .r{color:#f87171;} .code .m{color:#f9a8d4;} .code .g{color:#7a8490;} .code .s{color:#86efac;}
+.code .ok{color:var(--ok); font-weight:700;} .code .chg{color:var(--chg); font-weight:700;} .code .fl{color:var(--fail); font-weight:700;}
+.code.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.tree{background:#0d0f12; color:#c8cdd3; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:14px 17px; font:12.5px/1.8 'Consolas',monospace; white-space:pre; max-width:100%; overflow-x:auto;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border:2px solid var(--line2); border-radius:6px; overflow:hidden; font-size:12.2px; box-shadow:var(--shadow); background:var(--panel); max-width:100%;}
+.tb th{background:var(--panel2); color:var(--ink); border-bottom:3px solid var(--red); padding:8px 11px; text-align:left; font:800 11.5px 'Cascadia Code',monospace; letter-spacing:.06em; text-transform:uppercase;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid var(--line); vertical-align:top;}
+.tb tr:nth-child(even) td{background:var(--panel2);}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.grid2>*,.grid3>*{min-width:0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+.frow{display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;}
+.dnote{text-align:center; font-size:12px; color:var(--dim); margin-top:5px;}
+.harrow{color:var(--red-t); font-size:13px; align-self:center;}
+.darr{text-align:center; color:var(--red-t); font-size:13px; margin:2px 0;}
+p.lead{font-size:13.5px; line-height:1.65; margin:0 0 10px; color:#c8cdd3;}
+.stbad{display:inline-block; border:2px solid; border-radius:4px; padding:1px 9px; font:800 10.5px 'Cascadia Code',monospace;}
+.st-ok{border-color:var(--ok); color:var(--ok); background:var(--t-ok);}
+.st-chg{border-color:var(--chg); color:var(--chg); background:var(--t-chg);}
+.st-fail{border-color:var(--fail); color:var(--fail); background:var(--t-fail);}
+.cover{background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{height:12px; background:var(--red);}
+.cover .stamp{background:var(--red); color:#fff; font:900 42px 'Cascadia Code',monospace; padding:16px 26px; border-radius:8px; box-shadow:6px 6px 0 rgba(0,0,0,.6); transform:rotate(-2deg); margin-bottom:24px;}
+.cover .ckick{font:800 12px 'Cascadia Code',monospace; letter-spacing:.34em; text-transform:uppercase; color:var(--red-t);}
+.cover h1{font:700 50px/1.1 'Cascadia Code','Consolas',monospace; margin:12px 0 4px; color:#fff;}
+.cover .ambrule{width:90px; border:none; border-top:6px solid var(--red); margin:16px auto;}
+.cover .sub{font-size:14.5px; color:var(--dim); max-width:145mm; line-height:1.65;}
+.cover .vols{display:flex; gap:12px; margin-top:28px; flex-wrap:wrap; justify-content:center;}
+.volcard{border:2px solid var(--line2); border-radius:6px; background:var(--panel); box-shadow:var(--shadow); padding:10px 16px; font:800 13px 'Cascadia Code',monospace; color:var(--ink);}
+.volcard small{display:block; font-weight:600; color:var(--dim); font-size:10.5px; margin-top:2px;}
+.volcard.on{border-color:var(--red); color:#fff; background:var(--red);}
+.cover .cver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font:10.5px 'Cascadia Code',monospace; letter-spacing:.3em; color:var(--dim); text-transform:uppercase;}
+.tocrow{display:flex; align-items:baseline; padding:6px 2px; font:12.4px 'Segoe UI',sans-serif;}
+.tocrow .tnum{font:700 12.5px 'Cascadia Code',monospace; color:var(--red-t); width:40px;}
+.tocrow .dots{flex:1; border-bottom:2px dotted var(--line2); margin:0 9px 4px;}
+h3.sec{font:700 15px 'Cascadia Code',monospace; margin:14px 0 8px;}
+.taskhead .hst{font-size:10px; color:var(--dim); font-weight:400;}
+</style>
+</head>
+<body>
+<div class="sheet cover" id="cover">
+  <div class="ckick">Automation Control Manual — REDLINE v2</div>
+  <div class="stamp">ANSIBLE</div>
+  <h1>AUTOMATION<br/>MANUAL</h1>
+  <hr class="ambrule"/>
+  <div class="sub">From Remote Execution to Declarative Infrastructure — <b>Foundations</b><br/>Agentless architecture · Inventory · Ad-hoc proof · YAML · Playbooks · Modules &amp; Idempotency</div>
+  <div class="vols"><div class="volcard on">VOL 1 — FOUNDATIONS<small>this book</small></div><div class="volcard">VOL 2 — PLAYBOOK<small>Engineering</small></div><div class="volcard">VOL 3 — PRODUCTION<small>Operate at Scale</small></div></div>
+  <div class="cver">A4 · Playwright Chromium · Background graphics ON · Ansible 2.16 · FQCN · REDLINE v2 overflow:visible + red hierarchy</div>
+</div>
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Contents · Foundations</div><h1 class="t">📘 TABLE OF CONTENTS</h1></div><span class="hmeta">CORE</span></div></div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 22px">
+    <div>
+      <a class="tocrow" href="#ch-01"><span class="tnum">01</span><span class="tp">Foundations — Why Automation</span><span class="dots"></span>03</a>
+      <a class="tocrow" href="#ch-02"><span class="tnum">02</span><span class="tp">Architecture — Control / Managed / Transport</span><span class="dots"></span>05</a>
+      <a class="tocrow" href="#ch-03"><span class="tnum">03</span><span class="tp">Inventory &amp; Targeting — WHICH</span><span class="dots"></span>07</a>
+    </div>
+    <div>
+      <a class="tocrow" href="#ch-04"><span class="tnum">04</span><span class="tp">First Playbooks — WHAT</span><span class="dots"></span>11</a>
+      <a class="tocrow" href="#ch-05"><span class="tnum">05</span><span class="tp">Modules &amp; Idempotency — CHANGED vs OK</span><span class="dots"></span>13</a>
+      <a class="tocrow" href="#cheatsheet"><span class="tnum">A</span><span class="tp">Cheatsheet — FQCN &amp; Failure Index</span><span class="dots"></span>16</a>
+    </div>
+  </div>
+  <div class="mark m-key" style="margin-top:12px"><span class="tag">Key Idea</span>Inventory tells Ansible <b>WHICH</b> machines. Playbooks tell <b>WHAT</b> state. Idempotency tells <b>WAS CHANGE NEEDED?</b> — the three questions this volume answers.</div>
+  <div class="panel" style="margin-top:10px"><div class="ptitle">CANON — Actors</div><div class="frow"><span class="blk b-red">🎮 Control Node<small>ansible-playbook</small></span><span class="blk">🖥️ Managed Node<small>target</small></span><span class="blk b-cyan">🔌 Transport<small>SSH / WinRM</small></span><span class="blk">📋 Inventory<small>WHICH</small></span><span class="blk">📖 Playbook<small>WHAT</small></span><span class="blk">🧩 Module<small>FQCN task</small></span></div></div>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">TOC</span><span><span class="rok">ok=7</span> <span class="rchg">changed=2</span> failed=0</span><span><a class="backtoc" href="#cover">▤ COVER</a> ▶ <a class="tlink" href="#ch-01">01</a></span></div>
+</div>
+<div class="sheet" id="ch-01">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 01 · Foundations</div><h1 class="t">🏗️ WHY AUTOMATION BEATS SCRIPTS</h1></div><span class="hmeta">5 MIN</span></div></div>
+  <p class="lead">Manual work scales linearly. Scripts capture <b>commands</b>. Ansible captures <b>intent</b>: which machines, what state, what if already correct, how to verify.</p>
+  <div class="mark m-key"><span class="tag">Key Idea</span>Shell loop says <b>run command again</b>. Ansible says <b>converge fleet to desired state</b> — proves whether change needed.</div>
+  <div class="grid2">
+    <div class="zone" style="border-color:var(--fail)"><div class="zlabel">Manual / Script Loop</div><p style="margin:0; font-size:12.2px">Operator → SSH for-loop → hidden drift → re-run = side effects<br/><span class="st-fail">drift accumulates</span></p></div>
+    <div class="zone" style="border-color:var(--ok)"><div class="zlabel">Declarative (Ansible)</div><p style="margin:0; font-size:12.2px">Playbook → control node → inventory → compare → <span class="st-chg">changed</span> or <span class="st-ok">ok</span> → audited<br/><span class="st-ok">converged fleet</span></p></div>
+  </div>
+  <div class="taskhead">TASK [Ecosystem lane — where Ansible owns]<span class="hst">configuration vs infra vs orchestration</span></div>
+  <table class="tb"><tr><th>Concern</th><th>Tool</th><th>Handoff</th></tr><tr><td>Infrastructure</td><td>Terraform / OpenTofu</td><td>creates infra → hands OS to Ansible</td></tr><tr><td style="background:var(--red-fill)"><b>Configuration</b></td><td style="background:var(--red-fill)"><b>Ansible</b></td><td>configures OS/apps inside infra</td></tr><tr><td>Packaging</td><td>Docker</td><td>packages workloads</td></tr><tr><td>Orchestration</td><td>Kubernetes</td><td>schedules containers</td></tr></table>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">03</span><span><span class="rok">ok=4</span> <span class="rchg">changed=1</span> failed=0</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ 02</span></div>
+</div>
+<div class="sheet" id="ch-02">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 02 · Architecture</div><h1 class="t">🧠 AGENTLESS — CONTROL → TRANSPORT → MANAGED</h1></div><span class="hmeta">6 MIN</span></div></div>
+  <p class="lead">No permanent daemon on managed nodes. Control initiates; managed nodes execute module payloads.</p>
+  <div class="panel"><div class="frow"><span class="blk b-red">🎮 CONTROL NODE<small>ansible-playbook · inventory · vars</small></span><span class="harrow">→</span><span class="blk" style="background:#0d0f12; color:var(--cyan); border-color:var(--cyan)">🔌 SSH / WinRM<small style="color:var(--cyan)">connection plugin</small></span><span class="harrow">→</span><span class="blk">🖥️ MANAGED NODE<small>module runs · JSON result</small></span></div><p class="dnote">Payload: module + args → remote execution → JSON with <span class="st-ok">ok</span>/<span class="st-chg">changed</span>/<span class="st-fail">failed</span>.</p></div>
+  <div class="taskhead">TASK [Execution lane — the anchor]</div>
+  <div class="frow"><span class="blk b-red">COMMAND<small>ansible-playbook</small></span><span class="harrow">→</span><span class="blk">LOAD CONFIG</span><span class="harrow">→</span><span class="blk">INVENTORY</span><span class="harrow">→</span><span class="blk">SELECT HOSTS</span><span class="harrow">→</span><span class="blk">VARS/FACTS</span><span class="harrow">→</span><span class="blk b-chg">TASK→MODULE</span><span class="harrow">→</span><span class="blk b-ok">RESULT</span></div>
+  <div class="code"><span class="p">$</span> <span class="c">ansible --version</span>
+<span class="ok">ansible [core 2.16.x]  python 3.11  config ./ansible.cfg</span></div>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">05</span><span><span class="rok">ok=5</span> <span class="rchg">changed=1</span> failed=0</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ 03</span></div>
+</div>
+<div class="sheet" id="ch-03">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 03 · Inventory</div><h1 class="t">📋 INVENTORY — WHICH MACHINES</h1></div><span class="hmeta">7 MIN</span></div></div>
+  <p class="lead">Inventory = target declaration. Groups organize hosts. Patterns select subsets.</p>
+  <div class="code"><span class="g"># inventory.ini</span>
+<span class="c">[web]</span>
+<span class="m">web-01</span> <span class="y">ansible_host</span>=<span class="s">10.0.1.11</span>
+<span class="m">web-02</span> <span class="y">ansible_host</span>=<span class="s">10.0.1.12</span>
+<span class="c">[db]</span>
+<span class="m">db-01</span> <span class="y">ansible_host</span>=<span class="s">10.0.1.21</span></div>
+  <div class="code"><span class="p">$</span> ansible <span class="y">web</span> -i inventory.ini <span class="c">-m ping</span>
+<span class="ok">web-01 | SUCCESS => {"changed": false, "ping": "pong"}</span>
+<span class="ok">web-02 | SUCCESS => {"changed": false, "ping": "pong"}</span></div>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">07</span><span><span class="rok">ok=5</span> <span class="rchg">changed=1</span> failed=0</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ 04</span></div>
+</div>
+<div class="sheet" id="ch-04">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 04 · Playbooks</div><h1 class="t">📖 PLAYBOOK — DESIRED STATE IN YAML</h1></div><span class="hmeta">8 MIN</span></div></div>
+  <p class="lead">Playbook maps <b>hosts</b> to <b>tasks</b> that invoke <b>modules (FQCN)</b> with <b>arguments</b>.</p>
+  <div class="code"><span class="y">- name:</span> <span class="s">Configure web server</span>
+  <span class="y">hosts:</span> <span class="s">web</span>
+  <span class="y">become:</span> <span class="c">true</span>
+  <span class="y">tasks:</span>
+    <span class="y">- name:</span> <span class="s">Install nginx</span>
+      <span class="c">ansible.builtin.package:</span>
+        <span class="y">name:</span> <span class="s">nginx</span> <span class="y">state:</span> <span class="s">present</span></div>
+  <div class="code"><span class="p">$</span> ansible-playbook -i inventory.ini <span class="y">site.yml</span>
+<span class="chg">TASK [Install nginx] **** changed: [web-01]</span>
+<span class="ok">PLAY RECAP **** web-01 : ok=2  changed=2  failed=0</span></div>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">10</span><span><span class="rok">ok=4</span> <span class="rchg">changed=2</span> failed=0</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ 05</span></div>
+</div>
+<div class="sheet" id="ch-05">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 05 · Idempotency</div><h1 class="t">⚖️ MODULES &amp; IDEMPOTENCY</h1></div><span class="hmeta">ADV</span></div></div>
+  <p class="lead">Same input twice → same end state. Second run <span class="st-ok">ok</span>, not <span class="st-chg">changed</span>.</p>
+  <div class="grid2"><div class="zone"><div class="zlabel">First Run — Changed</div><div class="code">Desired: <span class="s">nginx present</span> ↓ Current: <span class="r">absent</span> ↓ Install → <span class="chg">◐ CHANGED</span></div></div><div class="zone"><div class="zlabel">Second Run — OK</div><div class="code">Desired: <span class="s">nginx present</span> ↓ Current: <span class="ok">present</span> ↓ No action → <span class="ok">● OK</span></div></div></div>
+  <div class="code"><span class="p">$</span> ansible-playbook -i inventory.ini idempotent.yml
+<span class="chg">TASK [Create app directory] **** changed: [web-01]</span>
+<span class="p">$</span> ansible-playbook -i inventory.ini idempotent.yml
+<span class="ok">TASK [Create app directory] **** ok: [web-01]</span></div>
+  <div class="mark m-fail"><span class="tag">Failed→</span><b>"OK" ≠ did nothing</b> — it means already correct. Read <code>ok</code> vs <code>changed</code>.</div>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">12</span><span><span class="rok">ok=4</span> <span class="rchg">changed=2</span> failed=0</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ A</span></div>
+</div>
+<div class="sheet" id="cheatsheet">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Appendix · Cheatsheet</div><h1 class="t">📑 CHEATSHEET — FQCN &amp; FAILURES</h1></div><span class="hmeta">FINALE</span></div></div>
+  <table class="tb"><tr><th>Legacy</th><th>FQCN (use)</th></tr><tr><td><code>yum</code></td><td><code>ansible.builtin.package</code></td></tr><tr><td><code>service</code></td><td><code>ansible.builtin.service</code></td></tr><tr><td><code>template</code></td><td><code>ansible.builtin.template</code></td></tr></table>
+  <div class="folio"><span>📘 Foundations · Vol 1</span><span class="fnum">15</span><span><span class="rok">ok=9</span> <span class="rchg">changed=0</span> failed=0</span><span><a class="backtoc" href="#toc">▤ COVER</a></span></div>
+</div>
+</body>
+</html>

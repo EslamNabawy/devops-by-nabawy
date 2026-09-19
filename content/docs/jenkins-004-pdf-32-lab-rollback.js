@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["jenkins-004-pdf-32-lab-rollback"]={"html":"\r\n\r\n\r\n\r\n\r\nCI/CD Engineering — PDF 32: Lab 05 Rollback\r\n","toc":[],"words":261,"assets":[]};

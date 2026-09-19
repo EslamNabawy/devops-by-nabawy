@@ -1,0 +1,28 @@
+/* base.css — reset, type scale, layout, focus. */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--t-paper); color: var(--t-ink);
+  font-family: var(--t-font); line-height: 1.6; font-size: 16px;
+}
+:root[data-reading="0"] body { font-size: 15px; }
+:root[data-reading="2"] body { font-size: 18px; }
+h1, h2, h3 { line-height: 1.25; text-wrap: balance; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1rem; }
+a { color: var(--t-accent); }
+:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); }
+.skip-link { position: absolute; left: -999px; }
+.skip-link:focus { left: 8px; top: 8px; background: var(--t-paper);
+  padding: 8px 12px; z-index: 99; }
+.muted { color: var(--t-muted); font-size: 0.85em; }
+.warn { border: 1px solid var(--t-danger); padding: 8px 12px;
+  border-radius: var(--t-radius); }
+.view { max-width: 860px; margin: 0 auto; padding: 16px 16px 96px; }
+.hint { color: var(--t-muted); font-size: 0.9rem; }
+code, pre { font-family: var(--t-mono); font-size: 0.9em; }
+.table-scroll { overflow-x: auto; }
+.skeleton span { display: block; height: 14px; margin: 8px 0;
+  background: var(--t-line); border-radius: 4px; }
+.empty { padding: 32px 16px; text-align: center; }

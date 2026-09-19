@@ -1,0 +1,29 @@
+{
+  "name": "nti-devops-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NTI DevOps Library + Roadmap — static offline-first site. Built output has no Node runtime dep.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "build:pdf": "node tools/build.mjs --only pdf --report",
+    "verify": "node tools/verify.mjs --full",
+    "serve": "node tools/serve.mjs"
+  },
+  "dependencies": {
+    "highlight.js": "^11.9.0",
+    "htm": "^3.1.1",
+    "markdown-it": "^14.1.0",
+    "minisearch": "^7.1.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "preact": "^10.22.0",
+    "sanitize-html": "^2.13.0"
+  },
+  "devDependencies": {
+    "axe-core": "^4.13.0",
+    "playwright": "^1.63.0"
+  }
+}

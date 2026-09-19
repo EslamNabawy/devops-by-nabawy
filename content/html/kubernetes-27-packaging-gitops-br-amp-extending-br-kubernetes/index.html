@@ -1,0 +1,835 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Packaging, GitOps & Extending Kubernetes — Book 08</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm; background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.75 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch02 h3.sec{margin:10px 0 6px}
+#ch02 .callout,#ch02 .cka{margin:7px 0;padding:8px 11px}
+#ch02 .term,#ch02 .mtree,#ch02 table.tb{margin:8px 0}
+#ch02 .term,#ch02 .mtree{padding:9px 12px}
+#ch02 p.lead{margin:0 0 7px}
+#ch02 .grid2,#ch02 .grid3{margin:8px 0;gap:10px}
+#ch02 .card,#ch02 .zone,#ch02 .labstep{padding:9px 11px}
+#ch02 .qz{margin:6px 0;padding:6px 9px}
+#ch02 .gl{margin:3px 0;padding:4px 8px}
+#ch02 .rowc{margin:7px 0}
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+#ch05 h3.sec{margin:10px 0 6px}
+#ch05 .callout,#ch05 .cka{margin:7px 0;padding:8px 11px}
+#ch05 .term,#ch05 .mtree,#ch05 table.tb{margin:8px 0}
+#ch05 .term,#ch05 .mtree{padding:9px 12px}
+#ch05 p.lead{margin:0 0 7px}
+#ch05 .grid2,#ch05 .grid3{margin:8px 0;gap:10px}
+#ch05 .card,#ch05 .zone,#ch05 .labstep{padding:9px 11px}
+#ch05 .qz{margin:6px 0;padding:6px 9px}
+#ch05 .gl{margin:3px 0;padding:4px 8px}
+#ch05 .rowc{margin:7px 0}
+#ch09 h3.sec{margin:10px 0 6px}
+#ch09 .callout,#ch09 .cka{margin:7px 0;padding:8px 11px}
+#ch09 .term,#ch09 .mtree,#ch09 table.tb{margin:8px 0}
+#ch09 .term,#ch09 .mtree{padding:9px 12px}
+#ch09 p.lead{margin:0 0 7px}
+#ch09 .grid2,#ch09 .grid3{margin:8px 0;gap:10px}
+#ch09 .card,#ch09 .zone,#ch09 .labstep{padding:9px 11px}
+#ch09 .qz{margin:6px 0;padding:6px 9px}
+#ch09 .gl{margin:3px 0;padding:4px 8px}
+#ch09 .rowc{margin:7px 0}
+#lab3 h3.sec{margin:10px 0 6px}
+#lab3 .callout,#lab3 .cka{margin:7px 0;padding:8px 11px}
+#lab3 .term,#lab3 .mtree,#lab3 table.tb{margin:8px 0}
+#lab3 .term,#lab3 .mtree{padding:9px 12px}
+#lab3 p.lead{margin:0 0 7px}
+#lab3 .grid2,#lab3 .grid3{margin:8px 0;gap:10px}
+#lab3 .card,#lab3 .zone,#lab3 .labstep{padding:9px 11px}
+#lab3 .qz{margin:6px 0;padding:6px 9px}
+#lab3 .gl{margin:3px 0;padding:4px 8px}
+#lab3 .rowc{margin:7px 0}
+#gloss h3.sec{margin:10px 0 6px}
+#gloss .callout,#gloss .cka{margin:7px 0;padding:8px 11px}
+#gloss .term,#gloss .mtree,#gloss table.tb{margin:8px 0}
+#gloss .term,#gloss .mtree{padding:9px 12px}
+#gloss p.lead{margin:0 0 7px}
+#gloss .grid2,#gloss .grid3{margin:8px 0;gap:10px}
+#gloss .card,#gloss .zone,#gloss .labstep{padding:9px 11px}
+#gloss .qz{margin:6px 0;padding:6px 9px}
+#gloss .gl{margin:3px 0;padding:4px 8px}
+#gloss .rowc{margin:7px 0}
+/* feather 8:lab3 */
+#lab3 .labstep{padding:8px 10px}
+/* L2 typography, scoped per still-overflowing page */
+#ch02 p.small,#ch02 li{font-size:12.2px;line-height:1.42}
+#ch02 .callout,#ch02 .cka{font-size:12.2px;line-height:1.44}
+#ch02 .qz{font-size:11.3px;line-height:1.42}
+#ch02 .gl{font-size:10.8px;line-height:1.36}
+#ch02 .term{font-size:11.6px;line-height:1.55}
+#ch02 .mtree{font-size:11.8px;line-height:1.6}
+#ch02 table.tb{font-size:11.7px} #ch02 .tb td{padding:5px 8px}
+#ch04 p.small,#ch04 li{font-size:12.2px;line-height:1.42}
+#ch04 .callout,#ch04 .cka{font-size:12.2px;line-height:1.44}
+#ch04 .qz{font-size:11.3px;line-height:1.42}
+#ch04 .gl{font-size:10.8px;line-height:1.36}
+#ch04 .term{font-size:11.6px;line-height:1.55}
+#ch04 .mtree{font-size:11.8px;line-height:1.6}
+#ch04 table.tb{font-size:11.7px} #ch04 .tb td{padding:5px 8px}
+#ch05 p.small,#ch05 li{font-size:12.2px;line-height:1.42}
+#ch05 .callout,#ch05 .cka{font-size:12.2px;line-height:1.44}
+#ch05 .qz{font-size:11.3px;line-height:1.42}
+#ch05 .gl{font-size:10.8px;line-height:1.36}
+#ch05 .term{font-size:11.6px;line-height:1.55}
+#ch05 .mtree{font-size:11.8px;line-height:1.6}
+#ch05 table.tb{font-size:11.7px} #ch05 .tb td{padding:5px 8px}
+/* MICRO nudge for borderline pages (L2-insufficient, pre-split attempt) */
+#ch02 .callout,#ch02 .cka{margin:6px 0;padding:7px 10px}
+#ch02 .labstep{padding:7px 10px;margin:8px 0}
+#ch02 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch02 .tabbody{font-size:11px;padding:8px 11px}
+#ch02 .zone{padding:7px 9px}
+#ch02 .rowc{margin:5px 0;gap:7px}
+#ch02 .grid2,#ch02 .grid3{gap:8px}
+#ch02 .kchip{padding:4px 10px}
+#ch02 ul.tick li{padding:3px 0 3px 2px}
+#ch05 .callout,#ch05 .cka{margin:6px 0;padding:7px 10px}
+#ch05 .labstep{padding:7px 10px;margin:8px 0}
+#ch05 .term.mini{font-size:10.5px;padding:7px 10px}
+#ch05 .tabbody{font-size:11px;padding:8px 11px}
+#ch05 .zone{padding:7px 9px}
+#ch05 .rowc{margin:5px 0;gap:7px}
+#ch05 .grid2,#ch05 .grid3{gap:8px}
+#ch05 .kchip{padding:4px 10px}
+#ch05 ul.tick li{padding:3px 0 3px 2px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">📦</div>
+<h1>PACKAGING, GITOPS<br>&amp; EXTENDING<br>KUBERNETES</h1>
+<div class="sub">Book 08 of the series — the delivery layer: Helm decoded (the four commands you ran blind in Book 07), Kustomize overlays, teaching the API new kinds with CRDs, Operators with domain knowledge, admission webhooks as the last checkpoint, and GitOps — the reconciliation loop aimed at your entire delivery system.</div>
+<div class="row">
+<div class="glass">📦 Helm<small>charts · releases</small></div>
+<div class="glass">🎨 Kustomize<small>overlays</small></div>
+<div class="glass">🧬 CRDs<small>new API kinds</small></div>
+<div class="glass">🤖 Operators<small>runbooks as code</small></div>
+</div>
+<div class="row">
+<div class="glass">🛂 Webhooks<small>admission</small></div>
+<div class="glass">🔁 GitOps<small>the pull model</small></div>
+<div class="glass">🐙 ArgoCD<small>· Flux</small></div>
+<div class="glass">♻️ Reconcile<small>the series' spine</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 08 · CONTINUES BOOKS 01–07 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">6 parts · 17 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · Helm</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>Helm — The Package Manager<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>Charts, Values &amp; Templating<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Releases — Lifecycle &amp; Rollback<span class="dots"></span><span class="tp">p.5</span></a>
+<div class="tocpart">Part II · Kustomize</div>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Kustomize — Overlays Without Templates<span class="dots"></span><span class="tp">p.6</span></a>
+<div class="tocpart">Part III · Extending the API</div>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>CRDs — Teaching the API New Kinds<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>Operators — Runbooks as Code<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Admission Webhooks — The Last Gate<span class="dots"></span><span class="tp">p.9</span></a>
+<div class="tocpart">Part IV · GitOps</div>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>GitOps — The Pull Model<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>ArgoCD &amp; Flux — Concept Level<span class="dots"></span><span class="tp">p.11</span></a>
+<div class="tocpart">Part V · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>Helm Lifecycle — Upgrade &amp; Rollback<span class="dots"></span><span class="tp">p.12</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Kustomize Overlays<span class="dots"></span><span class="tp">p.13</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>Build Your Own API Kind<span class="dots"></span><span class="tp">p.14</span></a>
+<div class="tocpart">Part VI · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 09<span class="dots"></span><span class="tp">p.19</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–07.</b> You've been <i>using</i> this book's contents all series without knowing: Book 07 · Lab 3 installed two charts, ServiceMonitor/VPA/HTTPRoute were CRDs (Books 07/06/03), ResourceQuota and PSS were admission controllers (Books 01/02), and cert-manager was an operator. Now the theory catches up.</div></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">📦 Helm — The Package Manager</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Book 07 · Lab 3: you typed four Helm commands and got Prometheus, Alertmanager, Grafana, Loki and Promtail — <b>dozens of objects</b> — from four lines. Time to decode the machinery.</p>
+<div class="term"><span class="p">$</span> helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+<span class="g">#                ↑ the APP STORE          ↑ where the store lives</span>
+<span class="p">$</span> helm install mon prometheus-community/kube-prometheus-stack
+<span class="g">#        ↑ RELEASE name   ↑ CHART from that repo
+# one command → dozens of objects. how?</span></div>
+<div class="grid3">
+<div class="card" style="border-top:3.5px solid #3b82f6;"><p class="small"><b>📜 Chart</b> — the <i>package</i>: a folder of templated YAML + default values. The recipe card.</p></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;"><p class="small"><b>🏬 Repository</b> — the <i>store</i>: a URL serving charts. The cookbook shelf (apt/brew/homebrew vibes).</p></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><p class="small"><b>🏷️ Release</b> — an <i>installed instance</i> with a NAME and its own config. A cake you baked — receipt kept.</p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The problem Helm solves:</b> raw YAML can't be parameterized. "Deploy Postgres, but with <i>my</i> password, <i>our</i> storage class, <i>3</i> replicas" without Helm = copy-paste-edit 500 lines and pray. With Helm: the chart holds templates, <b>you supply values</b>, the engine renders your personalized YAML. Same recipe, your kitchen.</div></div>
+<ul class="tick">
+<li>🏷️ <b>Release names matter:</b> Book 07's <code>mon</code> release named everything <code>mon-grafana</code>, <code>mon-kube-state-metrics</code> — one release prefix, zero collisions. Same chart installed 3× under 3 names = 3 independent stacks</li>
+<li>🔎 See the receipt: <code>kubectl get secrets | grep sh.helm</code> — Helm stores release metadata in <b>Secrets</b> (Book 02's safe, hiding Helm's paperwork!)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Helm is Kubernetes' <b>package manager</b> — <i>charts</i> are templated YAML packages from <i>repositories</i>, and <i>installing</i> one creates a named <b>release</b> whose every object is rendered from your values and tracked for later upgrade or rollback.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Inside the recipe card — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: Charts, Values &amp; Templating</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">📜 Charts, Values &amp; Templating</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<div class="mtree"><b>mychart/</b>
+├── <u>Chart.yaml</u>        <span class="g"># metadata: name, version, appVersion</span>
+├── <u>values.yaml</u>       <span class="g"># DEFAULTS — the chart author's opinions</span>
+├── <u>templates/</u>
+│   ├── deployment.yaml  <span class="g"># Go-templated YAML</span>
+│   ├── service.yaml
+│   └── _helpers.tpl     <span class="g"># reusable snippets (naming conventions…)</span>
+└── charts/             <span class="g"># sub-charts (dependencies)</span></div>
+<div class="term"><span class="g"># templates/deployment.yaml — the templating you'll actually read:</span>
+<span class="c">metadata</span>:
+  <span class="c">name</span>: {{ .Release.Name }}-web      <span class="g"># ← release name injected</span>
+<span class="c">spec</span>:
+  <span class="c">replicas</span>: {{ .Values.replicaCount }}
+  <span class="c">template</span>:
+    <span class="c">spec</span>:
+      <span class="c">containers</span>:
+      - <span class="c">image</span>: <span class="m">"{{ .Values.image.repository }}:{{ .Values.image.tag }}"</span>
+<span class="g"># .Values = merged values tree · .Release = install metadata</span></div>
+<h3 class="sec">🎚️ Values precedence — LAST WINS</h3>
+<table class="tb">
+<tr><th>Source</th><th>Wins over</th><th>Example</th></tr>
+<tr><td>chart's <code>values.yaml</code></td><td>— (the floor)</td><td><code>replicaCount: 1</code></td></tr>
+<tr><td>your file <code>-f myvals.yaml</code></td><td>chart defaults</td><td><code>replicaCount: 3</code></td></tr>
+<tr><td><code>--set replicaCount=5</code></td><td><b>everything</b> (the ceiling)</td><td>CI one-liners</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> helm install web ./mychart <span class="y">-f</span> prod-values.yaml <span class="y">--set</span> image.tag=<span class="y">v2.1</span>
+<span class="p">$</span> helm template ./mychart -f prod-values.yaml&nbsp;&nbsp;<span class="g"># render WITHOUT installing — review the YAML!</span>
+<span class="p">$</span> helm install web ./mychart <span class="y">--dry-run</span> --debug&nbsp;&nbsp;<span class="g"># same idea, plus install mechanics</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why <code>helm template</code> is a superpower:</b> the chart is a black box until you render it. Diff the output, read exactly what will hit your cluster (Book 01's <code>--dry-run</code> instinct, package-manager edition). Reviewing rendered YAML before apply is the mark of a Helm adult.</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The values-check trap:</b> <code>helm get values</code> shows only <b>YOUR overrides</b> — add <code>-a</code> (all) to see the computed values tree. "I set X but behavior didn't change" is usually a typo'd key silently ignored — <code>helm lint</code> and rendered-output review catch it.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a chart = <b>templates + defaults</b>; installation = merging <i>your</i> values over the defaults (file beats default, <code>--set</code> beats file) and rendering plain YAML — which you can always preview with <code>helm template</code> before anything touches the cluster.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The receipt book: upgrade, history, rollback — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: Releases</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">🎞️ Releases — Lifecycle &amp; Rollback</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A release isn't a one-shot install — it's a <b>tracked lifecycle</b> with numbered revisions. If this feels familiar, it should: it's Book 01 · CH 21's rollout story, reborn at package level.</p>
+<div class="term"><span class="p">$</span> helm upgrade web bitnami/nginx <span class="y">--set</span> replicaCount=<span class="y">3</span>
+<span class="p">$</span> helm history web
+<span class="y">REVISION&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIPTION</span>
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;superseded&nbsp;&nbsp;Install complete
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">deployed</span>&nbsp;&nbsp;&nbsp;&nbsp;Upgrade complete
+<span class="p">$</span> helm rollback web <span class="y">1</span>
+<span class="p">$</span> helm history web
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;superseded&nbsp;&nbsp;Upgrade complete
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">deployed</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">Rollback to 1</span>&nbsp;&nbsp;<span class="g"># ← NEW revision — history moves forward only!</span></div>
+<table class="tb">
+<tr><th>Command</th><th>Job</th><th>Callback</th></tr>
+<tr><td><code>helm upgrade --install N chart</code></td><td>create-or-update — <b>idempotent</b>; the CI/CD workhorse</td><td>declarative wish, Book 01 style</td></tr>
+<tr><td><code>helm rollback N REV</code></td><td>re-render an old revision as a <b>new</b> one</td><td>Book 01 · CH 21: undo ≠ rewind</td></tr>
+<tr><td><code>helm uninstall N</code></td><td>delete the release's objects</td><td>namespaced cascade — Book 01 · Lab 3</td></tr>
+<tr><td><code>helm get values N</code> / <code>helm list</code></td><td>audit config / inventory releases</td><td>—</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The pro flags:</b> <code>--atomic</code> — if an upgrade fails its health checks, <b>auto-rollback</b> (the Deployment-safety net from Book 01 · CH 20, applied to the whole package). <code>--wait</code> — block until all objects are ready. <code>helm upgrade --install --atomic --wait</code> is the CI one-liner worth memorizing.</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Uninstall honesty:</b> <code>helm uninstall</code> removes what Helm tracks — but <b>PVCs often survive</b> (Book 05: stateful resources are deliberately outside casual deletion). And the release receipts (those <code>sh.helm.release…</code> Secrets) go with it — uninstall = lose the ability to rollback. Book 09's <b>etcd backup</b> protects those receipts at a deeper layer.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> every install/upgrade/rollback is a numbered <b>revision</b> — forward-only history exactly like Deployment rollouts — and <code>upgrade --install</code> + <code>--atomic</code> turn "deploy a package" into a safe, idempotent, self-rescuing operation.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The rival philosophy — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: Kustomize</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🎨 Kustomize — Overlays Without Templates</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Kustomize answers the same need as Helm — "same app, different environments" — with the <b>opposite philosophy</b>: no templating language. Your base YAML stays <b>valid, applyable, plain</b>; variants are declared as <b>patches and transformers</b> on top.</p>
+<div class="mtree"><b>base/</b>                       <span class="g"># the honest, deployable baseline</span>
+├── deployment.yaml           <span class="g"># real YAML — no {{ }} anywhere</span>
+├── service.yaml
+└── kustomization.yaml        <span class="g"># resources: [deployment.yaml, service.yaml]</span>
+<b>overlays/prod/kustomization.yaml</b>
+<span class="c">resources</span>: [<span class="m">../../base</span>]       <span class="g"># inherit the baseline</span>
+<span class="c">namespace</span>: <span class="y">prod</span>              <span class="g"># TRANSFORMER: rewrite all namespaces</span>
+<span class="c">namePrefix</span>: <span class="y">prod-</span>            <span class="g"># TRANSFORMER: prefix every name</span>
+<span class="c">images</span>:
+- { <span class="c">name</span>: nginx, <span class="c">newTag</span>: <span class="m">"1.26"</span> }   <span class="g"># transformer: swap the tag</span>
+<span class="c">replicas</span>:
+- { <span class="c">name</span>: web, <span class="c">count</span>: <span class="y">5</span> }           <span class="g"># transformer: scale</span></div>
+<div class="term mini"><span class="p">$</span> kubectl kustomize overlays/prod&nbsp;&nbsp;<span class="g"># PREVIEW — render the final YAML, change nothing</span>
+<span class="p">$</span> kubectl apply <span class="y">-k</span> overlays/prod&nbsp;&nbsp;<span class="g"># apply the overlay — BUILT INTO kubectl</span>
+<span class="p">$</span> kubectl get deploy -n prod
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READY&nbsp;&nbsp;IMAGE</span>
+prod-web&nbsp;&nbsp;&nbsp;5/5&nbsp;&nbsp;&nbsp;&nbsp;nginx:1.26&nbsp;&nbsp;<span class="g"># prefix ✓ ns ✓ tag ✓ replicas ✓</span></div>
+<table class="tb">
+<tr><th></th><th>📦 Helm</th><th>🎨 Kustomize</th></tr>
+<tr><td><b>Mechanism</b></td><td>template + values → new YAML</td><td>patch + transform <b>valid</b> base YAML</td></tr>
+<tr><td><b>Shines at</b></td><td><b>distributing software</b> to strangers (charts)</td><td><b>managing YOUR</b> env variants (dev/stage/prod)</td></tr>
+<tr><td><b>Lifecycle</b></td><td>releases, rollback, repos</td><td>none — just rendering (GitOps-friendly!)</td></tr>
+<tr><td><b>Install</b></td><td>separate binary</td><td><code>kubectl -k</code> — already there</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>They compose:</b> kustomizations can include <code>helmCharts:</code> entries — render a chart into your overlay pipeline. The real-world pattern: <b>Helm for third-party software</b> (postgres, prometheus), <b>Kustomize for your own</b> environment deltas. Rivals? No — different layers of the same delivery stack.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> Kustomize = <b>variations without templates</b> — a valid base, overlays that patch/transform (namespace, prefix, tags, replicas), rendered by <code>kubectl -k</code> itself; Helm distributes software, Kustomize manages <i>your</i> environments — and Lab 2 builds one live.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part III: teaching the API brand-new kinds — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: CRDs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🧬 CRDs — Teaching the API New Kinds</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">You've spent seven books using kinds that <b>don't exist in core Kubernetes</b>: ServiceMonitor (Book 07), VPA (Book 06), Gateway &amp; HTTPRoute (Book 03). Someone <b>taught the API those kinds</b> — with a Custom Resource Definition.</p>
+<div class="term"><span class="c">apiVersion</span>: apiextensions.k8s.io/v1
+<span class="c">kind</span>: CustomResourceDefinition
+<span class="c">metadata</span>:
+  <span class="c">name</span>: crontabs.stable.example.com   <span class="g"># plural.group — THE API path</span>
+<span class="c">spec</span>:
+  <span class="c">group</span>: stable.example.com
+  <span class="c">versions</span>:
+  - <span class="c">name</span>: v1
+    <span class="c">served</span>: <span class="y">true</span>
+    <span class="c">schema</span>:                           <span class="g"># OpenAPI validation — BUILT INTO the API</span>
+      <span class="c">openAPIV3Schema</span>:
+        <span class="c">type</span>: object
+        <span class="c">properties</span>:
+          <span class="c">spec</span>:
+            <span class="c">type</span>: object
+            <span class="c">required</span>: [<span class="m">cronSpec</span>, <span class="m">image</span>]   <span class="g"># the API enforces this!</span>
+            <span class="c">properties</span>:
+              <span class="c">cronSpec</span>: { <span class="c">type</span>: <span class="m">string</span> }
+              <span class="c">image</span>:    { <span class="c">type</span>: <span class="m">string</span> }
+  <span class="c">scope</span>: <span class="y">Namespaced</span>                  <span class="g"># or Cluster (Book 01 · CH 11 scopes!)</span>
+  <span class="c">names</span>: { <span class="c">plural</span>: crontabs, <span class="c">singular</span>: crontab, <span class="c">kind</span>: CronTab }</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f crontab-crd.yaml
+<span class="p">$</span> kubectl get crontabs&nbsp;&nbsp;<span class="g"># ← the API now SPEAKS your kind. RBAC protects it,
+# etcd stores it, kubectl explain crontab.spec works —
+# first-class citizen, indistinguishable from built-ins.</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The crucial boundary:</b> a CRD is <b>schema-validated storage — nothing more</b>. Your CronTab gets validated, versioned, listed… and then <b>sits there</b>. No controller watches it, nothing schedules or runs. A CRD without a controller is a form nobody processes — the next chapter is the processor.</div></div>
+<ul class="tick">
+<li>🧬 <b>CRDs are themselves cluster-scoped</b> (Book 01 · CH 11's list) — the definition governs the cluster; the <i>custom resources</i> (instances) live in namespaces per <code>scope</code></li>
+<li>🛠️ <b>CRDs need installing before their resources</b> — apply order matters, and it's why Book 09's upgrade choreography and Book 08's sync waves (CH 09) exist</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> a CRD extends the API Server with a <b>brand-new kind — validated, stored, RBAC-protected, kubectl-native</b> — but it's inert data until a controller gives it behavior; Lab 3 builds one and proves the API enforces <i>your</i> schema.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The controller half of the pattern — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: Operators</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🤖 Operators — Runbooks as Code</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The series' spine returns one more time. Book 01's reconciliation loop — <i>watch actual, compare desired, act</i> — ran on built-in kinds. An <b>Operator</b> is that same loop, running on <b>your</b> CRD, with <b>your software's domain knowledge</b> encoded inside.</p>
+<div class="mtree"><b>The Operator pattern</b>
+  🧬 <u>CRD</u>  <span class="g">e.g. kind: PostgresCluster (CH 05)</span>
+      │  human writes the WISH:  replicas: 3, version: "16", backup: daily
+      ▼
+  🤖 <u>Operator</u>  <span class="g">= custom controller (a Deployment) watching the CR</span>
+      │  reconciliation loop — with postgres expertise hardcoded:
+      ▼
+  ⚙️ <u>ACTS</u> via the k8s API: creates StatefulSet (Book 05!),
+      headless Service (per-Pod DNS!), PVCs (volumeClaimTemplates!),
+      configures replication, runs backups as CronJobs (Book 06!)
+      ▼
+  📋 reports status back onto the CR — <span class="p">Ready</span></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ What an operator automates</div>
+<p class="small" style="margin:0;">Everything a skilled DBA does at 3am <b>by hand</b>: bootstrap a cluster, add replicas, promote on failover, take consistent backups, rolling-upgrade postgres 15→16 with the right switchover order. The runbook, written in Go, executed forever.</p></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;"><div class="zlabel" style="text-align:left;">🎭 Operators you've already met</div>
+<div class="term mini" style="margin:0;"><span class="c">prometheus-operator</span>  <span class="g">taught the API ServiceMonitor (B07)</span>
+<span class="c">cert-manager</span>         <span class="g">B03 · CH 06: "the cert just appears" —
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; an operator for Certificate CRs</span>
+<span class="c">VPA</span>                  <span class="g">B06 · CH 08 — a CRD + controller</span>
+<span class="c">CloudNativePG, ECK…</span>  <span class="g">database runbooks</span></div></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Capability ladder (interview gold):</b> operators evolve in phases — ① install the software, ② handle upgrades, ③ full lifecycle (backup, failover, scale). "Do we have an <i>operator</i> or just an <i>installer</i>?" is a serious procurement question — the word covers a spectrum.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> an Operator = <b>CRD + a reconciliation loop containing human expertise</b> — the same watch-compare-act spine from Book 01, now fluent in Postgres, certificates, or autoscaling; the CR is the wish, the operator is the eternal professional executing it.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The API's last checkpoint before etcd — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: Admission Webhooks</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🛂 Admission Webhooks — The Last Gate</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Every request this series has made — <code>kubectl apply</code>, controllers, operators — crosses the API Server's bouncer line: <b>AuthN → AuthZ (Book 02) → Admission → persist (etcd)</b>. Admission is the final, programmable checkpoint — and you've been living under it all along.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;">
+<div class="zlabel" style="text-align:left;">✅ Built-in admission you've MET</div>
+<div class="term mini" style="margin:0;"><span class="c">ResourceQuota</span>&nbsp;&nbsp;<span class="g">B01 · CH 06 — "checked at the
+&nbsp;&nbsp;door, not on the floor" — admission!</span>
+<span class="c">PodSecurity</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="g">B02 · CH 13 — PSS enforce/warn/audit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IS an admission controller</span>
+<span class="c">LimitRange</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g">defaults injected per-pod</span>
+<span class="c">NamespaceLifecycle</span> <span class="g">rejects objects into
+&nbsp;&nbsp;terminating namespaces (B01 · Lab 3)</span></div></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;">
+<div class="zlabel" style="text-align:left;">🔌 Extensible: call YOUR code</div>
+<div class="term mini" style="margin:0;"><span class="c">MutatingWebhookConfiguration</span>
+<span class="g">→ API Server calls your HTTPS service;
+&nbsp;&nbsp;webhook RETURNS A PATCHED object.
+&nbsp;&nbsp;(inject sidecars, defaults, labels)</span>
+<span class="c">ValidatingWebhookConfiguration</span>
+<span class="g">→ webhook says allow / deny+reason.
+&nbsp;&nbsp;("no :latest tags" → 403 with
+&nbsp;&nbsp;&nbsp;your policy message)</span></div></div>
+</div>
+<div class="mtree"><b>The webhook flow</b>
+kubectl apply pod.yaml
+  → AuthN (who?) → AuthZ (may you?)
+  → <u>MUTATE</u>&nbsp;&nbsp;<span class="g">sidecar injected, resources defaulted</span>
+  → <u>VALIDATE</u>&nbsp;<span class="g">sees the MUTATED object — order matters!</span>
+  → etcd 💾
+<span class="g">policy engines (Kyverno, OPA Gatekeeper) = prebuilt
+validating/mutating layers driven by policy CRDs (CH 05 again!)</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Two production warnings:</b> (1) <b>failurePolicy</b> — <code>Fail</code> means: your webhook is down, <i>the entire API for those resources is down</i> (deploy nothing until the policy engine recovers). <code>Ignore</code> is available but means "policy offline = policy optional." (2) webhooks sit <b>in the write path</b> of everything — keep them fast, HA, and never co-locate them with the workloads they admit.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> admission is the <b>last programmable gate before etcd</b> — Quota and PSS were its built-in forms all series, and webhooks extend it with your own mutating/validating code, which is how house rules graduate from "convention" to "physically enforced at the door."</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Part IV: making Git the source of truth — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: GitOps</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">🔁 GitOps — The Pull Model</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The classic delivery flow: CI runs <code>kubectl apply</code> or <code>helm upgrade</code>. Two quiet problems: your <b>pipeline holds cluster credentials</b> (Book 02's threat model, aimed at your own automation), and <b>drift is invisible</b> — someone hand-edits a Deployment, and Git says one thing while the cluster does another. Forever.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">❌ Push (CI applies)</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">CI ──kubectl──► cluster
+<span class="g">creds live in CI · hand-edits = silent drift ·
+nothing reconciles · "who changed prod?"</span></div></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Pull (GitOps)</div>
+<div class="mtree" style="font-size:11.5px;padding:10px 14px;margin:0;">Git ◄──pull── in-cluster AGENT ──apply──► cluster
+<span class="g">no creds flow OUT · agent reads Git (pull),
+watches cluster, reconciles the diff ·
+hand-edits get REVERTED (or alerted)</span></div></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The four GitOps principles (OpenGitOps):</b> ① the entire system is <b>declarative</b> (this whole series trained you for it) · ② desired state is <b>versioned in Git</b>, immutable history · ③ changes are <b>pulled</b> by an approved agent — nothing pushes in · ④ the agent <b>continuously reconciles</b>, not just at deploy time.</div></div>
+<div class="think"><p class="small" style="margin:0;"><b>The spine, revealed:</b> Book 01 taught <i>watch actual → compare desired → act</i> for Pods. Book 06 aimed it at replica counts. Book 08 aims it at <b>your entire cluster's configuration</b>: Git is the spec, the cluster is the reality, and the GitOps agent is the controller that cannot tolerate the difference. Drift is just another mismatch to reconcile.</p></div>
+<ul class="tick">
+<li>🔍 <b>Drift detection is the free lunch:</b> even in manual-sync mode, the agent <i>shows</i> you every difference between Git and live — an audit trail and a safety net in one</li>
+<li>🧾 <b>What belongs in Git:</b> everything you authored this series — Deployments, chart values, overlays, CRs, NetworkPolicies. What doesn't: true state (PV data) and raw Secrets (use external-secrets/SOPS — Book 02's encryption lesson, delivery edition)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> GitOps inverts the trust direction — <b>the cluster pulls its own desired state from Git and continuously reconciles toward it</b>, eliminating both the credentials-in-CI problem and silent drift with the series' oldest friend: the reconciliation loop.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The two graduated implementations — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: ArgoCD &amp; Flux</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">🐙 ArgoCD &amp; Flux — Concept Level</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">Two CNCF-graduated implementations of the pull model, same reconciliation core, different personalities:</p>
+<table class="tb">
+<tr><th></th><th>🐙 ArgoCD</th><th>🪶 Flux</th></tr>
+<tr><td><b>Personality</b></td><td>UI-first — watch diffs, click sync, app-of-apps dashboards</td><td>toolkit of lean controllers, no required UI</td></tr>
+<tr><td><b>Extension model</b></td><td><b>Application CRD</b> (yes — an operator whose CRD describes "keep ns X matching Git path Y"!)</td><td>GitOps Toolkit CRDs (Kustomization, HelmRelease, Source)</td></tr>
+<tr><td><b>Know it for</b></td><td>visual drift triage, multi-cluster apps, sync waves/hooks</td><td>modularity, OCI artifact sources, bootstrap-from-nothing</td></tr>
+<tr><td><b>Both</b></td><td colspan="2">reconcile Git→cluster, detect drift, support Helm charts <i>and</i> Kustomize overlays natively (CH 03 + CH 04 compose!)</td></tr>
+</table>
+<div class="term"><span class="g"># the ArgoCD Application — a CR describing one GitOps deployment:</span>
+<span class="c">apiVersion</span>: argoproj.io/v1alpha1
+<span class="c">kind</span>: Application
+<span class="c">spec</span>:
+  <span class="c">source</span>:
+    { <span class="c">repoURL</span>: <span class="m">https://github.com/acme/fleet</span>, <span class="c">path</span>: <span class="m">apps/web/overlays/prod</span> }
+  <span class="c">destination</span>:
+    { <span class="c">server</span>: <span class="m">https://kubernetes.default.svc</span>, <span class="c">namespace</span>: <span class="y">prod</span> }
+  <span class="c">syncPolicy</span>:
+    <span class="c">automated</span>: { <span class="c">prune</span>: <span class="y">true</span>, <span class="c">selfHeal</span>: <span class="y">true</span> }</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The two powerful switches, handled with respect:</b> <code>selfHeal</code> — manual <code>kubectl edit</code> is <b>reverted automatically</b> (drift becomes impossible; so does your emergency hotfix unless it goes through Git — that's the deal). <code>prune</code> — objects deleted from Git are deleted from the cluster: powerful, and a Book 01-cascade-class decision. Turn both on <i>deliberately</i>, per app.</div></div>
+<ul class="tick">
+<li>🌊 <b>Sync waves:</b> annotate objects <code>argocd.argoproj.io/sync-wave: "-1"</code> to order rollouts — <b>CRDs before CRs</b> (CH 05's apply-order rule, enforced), databases before the app that uses them (Book 05's sequence)</li>
+<li>🔓 <b>Secrets in Git</b> stay encrypted (SOPS/sealed-secrets) or better, stay <i>out</i> of Git entirely via external-secrets — Book 02's layers, delivery edition</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> ArgoCD and Flux are <b>operators for your fleet's configuration</b> — an Application CR declares "namespace X must match Git path Y," and automated sync + selfHeal + prune make Git's history and the cluster's reality the same document.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Prove all of it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part V: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Helm Lifecycle — Upgrade &amp; Rollback</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Install — and name the release</div>
+<div class="term mini"><span class="p">$</span> helm repo add bitnami https://charts.bitnami.com/bitnami &amp;&amp; helm repo update
+<span class="p">$</span> helm install web bitnami/nginx <span class="y">--set</span> replicaCount=<span class="y">2</span>
+<span class="p">$</span> helm list
+<span class="y">NAME&nbsp;&nbsp;REVISION&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;CHART&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APP VERSION</span>
+web&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">deployed</span>&nbsp;&nbsp;nginx-x.y.z&nbsp;&nbsp;1.25.x
+<span class="p">$</span> kubectl get deploy&nbsp;&nbsp;<span class="g"># → web-nginx — RELEASE NAME prefixes everything (CH 01)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Upgrade — history only moves forward</div>
+<div class="term mini"><span class="p">$</span> helm upgrade web bitnami/nginx <span class="y">--set</span> replicaCount=<span class="y">3</span>
+<span class="p">$</span> helm history web
+<span class="y">REVISION&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DESCRIPTION</span>
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;superseded&nbsp;&nbsp;Install complete
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">deployed</span>&nbsp;&nbsp;&nbsp;&nbsp;Upgrade complete
+<span class="p">$</span> helm rollback web <span class="y">1</span> &amp;&amp; helm history web
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">deployed</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">Rollback to 1</span>&nbsp;&nbsp;<span class="g"># NEW revision — Book 01 · CH 21's law</span>
+<span class="p">$</span> kubectl get deploy web-nginx&nbsp;&nbsp;<span class="g"># replicas back to 2 ✓</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 AUDIT THE RECEIPTS</div><div class="tabbody"><span class="p">$</span> helm get values web
+<span class="y">USER-SUPPLIED VALUES:</span>
+replicaCount: <span class="y">2</span>&nbsp;&nbsp;<span class="g"># your overrides only;
+# add -a for the FULL tree (CH 02)</span>
+<span class="p">$</span> kubectl get secrets | \
+&nbsp;&nbsp;<span class="c">grep</span> sh.helm.release
+sh.helm.release.v1.web.v<span class="c">1</span>…
+<span class="g"># the receipts live in Secrets —
+# Book 02's safe, holding Helm's
+# paperwork (CH 01!)</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 SEE WHAT ONE COMMAND MADE</div><div class="tabbody"><span class="p">$</span> kubectl get all \
+&nbsp;&nbsp;-l app.kubernetes.io/instance=web
+<span class="g"># deployment · service · (pods…) —
+# one chart, many objects, all
+# LABEL-tracked by release
+# (Book 01 · CH 15's labels = the
+# ownership mechanism!)</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> release naming, forward-only history, values auditing, and label-based ownership. <b>Teardown:</b> <code>helm uninstall web</code> (receipts go too — CH 03!).</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔬 Kustomize Overlays</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · An honest base</div>
+<div class="term mini"><span class="p">$</span> mkdir -p base overlays/prod &amp;&amp; cd base
+<span class="p">$</span> kubectl create deploy web --image=nginx:1.25 --replicas=1 \
+&nbsp;&nbsp;--dry-run=client -o yaml &gt; deployment.yaml
+<span class="p">$</span> <span class="c">cat</span> &gt; kustomization.yaml <span class="c">&lt;&lt;EOF</span>
+<span class="c">resources</span>: [deployment.yaml]
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl kustomize .&nbsp;<span class="g"># renders EXACTLY the base — no templating, just valid YAML</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · The prod overlay — four transformers</div>
+<div class="term mini"><span class="p">$</span> cd ../overlays/prod
+<span class="p">$</span> <span class="c">cat</span> &gt; kustomization.yaml <span class="c">&lt;&lt;EOF</span>
+<span class="c">resources</span>: [<span class="m">../../base</span>]
+<span class="c">namespace</span>: <span class="y">prod</span>
+<span class="c">namePrefix</span>: <span class="y">prod-</span>
+<span class="c">images</span>:
+- { <span class="c">name</span>: nginx, <span class="c">newTag</span>: <span class="m">"1.26"</span> }
+<span class="c">replicas</span>:
+- { <span class="c">name</span>: web, <span class="c">count</span>: <span class="y">3</span> }
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl kustomize . | <span class="c">grep</span> -E <span class="m">'name:|image:|replicas|namespace'</span>
+<span class="y">namespace: prod</span>&nbsp;&nbsp;<span class="g"># transformed</span>
+name: <span class="y">prod-web</span>&nbsp;&nbsp;<span class="g"># prefixed</span>
+image: nginx:<span class="y">1.26</span>&nbsp;<span class="g"># retagged</span>
+replicas: <span class="y">3</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># scaled</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Apply the overlay</div>
+<div class="term mini"><span class="p">$</span> kubectl create ns prod
+<span class="p">$</span> kubectl apply <span class="y">-k</span> overlays/prod
+<span class="p">$</span> kubectl get deploy -n prod
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READY&nbsp;&nbsp;IMAGE</span>
+prod-web&nbsp;&nbsp;&nbsp;3/3&nbsp;&nbsp;&nbsp;&nbsp;nginx:1.26&nbsp;&nbsp;<span class="g"># every transformer, live</span></div></div>
+<p class="small"><b>Proved:</b> base stays valid YAML; the overlay is pure declaration; <code>kubectl -k</code> needs no extra binary. <b>Teardown:</b> <code>kubectl delete ns prod</code> (cascade — Book 01!).</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🔬 Build Your Own API Kind</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Teach the API CronTab (CH 05's CRD, condensed)</div>
+<div class="term mini"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: apiextensions.k8s.io/v1
+<span class="c">kind</span>: CustomResourceDefinition
+<span class="c">metadata</span>: { <span class="c">name</span>: crontabs.stable.example.com }
+<span class="c">spec</span>:
+  <span class="c">group</span>: stable.example.com
+  <span class="c">versions</span>:
+  - <span class="c">name</span>: v1
+    <span class="c">served</span>: <span class="y">true</span>
+    <span class="c">schema</span>:
+      <span class="c">openAPIV3Schema</span>:
+        <span class="c">type</span>: object
+        <span class="c">properties</span>:
+          <span class="c">spec</span>:
+            <span class="c">type</span>: object
+            <span class="c">required</span>: [<span class="m">cronSpec</span>, <span class="m">image</span>]
+            <span class="c">properties</span>:
+              <span class="c">cronSpec</span>: { <span class="c">type</span>: <span class="m">string</span> }
+              <span class="c">image</span>: { <span class="c">type</span>: <span class="m">string</span> }
+  <span class="c">scope</span>: <span class="y">Namespaced</span>
+  <span class="c">names</span>: { <span class="c">plural</span>: crontabs, <span class="c">kind</span>: CronTab }
+<span class="c">EOF</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 THE API SPEAKS YOUR KIND</div><div class="tabbody"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: stable.example.com/v1
+<span class="c">kind</span>: CronTab
+<span class="c">metadata</span>: { <span class="c">name</span>: my-cron }
+<span class="c">spec</span>:
+  <span class="c">cronSpec</span>: <span class="m">"*/5 * * * *"</span>
+  <span class="c">image</span>: my-cron-img:1.0
+<span class="c">EOF</span>
+<span class="p">$</span> kubectl get crontabs
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AGE</span>
+my-cron&nbsp;&nbsp;5s&nbsp;&nbsp;<span class="g"># first-class!</span>
+<span class="p">$</span> kubectl explain crontab.spec
+<span class="g"># schema docs — generated
+# from YOUR openAPIV3Schema</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#dc2626;">🚫 THE API ENFORCES *YOUR* SCHEMA</div><div class="tabbody"><span class="p">$</span> kubectl apply -f - <span class="c">&lt;&lt;EOF</span>
+<span class="c">apiVersion</span>: stable.example.com/v1
+<span class="c">kind</span>: CronTab
+<span class="c">metadata</span>: { <span class="c">name</span>: bad }
+<span class="c">spec</span>: { <span class="c">image</span>: <span class="m">x:1</span> }
+<span class="c">EOF</span>
+<span class="r">The CronTab "bad" is invalid:
+spec.cronSpec: Required value</span>
+<span class="g"># rejected at the door —
+# YOUR required field, enforced
+# by the API Server itself.
+# (and: my-cron just SITS there —
+# no controller. CH 06 = the fix)</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> your kind is validated, stored, listable, and <code>explain</code>-able — schema enforcement included; behavior still absent (that's an operator's job). <b>Teardown:</b> <code>kubectl delete crontab my-cron; kubectl delete crd crontabs.stable.example.com</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span><code>helm install mon chart-x</code> creates…<br><b>A.</b> a chart &nbsp; <b>B.</b> a repository &nbsp; <b>C.</b> a named release with tracked revisions &nbsp; <b>D.</b> a namespace called mon</div>
+<div class="qz"><span class="qn">Q2.</span>After <code>helm rollback web 1</code> from revision 3, <code>helm history</code> shows…<br><b>A.</b> history trimmed to one entry &nbsp; <b>B.</b> a NEW revision 4, "Rollback to 1" — forward-only history &nbsp; <b>C.</b> revision 1 re-marked deployed, 2–3 deleted &nbsp; <b>D.</b> an error — rollback is Deployment-only</div>
+<div class="qz"><span class="qn">Q3.</span>Values precedence, last-wins:<br><b>A.</b> --set &lt; -f file &lt; chart defaults &nbsp; <b>B.</b> chart defaults &lt; --set &lt; -f file &nbsp; <b>C.</b> they merge randomly &nbsp; <b>D.</b> chart defaults &lt; -f file &lt; --set</div>
+<div class="qz"><span class="qn">Q4.</span>Kustomize differs from Helm fundamentally because it…<br><b>A.</b> patches and transforms valid base YAML — no templating language &nbsp; <b>B.</b> requires a separate binary &nbsp; <b>C.</b> stores releases in Secrets &nbsp; <b>D.</b> only works with charts</div>
+<div class="qz"><span class="qn">Q5.</span>A CRD <i>by itself</i> provides…<br><b>A.</b> a running controller &nbsp; <b>B.</b> schema-validated, RBAC-protected storage — with no behavior &nbsp; <b>C.</b> automatic backups &nbsp; <b>D.</b> a new namespace</div>
+<div class="qz"><span class="qn">Q6.</span>The <code>ServiceMonitor</code> kind (Book 07) exists because…<br><b>A.</b> it's built into core k8s &nbsp; <b>B.</b> kubectl installed it &nbsp; <b>C.</b> the prometheus-operator taught the API via a CRD &nbsp; <b>D.</b> Grafana created it dynamically</div>
+<div class="qz"><span class="qn">Q7.</span>Order at the API Server's admission line:<br><b>A.</b> mutating webhooks run BEFORE validating — validators see the mutated object &nbsp; <b>B.</b> validation first, then mutation &nbsp; <b>C.</b> they run in parallel &nbsp; <b>D.</b> admission runs after persistence</div>
+<div class="qz"><span class="qn">Q8.</span>ResourceQuota and Pod Security Standards are examples of…<br><b>A.</b> operators &nbsp; <b>B.</b> CRDs &nbsp; <b>C.</b> built-in admission controllers &nbsp; <b>D.</b> CNI features</div>
+<div class="qz"><span class="qn">Q9.</span>GitOps improves on CI-push mainly because…<br><b>A.</b> it's faster &nbsp; <b>B.</b> an in-cluster agent PULLS from Git — no external credentials, and drift is continuously reconciled &nbsp; <b>C.</b> it removes the need for Git &nbsp; <b>D.</b> it skips RBAC</div>
+<div class="qz"><span class="qn">Q10.</span>ArgoCD's <code>selfHeal: true</code> means…<br><b>A.</b> probes are auto-configured &nbsp; <b>B.</b> broken Pods restart faster &nbsp; <b>C.</b> Git gets updated from the cluster &nbsp; <b>D.</b> manual cluster edits are automatically reverted toward Git</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>C</b></td><td>Install = named release instance, revisions tracked in Secrets — CH 01</td></tr>
+<tr><td>2</td><td><b>B</b></td><td>Rollback re-renders as a new revision; history never rewinds — CH 03, Lab 1</td></tr>
+<tr><td>3</td><td><b>D</b></td><td>Defaults lose, file beats them, --set beats everything — CH 02</td></tr>
+<tr><td>4</td><td><b>A</b></td><td>No templates: transformers/patches over valid YAML, built into kubectl — CH 04</td></tr>
+<tr><td>5</td><td><b>B</b></td><td>CRD = storage + validation only; Lab 3's CronTab sat there — CH 05</td></tr>
+<tr><td>6</td><td><b>C</b></td><td>Every non-core kind you've used came from someone's CRD — CH 05/06</td></tr>
+<tr><td>7</td><td><b>A</b></td><td>Mutation first, so policy validates what will actually persist — CH 07</td></tr>
+<tr><td>8</td><td><b>C</b></td><td>"Checked at the door" — Quota (B01) and PSS (B02) ARE admission — CH 07</td></tr>
+<tr><td>9</td><td><b>B</b></td><td>Pull direction kills credential exfil + drift — CH 08</td></tr>
+<tr><td>10</td><td><b>D</b></td><td>selfHeal = reconcile live state back to Git; hotfixes must go through Git — CH 09</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 09</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–3, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q5 or Q6?</b> The CRD/Operator split is THE extension-model question — data vs behavior. Missed Q8? Realizing Quota and PSS were admission all along is this book's biggest "oh" — the built-in world already ran the pattern you're now extending.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>Chart</b> — Helm package: templated templates/ + default values.yaml + Chart.yaml metadata.</div>
+<div class="gl"><b>Repository</b> — URL serving charts; <code>helm repo add</code> subscribes you to the store.</div>
+<div class="gl"><b>Release</b> — a named installed instance of a chart; every object labeled and tracked together.</div>
+<div class="gl"><b>Revision</b> — numbered snapshot of a release state; upgrades and rollbacks append (forward-only).</div>
+<div class="gl"><b>values precedence</b> — chart defaults &lt; <code>-f</code> file &lt; <code>--set</code>; last wins.</div>
+<div class="gl"><b>helm template / --dry-run</b> — render before install; review the exact YAML that will hit the cluster.</div>
+<div class="gl"><b>--atomic / --wait</b> — auto-rollback on failed upgrade / block until ready; the CI-safe install flags.</div>
+<div class="gl"><b>Kustomize</b> — template-free customization: base (valid YAML) + overlays of patches/transformers; <code>kubectl -k</code>.</div>
+<div class="gl"><b>Transformers</b> — namespace, namePrefix, images, replicas — declarative rewrites applied at render time.</div>
+<div class="gl"><b>CRD</b> — CustomResourceDefinition: teaches the API a new kind (group/version/kind, schema, scope); cluster-scoped itself.</div>
+<div class="gl"><b>Custom Resource (CR)</b> — an instance of a CRD; inert data without a controller.</div>
+<div class="gl"><b>Operator</b> — CRD + custom controller: domain-expert reconciliation loop that manages the software's full lifecycle.</div>
+<div class="gl"><b>Operator capability levels</b> — install → upgrades → full lifecycle (backup, failover, scale).</div>
+<div class="gl"><b>Admission controller</b> — API Server checkpoint after AuthZ, before etcd; ResourceQuota, LimitRange, PodSecurity are built-ins.</div>
+<div class="gl"><b>MutatingWebhookConfiguration</b> — HTTPS callout that patches objects (sidecar injection, defaults); runs before validation.</div>
+<div class="gl"><b>ValidatingWebhookConfiguration</b> — HTTPS callout that allows/denies with a reason; sees the mutated object.</div>
+<div class="gl"><b>failurePolicy</b> — Fail (webhook down = API for those resources down) vs Ignore (policy optional when offline).</div>
+<div class="gl"><b>GitOps</b> — declarative state in Git, pulled and continuously reconciled by an in-cluster agent; no outbound credentials, drift auto-detected.</div>
+<div class="gl"><b>Drift</b> — divergence between Git and live state; the mismatch a GitOps agent exists to eliminate.</div>
+<div class="gl"><b>Application CRD</b> — ArgoCD's object: source (Git path) + destination + syncPolicy describing one managed deployment.</div>
+<div class="gl"><b>selfHeal / prune</b> — revert manual edits toward Git / delete live objects removed from Git.</div>
+<div class="gl"><b>Sync wave</b> — ArgoCD ordering annotation; CRDs before CRs, databases before apps.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">📦 Helm — commands</div><div class="term mini"><span class="p">$</span> helm repo add X URL &amp;&amp; helm repo update
+<span class="p">$</span> helm install N chart [-f v.yaml] [--set k=v]
+<span class="p">$</span> helm upgrade N chart [--install] [--atomic --wait]
+<span class="p">$</span> helm rollback N REV&nbsp;&nbsp;<span class="g"># new revision!</span>
+<span class="p">$</span> helm history N · list · get values N [-a]
+<span class="p">$</span> helm template ./chart -f v.yaml&nbsp;&nbsp;<span class="g"># preview</span>
+<span class="p">$</span> helm uninstall N&nbsp;&nbsp;<span class="g"># receipts gone too</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🎨 Kustomize — skeleton</div><div class="term mini"><span class="g">base/kustomization.yaml:</span>
+<span class="c">resources</span>: [deployment.yaml, service.yaml]
+<span class="g">overlays/prod/kustomization.yaml:</span>
+<span class="c">resources</span>: [../../base]
+<span class="c">namespace</span>: prod&nbsp;&nbsp;·&nbsp;&nbsp;<span class="c">namePrefix</span>: prod-
+<span class="c">images</span>: [{name: nginx, newTag: "1.26"}]
+<span class="c">replicas</span>: [{name: web, count: 3}]
+<span class="p">$</span> kubectl kustomize overlays/prod&nbsp;<span class="g"># preview</span>
+<span class="p">$</span> kubectl apply <span class="y">-k</span> overlays/prod</div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🧬 CRD minimum + webhook flow</div><div class="term mini"><span class="c">kind</span>: CustomResourceDefinition
+<span class="c">spec</span>: { group, versions[].schema,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scope, names{plural,kind} }
+<span class="g"># CRD = data only · +controller = Operator</span>
+<span class="g">flow: authn → authz → MUTATE → VALIDATE → etcd
+Quota · LimitRange · PSS = built-in admission
+Kyverno/Gatekeeper = policy CRDs on webhooks
+failurePolicy: Fail = webhook down ⇒ API down</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🔁 GitOps — ArgoCD Application</div><div class="term mini"><span class="c">spec</span>:
+  <span class="c">source</span>: {repoURL, path}
+  <span class="c">destination</span>: {server, namespace}
+  <span class="c">syncPolicy</span>:
+    <span class="c">automated</span>: { <span class="c">prune</span>: <span class="y">true</span>,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c">selfHeal</span>: <span class="y">true</span> }
+<span class="g"># in Git: everything you author
+# NOT in Git: PV data, raw Secrets
+# (SOPS / external-secrets instead)</span></div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>Helm = charts (templates+values) → releases (named, revisioned, receipts in Secrets); rollback appends a revision</li>
+<li>Kustomize = transformers over valid base YAML; Helm distributes software, Kustomize manages your env deltas — they compose</li>
+<li>CRD = validated storage; CRD + controller with domain knowledge = Operator (the series' reconcile loop, generalized)</li>
+<li>ServiceMonitor, VPA, GatewayAPI, ArgoCD's Application — all CRDs; cert-manager — an operator</li>
+<li>Admission is the last gate: Quota/PSS built-in, webhooks extend it; mutation precedes validation; failurePolicy Fail = dependency</li>
+<li>GitOps: agent pulls from Git, reconciles continuously — selfHeal reverts hand-edits, prune deletes removed objects</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 08 complete</span></div>
+<p class="lead">Books 01–07 built the machine and taught it to observe itself — Book 08 made its <b>entire lifecycle declarative and self-reconciling</b>.</p>
+<div class="mtree"><b>📦 THE DELIVERY LAYER — fully mapped:</b>
+├── <u>Helm</u>        <span class="g">charts · values precedence · releases · rollback</span>
+├── <u>Kustomize</u>    <span class="g">base + overlays · transformers · kubectl -k</span>
+├── <u>CRDs</u>        <span class="g">your own kinds — validated by the API itself</span>
+├── <u>Operators</u>    <span class="g">the reconcile loop with domain knowledge</span>
+├── <u>Webhooks</u>    <span class="g">the last gate — Quota/PSS were built-in admission</span>
+└── <u>GitOps</u>      <span class="g">Git = spec · agent = controller · drift = mismatch</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Decode and safely operate any chart — upgrade with --atomic, audit values, roll back knowing history never rewinds</li>
+<li>Structure a fleet repo: Helm for third-party software, Kustomize overlays for your environments</li>
+<li>Extend the API with your own CRD and explain precisely what an operator adds to it</li>
+<li>Read the API Server's full request path — authn → authz → mutate → validate → etcd — and place every Book 02 concept on it</li>
+<li>Set up GitOps with eyes open: what selfHeal and prune really promise, and what never belongs in Git</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 09 · Cluster Lifecycle &amp; Production Readiness — the finale:</b> everything so far ran <i>inside</i> a working cluster. Book 09 builds and maintains the cluster itself: kubeadm installation, <b>etcd backup &amp; restore</b> (where Helm's release receipts and every object you've ever applied actually live!), control-plane upgrade choreography, GKE/EKS/AKS differences, multi-cluster strategy — and the CKA/CKAD/CKS exam map for the whole series.</div></div>
+<div class="center" style="margin-top:18px;font-size:20px;">— End of Book 08 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 08 · Packaging, GitOps &amp; Extending K8s</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 19</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

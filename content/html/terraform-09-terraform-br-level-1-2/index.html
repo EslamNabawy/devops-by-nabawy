@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Terraform Level 1+2 · Vol 1 · INK & AMBER</title>
+<style>:root{--paper:#faf7f1;--card:#fffdf9;--ink:#26201a;--line:#e7e0d2;--muted:#7c7264;--amber:#d97706;--amber-d:#b45309;--teal:#0f766e;--crimson:#b91c1c;--plum:#7c3aed;--green:#15803d;--t-amber:#fdf1de;--t-teal:#e8f4f2;--t-crimson:#fbeaea;--t-plum:#f3eefb;--t-green:#eaf6ec;--t-paper:#f4eee1;--rose:#be123c;--t-rose:#fbeaea;--sky-t:#e0f0fa}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;background:#e9e2d6;font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink)}
+@page{size:A4;margin:0}
+.sheet{width:210mm;min-width:210mm;max-width:210mm;height:297mm;min-height:297mm;max-height:297mm;background:var(--paper);margin:0 auto 9mm;padding:10mm 12mm 14mm;box-sizing:border-box;position:relative;box-shadow:0 6px 22px rgba(38,32,26,.22);page-break-after:always;page-break-inside:avoid;overflow:hidden}
+.sheet::before{content:'';position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(to bottom, var(--ink) 0 6px, var(--amber) 6px 8px)}
+@media print{body{background:#fff}.sheet{margin:0;box-shadow:none}}
+.pghead{margin:0 0 10px;border-bottom:2px solid var(--ink);padding-bottom:7px}
+.hrow{display:flex;align-items:flex-start;gap:12px}
+.kick{font-size:9.8px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-d);margin-bottom:2px}
+h1.t{font-family:Georgia,'Times New Roman',serif;font-size:24.2px;font-weight:700;margin:0;line-height:1.2}
+.hmeta{margin-left:auto;align-self:flex-start;font-size:9.8px;font-weight:800;border:2px solid var(--ink);border-radius:8px;padding:3px 10px;background:var(--t-amber);box-shadow:3px 0 var(--ink);white-space:nowrap}
+.folio{position:absolute;bottom:8mm;left:15mm;right:15mm;display:flex;align-items:center;gap:10px;font-size:9.3px;letter-spacing:.06em;color:var(--muted)}
+.folio::before,.folio::after{content:'';flex:1;border-top:2px solid var(--ink)}
+.folio .fnum{font-weight:800;color:var(--ink)}
+a.tocrow{color:inherit;text-decoration:none}
+a.tocrow:hover .tp{color:var(--amber-d)}
+a.tlink{color:var(--amber-d);font-weight:700;text-decoration:none;border-bottom:2px dotted var(--amber)}
+a.tlink:hover{background:var(--t-amber)}
+a.backtoc{color:var(--muted);text-decoration:none;border:1.5px solid var(--ink);border-radius:6px;padding:1px 7px;font-weight:800;font-size:8.8px;box-shadow:2px 2px 0 rgba(38,32,26,.8);background:var(--card)}
+a.backtoc:hover{color:var(--amber-d)}
+.mark{border-radius:0 10px 10px 0;border-left:5px solid;padding:9px 13px;margin:7px 0;font-size:11.7px;line-height:1.40}
+.mark .tag{display:block;font-size:9.3px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.m-key{border-color:var(--amber);background:var(--t-amber)}.m-key .tag{color:var(--amber-d)}
+.m-warn{border-color:var(--crimson);background:var(--t-crimson)}.m-warn .tag{color:var(--crimson)}
+.m-tip{border-color:var(--teal);background:var(--t-teal)}.m-tip .tag{color:var(--teal)}
+.m-fun{border-color:var(--plum);background:var(--t-plum)}.m-fun .tag{color:var(--plum)}
+.m-ok{border-color:var(--green);background:var(--t-green)}.m-ok .tag{color:var(--green)}
+.m-exam{border:2px solid var(--ink);border-left:6px solid var(--amber);background:var(--card);border-radius:0 10px 10px 0;box-shadow:3px 3px 0 var(--ink);padding:9px 13px;margin:7px 0;font-size:11.7px;line-height:1.40}
+.m-exam .tag{display:block;font-size:9.3px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-d);margin-bottom:2px}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 rgba(38,32,26,.85);padding:8px 10px}
+.ptitle{font-family:Georgia,serif;font-size:14.0px;font-weight:700;margin:0 0 7px}
+.blk{display:inline-block;border:2px solid var(--ink);border-radius:10px;padding:7px 12px;font-weight:800;font-size:11.6px;text-align:center;box-shadow:3px 3px 0 rgba(38,32,26,.85)}
+.blk small{display:block;font-weight:600;font-size:9.8px;margin-top:2px;line-height:1.3}
+.b-amber{background:var(--t-amber)}.b-teal{background:var(--t-teal)}.b-crimson{background:var(--t-crimson)}
+.b-plum{background:var(--t-plum)}.b-green{background:var(--t-green)}.b-paper{background:var(--card)}.b-sky{background:var(--sky-t)}
+.b-ink{background:var(--ink);color:var(--paper)}.b-ink small{color:#d8d0c2}
+.pill{display:inline-block;border:2px solid var(--rose);color:#9f1239;background:var(--t-rose);border-radius:999px;padding:3px 11px;font-size:10.2px;font-weight:800}
+.chipr{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:4px 11px;font-size:10.7px;font-weight:700;box-shadow:2px 2px 0 rgba(38,32,26,.8)}
+.chipr small{color:var(--muted);font-weight:600}
+.fstem{width:2.5px;height:16px;background:var(--ink);margin:0 auto}
+.fbar{border-top:2.5px solid var(--ink);height:0}
+.fbarwrap{display:flex;justify-content:center}
+.fbar2{width:50%}.fbar3{width:66.7%}
+.fcols{display:flex}
+.fcol{flex:1;padding:0 6px;display:flex;flex-direction:column;align-items:center}
+.fcol .fstub{width:2.5px;height:16px;background:var(--ink)}
+.darr{text-align:center;color:var(--ink);font-size:12.1px;margin:1px 0}
+.harrow{color:var(--ink);font-size:12.1px;align-self:center}
+.frow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.dnote{text-align:center;font-size:11.2px;color:var(--muted);margin-top:5px}
+.zone{border:2.5px solid var(--ink);border-radius:14px;padding:8px 10px;background:var(--card);box-shadow:4px 4px 0 rgba(38,32,26,.85)}
+.z-amber{background:var(--t-amber)}.z-teal{background:var(--t-teal)}.z-crimson{background:var(--t-crimson)}.z-paper{background:var(--t-paper)}
+.zlabel{font-size:9.3px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);text-align:center;margin-bottom:8px}
+.code{background:#211d19;color:#efe9dd;border:2px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 rgba(38,32,26,.85);padding:9px 12px;font:9.8px/1.4 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden}
+.code .p{color:#fbbf24}.code .c{color:#93c5fd}.code .y{color:#fcd34d}.code .r{color:#f87171}.code .m{color:#f9a8d4}.code .g{color:#a8a29e}.code .s{color:#86efac}
+.code.mini{font-size:10.0px;padding:9px 12px;line-height:1.45}
+.tree{background:#211d19;color:#e7e0d2;border:2px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 rgba(38,32,26,.85);padding:9px 12px;font:9.8px/1.4 'Consolas','SF Mono',monospace;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden}
+.tree b{color:#fbbf24}.tree u{color:#86efac;text-decoration:none}.tree em{color:#f9a8d4;font-style:normal}.tree i{color:#c4b5fd;font-style:normal}.tree s{color:#7dd3fc;text-decoration:none}.tree .g{color:#a8a29e}
+table.tb{width:100%;border-collapse:separate;border-spacing:0;border:2px solid var(--ink);border-radius:12px;overflow:hidden;font-size:11.3px;box-shadow:3px 3px 0 rgba(38,32,26,.85)}
+.tb th{background:var(--ink);color:var(--paper);padding:8px 11px;text-align:left;font-size:10.7px;letter-spacing:.04em}
+.tb td{padding:7.5px 11px;border-bottom:1px solid var(--line);background:var(--card);vertical-align:top}
+.tb tr:nth-child(even) td{background:var(--t-paper)}
+.tb tr:last-child td{border-bottom:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.center{text-align:center}
+ul.tick{list-style:none;padding:0;margin:4px 0}
+ul.tick li{padding:3px 0 3px 2px;display:flex;gap:9px;align-items:flex-start;font-size:11.6px;line-height:1.40}
+h3.sec{font-family:Georgia,serif;font-size:13px;font-weight:700;margin:5px 0 4px}
+h3.sec .n{color:var(--amber-d);margin-right:6px}
+p.lead{font-size:11.2px;line-height:1.4;margin:0 0 8px}
+p.small,li{font-size:11.6px;line-height:1.40}
+.st{display:inline-block;border:2px solid;border-radius:999px;padding:2px 10px;font-size:9.8px;font-weight:800}
+.st-run{border-color:var(--green);color:var(--green);background:var(--t-green)}
+.st-pend{border-color:var(--amber-d);color:var(--amber-d);background:var(--t-amber)}
+.st-term{border-color:var(--crimson);color:var(--crimson);background:var(--t-crimson)}
+.qz{border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:7px 11px;margin:4px 0;background:var(--card);font-size:11.0px;line-height:1.35}
+.qz .qn{font-weight:900;color:var(--amber-d);margin-right:5px}
+.glos{border-left:4px solid var(--amber);background:var(--card);border-radius:0 8px 8px 0;padding:6px 10px;font-size:10.5px;line-height:1.30}
+.glos b{font-family:Georgia,serif}
+.stepitem{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--ink);border-radius:10px;box-shadow:3px 3px 0 rgba(38,32,26,.85);background:var(--card);padding:8px 12px;margin:0 0 8px}
+.stepnum{min-width:26px;height:26px;background:var(--ink);color:var(--paper);border-radius:8px;font-weight:900;font-size:12.1px;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--amber)}
+.ok{color:var(--green);font-weight:800}.bad{color:var(--crimson);font-weight:800}
+.termwin{border:2px solid var(--ink);border-radius:12px;overflow:hidden;box-shadow:4px 4px 0 rgba(38,32,26,.85);background:#211d19}
+.termhead{padding:6px 12px;font-size:10.2px;font-weight:800;letter-spacing:.08em;color:#fffdf8}
+.th-obs{background:var(--teal)}.th-ctl{background:var(--amber-d)}
+.termbody{background:#211d19;color:#efe9dd;font:9.4px/1.4 'Consolas','SF Mono',monospace;padding:7px 10px;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;max-width:100%;overflow:hidden}
+.termbody .p{color:#fbbf24}.termbody .g{color:#a8a29e}.termbody .s{color:#86efac}.termbody .r{color:#f87171}.termbody .c{color:#93c5fd}
+.labstep{border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 rgba(38,32,26,.85);background:var(--card);padding:10px 12px;margin:6px 0}
+.labcols{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:7px}
+.labtag{font-size:9.3px;font-weight:800;letter-spacing:.08em;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+.cover{background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20mm}
+.cover::before{height:14px;background:var(--ink)}
+.cover .stamp{border:3px solid var(--ink);border-radius:14px;box-shadow:5px 5px 0 var(--amber);padding:14px 20px;font-size:40.9px;line-height:1;transform:rotate(-2deg);background:var(--card);margin-bottom:22px}
+.cover .ckick{font-size:11.2px;font-weight:800;letter-spacing:.34em;text-transform:uppercase;color:var(--amber-d)}
+.cover h1{font-family:Georgia,serif;font-size:48.4px;font-weight:700;margin:5px 0 2px;line-height:1.08}
+.cover .ambrule{width:90px;border-top:6px solid var(--amber);margin:16px auto}
+.cover .sub{font-size:13.5px;color:#4a4238;max-width:145mm;line-height:1.50}
+.cover .vols{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+.volcard{border:2px solid var(--ink);border-radius:12px;background:var(--card);box-shadow:4px 4px 0 rgba(38,32,26,.85);padding:10px 16px;font-weight:800;font-size:12.1px}
+.volcard small{display:block;font-weight:600;color:var(--muted);font-size:9.8px;margin-top:2px}
+.cover .cver{position:absolute;bottom:12mm;left:0;right:0;text-align:center;font-size:9.8px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.tocrow{display:flex;align-items:baseline;padding:6px 2px;font-size:11.9px}
+.tocrow .tnum{font-family:Georgia,serif;font-weight:700;color:var(--amber-d);width:40px}
+.tocrow .dots{flex:1;border-bottom:2px dotted #c9bfa9;margin:0 9px 4px}
+.tocrow .tp{font-weight:800}
+.tocgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.cb{width:13px;height:13px;border:2px solid var(--ink);border-radius:3px;display:inline-block;margin-right:7px;vertical-align:-2px;flex:none}
+.lgd{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:8px}
+.lgd div{display:flex;align-items:center;gap:7px;font-size:11.2px;font-weight:600}
+.dot8{width:12px;height:12px;border:2px solid var(--ink);border-radius:4px;display:inline-block}
+.resbox{border:2px solid var(--ink);border-radius:12px;background:var(--card);box-shadow:3px 3px 0 rgba(38,32,26,.85);padding:11px 14px;font-size:11.5px;line-height:1.40}
+.resbox a{color:var(--amber-d);font-weight:800;text-decoration:none;border-bottom:2px dotted var(--amber)}
+</style></head><body>
+<div class="sheet cover" id="cover"><div class="stamp">🏗️</div><div class="ckick">Terraform Study Series · Volume One</div><h1>Terraform<br>Level 1 + 2</h1><div class="ambrule"></div><p class="sub">The complete <b>beginner-to-intermediate</b> guide: Infrastructure as Code, the core workflow, AWS provider setup, networking, compute, remote state — and the Day 2 patterns that turn a script into a team tool. Built on the course deck by <b>Eng. Mohamed Magdy</b>.</p><div class="vols"><div class="volcard">Part I · Day 1<small>Foundations · Workflow · State</small></div><div class="volcard">Part II · Day 2<small>Variables · Workspaces · HCL</small></div><div class="volcard">Part III · L2<small>Provisioners · Modules · Capstone</small></div></div><div class="cver">INK & AMBER EDITION · 2026</div><div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 1 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="toc"><div class="pghead"><div class="hrow"><div><div class="kick">CONTENTS</div><h1 class="t">🗺️ Map of the Book</h1></div><span class="hmeta">☑ tick as you go</span></div></div>
+<p class="lead">Every page is a clickable door. Use the <b>TOC</b> badge at the bottom of every page to return here. Read the <a class="tlink" href="#summary">Executive Summary</a> first — it tells the whole story in one page.</p>
+<div class="tocgrid">
+<a class="tocrow" href="#summary"><span class="tnum">→</span><span class="tp">Executive Summary — The Route</span><span class="dots"></span><span class="tp">3</span></a>
+<a class="tocrow" href="#ch-01"><span class="tnum">01</span><span class="tp">What is Infrastructure as Code?</span><span class="dots"></span><span class="tp">4</span></a>
+<a class="tocrow" href="#ch-02"><span class="tnum">02</span><span class="tp">What is Terraform + Why (6 pillars)</span><span class="dots"></span><span class="tp">5</span></a>
+<a class="tocrow" href="#ch-03"><span class="tnum">03</span><span class="tp">How Terraform Works — Core vs Plugins</span><span class="dots"></span><span class="tp">6</span></a>
+<a class="tocrow" href="#ch-04"><span class="tnum">04</span><span class="tp">AWS Provider — Three Auth Patterns</span><span class="dots"></span><span class="tp">7</span></a>
+<a class="tocrow" href="#ch-05"><span class="tnum">05</span><span class="tp">Your First Resource — aws_vpc</span><span class="dots"></span><span class="tp">8</span></a>
+<a class="tocrow" href="#ch-06"><span class="tnum">06</span><span class="tp">VPC Networking — Subnets, IGW, NAT</span><span class="dots"></span><span class="tp">9</span></a>
+<a class="tocrow" href="#ch-07"><span class="tnum">07</span><span class="tp">terraform init — what it really does</span><span class="dots"></span><span class="tp">10</span></a>
+<a class="tocrow" href="#ch-08"><span class="tnum">08</span><span class="tp">plan · apply · tfstate — the core loop</span><span class="dots"></span><span class="tp">11</span></a>
+<a class="tocrow" href="#ch-09"><span class="tnum">09</span><span class="tp">The 3-State Model — code · state · reality</span><span class="dots"></span><span class="tp">12</span></a>
+<a class="tocrow" href="#ch-10"><span class="tnum">10</span><span class="tp">State Risks &amp; Remote Backend</span><span class="dots"></span><span class="tp">13</span></a>
+<a class="tocrow" href="#ch-11"><span class="tnum">11</span><span class="tp">State Locking — the mutex</span><span class="dots"></span><span class="tp">14</span></a>
+<a class="tocrow" href="#ch-12"><span class="tnum">12</span><span class="tp">State Subcommands &amp; CLI extras</span><span class="dots"></span><span class="tp">15</span></a>
+<a class="tocrow" href="#ch-13"><span class="tnum">13</span><span class="tp">fmt &amp; destroy — canon &amp; teardown</span><span class="dots"></span><span class="tp">16</span></a>
+<a class="tocrow" href="#ch-14"><span class="tnum">14</span><span class="tp">Variables &amp; the precedence ladder</span><span class="dots"></span><span class="tp">17</span></a>
+<a class="tocrow" href="#ch-15"><span class="tnum">15</span><span class="tp">Workspaces &amp; Advanced HCL</span><span class="dots"></span><span class="tp">18</span></a>
+<a class="tocrow" href="#ch-16"><span class="tnum">16</span><span class="tp">Outputs — share, export, CI/CD</span><span class="dots"></span><span class="tp">19</span></a>
+<a class="tocrow" href="#ch-17"><span class="tnum">17</span><span class="tp">Providers catalog — IaaS / PaaS / SaaS</span><span class="dots"></span><span class="tp">20</span></a>
+<a class="tocrow" href="#ch-18"><span class="tnum">18</span><span class="tp">Provisioners — doctrine: last resort</span><span class="dots"></span><span class="tp">21</span></a>
+<a class="tocrow" href="#ch-19"><span class="tnum">19</span><span class="tp">Modules — package, version, reuse</span><span class="dots"></span><span class="tp">22</span></a>
+<a class="tocrow" href="#lab-1"><span class="tnum">★</span><span class="tp">CAPSTONE — full build chain</span><span class="dots"></span><span class="tp">23</span></a>
+<a class="tocrow" href="#cheat"><span class="tnum">▣</span><span class="tp">Cheat · Quiz · Glossary · Resources</span><span class="dots"></span><span class="tp">24</span></a>
+</div>
+<h3 class="sec" style="margin-top:14px;"><span class="n">▣</span>How to read this book</h3>
+<ul class="tick">
+<li>🟢 <b>Concept pages</b> — read in order on Day 1.</li>
+<li>🟡 <b>Mechanics</b> — when you want to understand what plan/apply/state actually do.</li>
+<li>🟠 <b>Labs</b> — you need a terminal and 30 minutes.</li>
+<li>🖨 <b>Print the cheat page</b> — review card before any interview.</li>
+</ul>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 2 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="summary"><div class="pghead"><div class="hrow"><div><div class="kick">EXECUTIVE SUMMARY</div><h1 class="t">🗺️ The Route — One Page, Whole Book</h1></div><span class="hmeta">📖 read first</span></div></div>
+<p class="lead">We begin with <b>why</b> clicking through consoles doesn't scale, and meet the contractor who fixes it. From there you learn to draw blueprints: <a class="tlink" href="#ch-04">AWS provider</a> brings the keys (without exposing them); <a class="tlink" href="#ch-05">your first VPC</a> draws the boundary. The book's beating heart: <a class="tlink" href="#ch-09">state</a>, the ledger that remembers every resource, guarded by the <a class="tlink" href="#ch-08">plan</a>, the dress rehearsal.</p>
+<p class="lead">Day 1 builds the foundation: <a class="tlink" href="#ch-07">init</a> wires plugins, <a class="tlink" href="#ch-08">plan/apply</a> executes the diff, <a class="tlink" href="#ch-10">remote backend</a> stores the ledger, <a class="tlink" href="#ch-11">locking</a> prevents collisions. By the end of Day 1 you've built a VPC, subnets, gateways, and a working EC2 with a security group — the whole cloud story in one sitting.</p>
+<p class="lead">Day 2 turns the one-off script into a team tool: <a class="tlink" href="#ch-14">variables</a> parameterize inputs, <a class="tlink" href="#ch-15">workspaces</a> isolate state per env, <a class="tlink" href="#ch-15">count &amp; for_each</a> build N copies, <a class="tlink" href="#ch-16">outputs</a> export values for CI/CD and other modules. One config, many environments, zero duplication.</p>
+<p class="lead">Level 2 closes the loop: <a class="tlink" href="#ch-17">providers</a> as translators to every cloud API, <a class="tlink" href="#ch-18">provisioners</a> as the last-resort escape hatch (with doctrine), <a class="tlink" href="#ch-19">modules</a> as Lego bricks that package reuse. The <a class="tlink" href="#lab-1">CAPSTONE</a> stitches every chapter together in one hands-on build: provider → VPC → 2 subnets → 4 instances → security group → output IPs → provisioner → destroy.</p>
+<div class="mark m-key" style="margin-top:14px;"><span class="tag">🔑 The Golden Path in 3 sentences</span>We start with the <b>pain</b> (ClickOps doesn't scale), learn the <b>blueprint</b> (HCL + state + plan), and end with the <b>proof</b> (a working cloud environment that comes up identically every time).</div>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 3 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-01"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 01</div><h1 class="t">📐 What is Infrastructure as Code?</h1></div><span class="hmeta">🟢 6 MIN · T1</span></div></div>
+<p class="lead">Manual server setup is the chef who "just knows" the dish — until they quit, and nobody can remake it. <b>Infrastructure as Code (IaC)</b> replaces tribal knowledge with a written recipe anyone can follow, with the same taste every time. <code>main.tf</code> is the blueprint; <code>terraform apply</code> is the construction crew.</p>
+<div class="mark m-key"><span class="tag">🔑 The rule</span><b>Idempotence.</b> Apply the same code ten times → same infrastructure every time. <code>f(f(x)) = f(x)</code>. The property that makes IaC safe to retry, safe in CI, safe to share across teams.</div>
+<h3 class="sec"><span class="n">▣</span>The 5-step loop (memorize)</h3>
+<div class="frow"><div class="blk b-amber" style="min-width:90px;">1 · Write<small>.tf in Git</small></div><span class="harr">→</span><div class="blk b-paper" style="min-width:90px;">2 · Review<small>PR + fmt</small></div><span class="harr">→</span><div class="blk b-teal" style="min-width:90px;">3 · Plan<small>+/−/&sim; diff</small></div><span class="harr">→</span><div class="blk b-plum" style="min-width:90px;">4 · Apply<small>API calls</small></div><span class="harr">→</span><div class="blk b-green" style="min-width:90px;">5 · Monitor<small>drift alarm</small></div></div>
+<p class="dnote">Code says where to go · state remembers where you've been · refresh checks where you are.</p>
+<h3 class="sec"><span class="n">▣</span>Why it exists — a real story</h3>
+<p class="small">Startup: 3 devs, 1 EC2 made by clicking. Works. Team grows to 20, need dev/staging/prod + 50 servers. Without IaC: nobody remembers the security-group rules, dev works / prod fails, the engineer who built it left, audit can't trace port openings, region outage = 3 weeks of clicking. With IaC: same company rebuilds prod in 12 minutes via <code>terraform apply -var-file=prod.tfvars</code>, rolls back via <code>git revert</code>, proves every change with a PR.</p>
+<div class="grid2"><div class="panel"><div class="ptitle">❌ Manual (ClickOps)</div><ul class="tick"><li>Snowflake, tribal knowledge</li><li>Slow, error-prone</li><li>No rollback, no audit</li><li>Rebuild = weeks</li></ul></div><div class="panel"><div class="ptitle">✅ Infrastructure as Code</div><ul class="tick"><li>Every resource in code</li><li>Fast, parallel, automated</li><li><code>git revert</code> + apply</li><li>Rebuild = minutes</li></ul></div></div>
+<div class="mark m-fun"><span class="tag">😄 The recipe analogy</span>ClickOps = chef who "just knows" the dish. IaC = written recipe anyone can follow. Bonus: anyone can read the recipe and improve it. Bonus bonus: you can compare two recipes (PRs) to see what changed.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Now that you know WHY, meet the contractor — <a class="tlink" href="#ch-02">Chapter 2: What is Terraform + Why</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 4 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-02"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 02</div><h1 class="t">💎 What is Terraform + The 6 Pillars of Why</h1></div><span class="hmeta">🟢 7 MIN · T2 + T3</span></div></div>
+<p class="lead"><b>Terraform</b> (HashiCorp, 2014, Go, MPL 2.0, open source) is a <b>multi-cloud standard</b> that builds, changes, and versions infrastructure safely. It manages existing providers (AWS, GCP, Azure, 3000+ more) and your own in-house solutions. Six reasons it wins, each with the objection already answered. 📝 2023+: new releases are BUSL — the MPL line continues as <b>OpenTofu</b>.</p>
+<div class="mark m-key"><span class="tag">🔑 Terraform in one sentence</span><b>Learn once, manage anything, with the best preview and biggest ecosystem.</b> 3000+ providers. The community has answered every error you'll hit.</div>
+<h3 class="sec"><span class="n">▣</span>The 6 pillars</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">1 · IaC done right</div><p class="small">Code replaces clicks; Git replaces memory.</p><div class="code mini">git log --oneline -- infra/
+git revert &lt;sha&gt; &amp;&amp; terraform apply</div><p class="small"><b>Objection</b> "scripts do that" → scripts aren't idempotent/previewable; Terraform is.</p></div>
+<div class="panel"><div class="ptitle">2 · Platform-agnostic</div><div class="code mini">resource "aws_s3_bucket" "a" { bucket = "x" }
+resource "azurerm_resource_group" "b" { name = "rg" }
+resource "github_repository" "c" { name = "infra" }</div><p class="small">One <code>apply</code> touches 3 APIs. <b>Objection</b> "we're AWS-only" → still useful for GitHub/Cloudflare/Datadog in same run.</p></div>
+<div class="panel"><div class="ptitle">3 · Plan before apply</div><div class="code mini">Plan: 1 to add, 1 to change, 0 to destroy.
+  + aws_s3_bucket.new
+  ~ aws_instance.web (t3.micro → t3.small)</div><p class="small">PR shows the diff as a comment. <code>plan -out=tfplan → apply tfplan</code> = reviewed == executed.</p></div>
+<div class="panel"><div class="ptitle">4 · Coding best practices</div><div class="code mini">terraform fmt -check &amp;&amp; terraform validate &amp;&amp; tflint &amp;&amp; checkov -d .</div><p class="small">Remote state+lock, no secrets, small modules, tag all — same bar as app code.</p></div>
+<div class="panel"><div class="ptitle">5 · Massive community</div><p class="small">3000+ providers, 10k+ modules. Every error already answered. Hiring: most platform/DevOps posts name Terraform.</p></div>
+<div class="panel"><div class="ptitle">6 · Speed + reliable</div><p class="small">Graph-parallel builds. Idempotent re-applies. Enterprise: remote runs, locking, policy gates.</p></div>
+</div>
+<div class="mark m-fun"><span class="tag">😄 TF vs CFN — one-line</span><b>Unlocked phone + any carrier</b> (more setup, works everywhere) vs <b>carrier-locked</b> (free, deep integration, only one network). Pick unlocked when you travel clouds.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Look under the hood — <a class="tlink" href="#ch-03">Chapter 3: How Terraform Works (Core vs Plugins)</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 5 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-03"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 03</div><h1 class="t">🧠 How Terraform Works — Core vs Plugins</h1></div><span class="hmeta">🟡 7 MIN · T4 + T9</span></div></div>
+<p class="lead">One-line: <b>Core reads your code and builds a graph; plugins do the dirty work talking to AWS/Azure/etc.</b> Core is the brain, providers are the hands. They communicate over gRPC (local RPC) — you almost never see the boundary, but knowing which side is the culprit saves hours.</p>
+<div class="rowc"><div class="blk b-amber" style="min-width:110px;">.tf code<small>WHAT</small></div><span class="harr">→</span><div class="blk b-plum" style="min-width:130px;">CORE<small>plan + graph</small></div><span class="harr">→</span><div class="blk b-teal" style="min-width:130px;">PROVIDER<small>HOW</small></div><span class="harr">→</span><div class="blk b-ink" style="min-width:110px;">AWS API<small>REAL</small></div></div>
+<p class="dnote">State sits beside the core — its memory. <code>TF_LOG=DEBUG</code> reveals the gRPC chatter.</p>
+<h3 class="sec"><span class="n">▣</span>What core does (brain)</h3>
+<table class="tb"><tr><th>Core job</th><th>Example</th></tr>
+<tr><td>Parse HCL + variables + tfvars</td><td><code>var.env</code> → <code>"prod"</code></td></tr>
+<tr><td>Build dependency graph</td><td><code>subnet → vpc</code> (auto from references)</td></tr>
+<tr><td>Order + parallelize</td><td>VPC first, then 3 subnets concurrently</td></tr>
+<tr><td>Diff (plan)</td><td>code says v2, state says v1 → <code>~ update</code></td></tr>
+<tr><td>Manage state + lock</td><td>S3 + DynamoDB, one writer</td></tr>
+<tr><td>Call plugins, never APIs</td><td>core never holds AWS keys — provider does</td></tr>
+</table>
+<h3 class="sec"><span class="n">▣</span>Resource vs data source (the critical distinction)</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">Resource — managed</div><div class="code mini">resource "aws_instance" "web" {
+  ami = "ami-123"
+  tags = { Name = "web" }
+}</div><p class="small">Terraform manages full lifecycle: create, update, delete. Counts in <code>plan</code>.</p></div>
+<div class="panel"><div class="ptitle">Data source — read-only</div><div class="code mini">data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+  filter { name = "name" values = ["ubuntu/images/hvm-ssd/ubuntu-*-22.04*"] }
+}</div><p class="small">Lookup only — Terraform doesn't create or delete. Use for AMIs, AZs, secrets. Always fresh on every <code>plan</code>.</p></div>
+</div>
+<div class="mark m-warn"><span class="tag">⚠️ The "hidden dep" trap</span>References handle 95% of ordering. For invisible deps (IAM eventual consistency, external side effects), use <code>depends_on = [...]</code> explicitly. <code>terraform graph | dot -Tpng &gt; g.png</code> to visualize the order.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The brain is built. Give it hands — <a class="tlink" href="#ch-04">Chapter 4: AWS Provider</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 6 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-04"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 04</div><h1 class="t">🔑 AWS Provider — Three Auth Patterns</h1></div><span class="hmeta">🟡 7 MIN · T5</span></div></div>
+<p class="lead">The <code>provider "aws"</code> block plus <b>credentials that never touch code</b> = Terraform talking to your account. The provider checks sources in order — first hit wins. Get auth right once, every guide after this just works.</p>
+<div class="mark m-key"><span class="tag">🔑 The #1 rule</span><b>No keys in code. Ever.</b> State files + git history keep secrets forever. Static keys in the provider block is the #1 way that gets repos breached.</div>
+<h3 class="sec"><span class="n">▣</span>Auth priority order (first hit wins)</h3>
+<div class="frow">
+<div class="blk b-amber" style="min-width:130px;">1 · provider block<small>❌ leaks</small></div>
+<span class="harr">→</span>
+<div class="blk b-teal" style="min-width:150px;">2 · env vars<small>✓ CI/local</small></div>
+<span class="harr">→</span>
+<div class="blk b-green" style="min-width:160px;">3 · ~/.aws + profile<small>✓ humans</small></div>
+<span class="harr">→</span>
+<div class="blk b-plum" style="min-width:170px;">4 · SSO / role / OIDC<small>✓ teams</small></div>
+</div>
+<h3 class="sec"><span class="n">▣</span>Three patterns you'll use</h3>
+<div class="panel" style="margin:8px 0;">
+<div class="ptitle">Pattern A · env vars (CI, scripts)</div>
+<div class="code mini">export AWS_ACCESS_KEY_ID="AKIA..."
+export AWS_SECRET_ACCESS_KEY="..."
+export AWS_REGION="us-east-1"
+terraform plan</div>
+</div>
+<div class="panel" style="margin:8px 0;">
+<div class="ptitle">Pattern B · named profile (humans daily-driving)</div>
+<div class="code mini">$ aws configure --profile study
+$ export AWS_PROFILE=study
+$ terraform plan</div>
+</div>
+<div class="panel" style="margin:8px 0;">
+<div class="ptitle">Pattern C · OIDC in CI (no stored secrets)</div>
+<div class="code mini">permissions: { id-token: write }
+- uses: aws-actions/configure-aws-credentials@v4
+  with: { role-to-assume: arn:..., aws-region: us-east-1 }</div>
+</div>
+<h3 class="sec"><span class="n">▣</span>Safety belt</h3>
+<div class="code">provider "aws" {
+  region = "us-east-1"
+  allowed_account_ids = ["123456789012"]
+  default_tags { tags = { Env = "study", ManagedBy = "terraform" } }
+}</div>
+<p class="dnote">If creds accidentally point at prod, <code>terraform plan</code> fails fast. The 2-minute seatbelt that prevents the 2-day outage.</p>
+<div class="mark m-warn"><span class="tag">⚠️ Error you'll hit</span><code>No valid credential sources found</code> → nothing exported, no profile. Run <code>aws sts get-caller-identity</code> first; set <code>AWS_PROFILE</code> or env vars.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Provider is wired. Draw your first real resource — <a class="tlink" href="#ch-05">Chapter 5: Your First Resource (aws_vpc)</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 7 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-05"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 05</div><h1 class="t">🧱 Your First Resource — aws_vpc</h1></div><span class="hmeta">🟢 8 MIN · T6</span></div></div>
+<p class="lead">A VPC is the <b>plot of land</b> — a logically isolated virtual network where every other AWS resource lives. One per environment. Subnets divide it into AZs, route tables decide who talks to whom, gateways open the doors. Every EC2/RDS/ALB <b>must</b> launch in a VPC.</p>
+<div class="mark m-key"><span class="tag">🔑 VPC = network boundary</span>Pick a CIDR in private RFC1918 space. <code>10.0.0.0/16</code> = 65,536 IPs. AWS reserves 5 per subnet, so plan <code>/16</code> for VPC, <code>/24</code> per subnet. Default VPC exists — <b>never use it for new work.</b></div>
+<h3 class="sec"><span class="n">▣</span>Resource block anatomy (memorize)</h3>
+<div class="code">resource "aws_vpc" "main" {       <span class="c">//  ┌── type (RESOURCE_TYPE.LOCAL_NAME)</span>
+  cidr_block = "10.0.0.0/16"       <span class="c">//  │  argument: what you want</span>
+  enable_dns_hostnames = true      <span class="c">//  │</span>
+  enable_dns_support   = true      <span class="c">//  │</span>
+  instance_tenancy = "default"    <span class="c">//  │  "dedicated" = single-tenant $$</span>
+  tags = { Name = "study-vpc", Env = "dev" }
+}</div>
+<p class="dnote">Every resource = <code>resource "TYPE" "LOCAL_NAME" { args }</code>. Local name is Terraform-only — AWS knows the resource by ID. Reference as <code>aws_vpc.main.id</code>, <code>aws_vpc.main.cidr_block</code>, etc.</p>
+<h3 class="sec"><span class="n">▣</span>The pro pattern — registry module beats hand-rolled</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">❌ Hand-rolled (200 lines)</div><p class="small">You write every subnet, every route table, every association. Good for learning; bad for prod.</p>
+</div>
+<div class="panel"><div class="ptitle">✅ Registry module (10 lines)</div>
+<div class="code mini">module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.1"   <span class="g"># pin!</span>
+
+  name = "study"
+  cidr = "10.0.0.0/16"
+  azs  = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+  public_subnets   = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  private_subnets  = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+  database_subnets = ["10.0.21.0/24", "10.0.22.0/24", "10.0.23.0/24"]
+
+  enable_nat_gateway = true
+  single_nat_gateway = true   <span class="g"># dev only</span>
+
+  tags = { Env = "dev" }
+}</div>
+</div>
+</div>
+<p class="dnote">Rule: use the module in any real project. Hand-roll only when learning or you need a non-standard layout.</p>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The plot is drawn. Divide it into AZs and open the gates — <a class="tlink" href="#ch-06">Chapter 6: VPC Networking</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 8 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+</div>
+<div class="sheet" id="ch-06"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 06</div><h1 class="t">🌐 Subnets · Route Tables · IGW · NAT</h1></div><span class="hmeta">🟡 8 MIN · T6 (deep)</span></div></div>
+<p class="lead">VPC is the plot. <b>Subnets</b> divide it into AZs. <b>Route tables</b> decide who can talk to whom. <b>Internet Gateway</b> opens the public door. <b>NAT Gateway</b> lets private subnets sneak out for updates without being reachable from the internet.</p>
+<div class="rowc" style="gap:4px;"><div class="blk b-ink" style="min-width:90px; font-size:11px;">VPC<small>10.0.0.0/16</small></div></div>
+<div class="fstem"></div>
+<div class="rowc" style="gap:4px;"><div class="blk b-amber" style="min-width:90px; font-size:11px;">IGW<small>1 per VPC</small></div></div>
+<div class="fstem"></div>
+<div class="rowc" style="gap:4px;"><div class="blk b-amber" style="min-width:80px; font-size:10px;">pub 1a</div><div class="blk b-amber" style="min-width:80px; font-size:10px;">pub 1b</div><div class="blk b-amber" style="min-width:80px; font-size:10px;">pub 1c</div></div>
+<p class="dnote">Public subnets share a route table pointing 0.0.0.0/0 → IGW. Private subnets share one pointing 0.0.0.0/0 → NAT (in a public subnet). DB subnets have <b>no default route</b> — never.</p>
+<h3 class="sec"><span class="n">▣</span>The 4 resources you touch every day</h3>
+<div class="code">resource "aws_subnet" "public" {
+  count                   = length(local.azs)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
+  availability_zone       = local.azs[count.index]
+  map_public_ip_on_launch = true
+  tags = { Name = "public-${local.azs[count.index]}", Tier = "public" }
+}</div>
+<div class="code" style="margin-top:6px;">resource "aws_internet_gateway" "igw" { vpc_id = aws_vpc.main.id }
+resource "aws_eip" "nat" { domain = "vpc" }
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+  depends_on    = [aws_internet_gateway.igw]
+}</div>
+<div class="mark m-warn"><span class="tag">⚠️ Gotcha</span>AWS reserves <b>5 IPs per subnet</b>. A <code>/24</code> = 251 usable. <b>Never hardcode AZs</b> — use <code>data "aws_availability_zones"</code> + <code>slice(..., 0, 3)</code>. A subnet is "public" only when its route table points 0.0.0.0/0 → IGW.</div>
+<div class="grid2">
+<div class="panel"><div class="ptitle">Day-2 ops</div>
+<ul class="tick"><li>✅ Flow logs on the VPC</li><li>✅ 1 NAT/AZ in prod, 1 in dev</li><li>✅ Tag every subnet: Tier + AZ</li><li>✅ DB route table: <b>no default route, ever</b></li><li>✅ Gateway endpoints for S3 + DynamoDB</li></ul></div>
+<div class="panel"><div class="ptitle">Errors you'll hit</div>
+<ul class="tick"><li><code>CIDR overlaps with existing</code> → use <code>cidrsubnet</code></li><li><code>host bits set in CIDR</code> → <code>10.0.1.0/24</code> not <code>10.0.1.5/24</code></li><li><code>NAT in private subnet</code> → put in public</li><li><code>cannot delete subnet: dependencies</code> → destroy in reverse</li></ul></div>
+</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Network is built. Now wire the engine — <a class="tlink" href="#ch-07">Chapter 7: terraform init</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 9 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-07"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 07</div><h1 class="t">🔌 terraform init — What It Really Does</h1></div><span class="hmeta">🟡 6 MIN · T7</span></div></div>
+<p class="lead"><code>terraform init</code> is the first command of any project — and the one people forget has <b>two jobs</b>, not one. It installs provider binaries AND wires up the backend (if you have one). No cloud calls; think <code>npm install</code> for infra.</p>
+<div class="mark m-tip"><span class="tag">💡 Safe to re-run</span>Init never touches real infra. Re-run it anytime you change <code>required_providers</code>, swap the backend block, or upgrade a provider. <code>-upgrade</code> bumps to newest allowed by <code>~&gt;</code>. <code>-reconfigure</code> forgets the saved backend choice.</div>
+<h3 class="sec"><span class="n">▣</span>Job 1 (always) — install providers + modules</h3>
+<div class="code">$ terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Installing hashicorp/aws v5.0.1
+- Installed hashicorp/aws v5.0.1 (signed by HashiCorp)
+- Installing hashicorp/local v2.5.1
+- Installed hashicorp/local v2.5.1 (signed by HashiCorp)
+
+Terraform has been successfully initialized!</div>
+<p class="dnote">What lands on disk: <code>.terraform/providers/.../terraform-provider-aws_v5.0.1</code> (the binary) + <code>.terraform.lock.hcl</code> (exact version + hashes, commit this).</p>
+<h3 class="sec"><span class="n">▣</span>Job 2 (only with a backend block) — wire up state storage</h3>
+<div class="code">$ terraform init -migrate-state
+Initializing the backend...
+Backend type: s3
+Do you want to copy existing state to the new backend? yes
+Successfully configured the backend "s3"!
+
+Terraform has been successfully initialized!</div>
+<p class="dnote">Init performs <code>HeadBucket</code> and <code>DescribeTable</code> during setup. <b>Missing bucket?</b> <code>NoSuchBucket</code> error. <b>Backend resources must exist BEFORE first init</b> — bootstrap folder with local state creates them.</p>
+<h3 class="sec"><span class="n">▣</span>The .gitignore canon</h3>
+<div class="code">.terraform/           <span class="g"># downloaded provider binaries — always ignore</span>
+*.tfstate             <span class="g"># state file — has secrets, NEVER commit</span>
+*.tfstate.backup      <span class="g"># backup created by apply</span>
+*.tfvars              <span class="g"># real values — ignore</span>
+!example.tfvars       <span class="g"># except the example template</span>
+tfplan                <span class="g"># plan output binary</span>
+.terraform.lock.hcl   <span class="g"># COMMIT THIS — pins versions + hashes</span></div>
+<div class="mark m-warn"><span class="tag">⚠️ The lock file IS in git</span>Counter-intuitive but critical: the lock file makes your team byte-identical. <code>terraform providers lock</code> regenerates hashes for all platforms. CI and laptop get the same provider binary.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The engine is wired. The 7-command loop — <a class="tlink" href="#ch-08">Chapter 8: plan · apply · tfstate</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 10 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-08"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 08</div><h1 class="t">🔁 plan · apply · tfstate — The Core Loop</h1></div><span class="hmeta">🟡 7 MIN · T8 + T10 + T15</span></div></div>
+<p class="lead">Every Terraform session runs the same 7-command loop. <code>init</code> is the install (no cloud calls), <code>plan</code> is the dress rehearsal, <code>apply</code> is the real show, and a second <code>apply</code> proves idempotence by saying "No changes." State is the ledger written by <code>apply</code> and read by every subsequent <code>plan</code>.</p>
+<div class="mark m-key"><span class="tag">🔑 The contract</span><b>plan</b> is a contract, not a forecast. <code>plan -out=tfplan</code> + <code>apply tfplan</code> guarantees: what you reviewed = what was executed. <b>Never edit state by hand</b> — use <code>terraform state mv/rm</code> instead.</div>
+<h3 class="sec"><span class="n">▣</span>The 7-command loop (every session)</h3>
+<div class="code">terraform version    <span class="g"># 0. what toolchain?</span>
+terraform init       <span class="g"># 1. install providers + modules → .terraform/ + .lock.hcl</span>
+terraform fmt        <span class="g"># 2. canonical formatting (CI gate: fmt -check)</span>
+terraform validate   <span class="g"># 3. syntax check (offline, no cloud)</span>
+terraform plan       <span class="g"># 4. preview diff (+/~/−) — read this carefully</span>
+terraform apply      <span class="g"># 5. execute + write state</span>
+terraform apply      <span class="g"># 6. prove idempotence → "No changes"</span></div>
+<p class="dnote">Apply twice in a row: second one says No changes. That's idempotence made visible.</p>
+<h3 class="sec"><span class="n">▣</span>What tfstate actually contains</h3>
+<div class="tree">{
+  "version": 4,
+  "terraform_version": "1.10.0",
+  "serial": 12,
+  "outputs": { "vpc_id": { "value": "vpc-0ab123", "type": "string" } },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "provider["registry.terraform.io/hashicorp/aws"]",
+      "instances": [{
+        "schema_version": 1,
+        "attributes": {
+          "id": "vpc-0ab123",
+          "cidr_block": "10.0.0.0/16",
+          "enable_dns_hostnames": true,
+          "tags": { "Env": "dev", "Name": "study-vpc" }
+        }
+      }]
+    }
+  ]
+}</div>
+<p class="dnote">State stores: resource IDs, all attributes, dependencies, provider metadata. The mapping from your code addresses (e.g. <code>aws_vpc.main</code>) to real cloud IDs (e.g. <code>vpc-0ab123</code>).</p>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> You have the loop. Now meet the three things it compares — <a class="tlink" href="#ch-09">Chapter 9: The 3-State Model</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 11 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-09"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 09</div><h1 class="t">📒 The 3-State Model — code · state · reality</h1></div><span class="hmeta">🟡 7 MIN · T11</span></div></div>
+<p class="lead">Every plan is a 3-way comparison. Learn these three names — interviews ask them directly. <b>Desired state</b> is your <code>.tf</code> files. <b>Known state</b> is <code>terraform.tfstate</code>. <b>Real state</b> is what AWS looks like right now (after refresh).</p>
+<div class="rowc" style="gap:6px;"><div class="blk b-amber" style="min-width:140px;">1 · DESIRED<small>code</small></div><div class="stem"></div><div class="blk b-plum" style="min-width:140px;">2 · KNOWN<small>tfstate</small></div><div class="stem"></div><div class="blk b-teal" style="min-width:140px;">3 · REAL<small>AWS API</small></div></div>
+<p class="dnote">Refresh = read REAL via API, compare to KNOWN. Diff = compare DESIRED to KNOWN. Anything off → plan shows +/~/−. State does 4 jobs: <b>track</b> (what's managed), <b>compare</b> (desired vs known), <b>metadata</b> (IDs/IPs/ARNs), <b>perform</b> (cache so plan stays fast).</p>
+<h3 class="sec"><span class="n">▣</span>Reading a plan output</h3>
+<div class="code">Terraform will perform the following actions:
+
+  <span class="s">+ aws_instance.web</span>              <span class="c"># create</span>
+  <span class="y">~ aws_s3_bucket.notes</span>           <span class="c"># update in-place</span>
+  <span class="m">-/+ aws_instance.replace</span>         <span class="c"># destroy then create (force-new)</span>
+  <span class="r">- aws_security_group.old</span>        <span class="c"># destroy</span>
+
+Plan: 1 to add, 1 to change, 1 to destroy.</div>
+<table class="tb" style="margin-top:6px;"><tr><th>Symbol</th><th>Means</th><th>Danger</th></tr>
+<tr><td><code>+</code> create</td><td>in code, not in state</td><td><span class="ok">safe</span></td></tr>
+<tr><td><code>~</code> update in-place</td><td>same ID, new attrs</td><td><span class="ok">safe</span> (low)</td></tr>
+<tr><td><code>-/+</code> destroy+create</td><td>attribute forces new</td><td>⚠️ data loss</td></tr>
+<tr><td><code>-</code> destroy</td><td>in state, gone from code</td><td>🔴 read every line</td></tr>
+</table>
+<div class="mark m-warn"><span class="tag">⚠️ Rename trap</span>Terraform's identity is the <b>address</b> (<code>aws_instance.web</code>), not attributes. Rename the local name → destroy + create. <b>Use a <code>moved</code> block</b> for safe renames (preserves state, no rebuild).</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> You have the model. Now store the ledger safely — <a class="tlink" href="#ch-10">Chapter 10: State Risks &amp; Remote Backend</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 12 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-10"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 10</div><h1 class="t">☁️ State Risks &amp; Remote Backend (S3 + DynamoDB)</h1></div><span class="hmeta">🟡 8 MIN · T12</span></div></div>
+<p class="lead">Local state dies with the laptop. The whole team needs <b>one</b> state, in a place that locks, versions, and survives. The cure: <b>S3 stores the JSON snapshots</b>; <b>DynamoDB holds the mutex</b>. Both, configured before the second human exists.</p>
+<div class="mark m-key"><span class="tag">🔑 The 3 pains of local state</span>
+<b>①</b> Teammate applies from their laptop → your state is stale → resources duplicated. <b>②</b> Two <code>apply</code> at once → corrupt JSON or half-written resources. <b>③</b> Laptop dies / file deleted → management history gone. <b>All three cured by S3 + DynamoDB.</b></div>
+<h3 class="sec"><span class="n">▣</span>Backend anatomy</h3>
+<div class="code">terraform {
+  backend "s3" {
+    bucket         = "my-study-tfstate-12345"   <span class="g"># unique</span>
+    key            = "dev/terraform.tfstate"    <span class="g"># per-env path</span>
+    region         = "us-east-1"
+    dynamodb_table = "tfstate-locks"
+    encrypt        = true
+  }
+}</div>
+<p class="dnote">S3 = JSON snapshots (versioned, encrypted). DynamoDB = mutex (conditional-write row). Two different stores, two different jobs.</p>
+<h3 class="sec"><span class="n">▣</span>Bootstrap (chicken-and-egg)</h3>
+<div class="code">$ aws s3api create-bucket --bucket my-study-tfstate-12345
+$ aws s3api put-bucket-versioning --bucket my-study-tfstate-12345     --versioning-configuration Status=Enabled
+$ aws s3api put-bucket-encryption --bucket my-study-tfstate-12345     --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+$ aws dynamodb create-table --table-name tfstate-locks     --attribute-definitions AttributeName=LockID,AttributeType=S     --key-schema AttributeName=LockID,KeyType=HASH --billing-mode PAY_PER_REQUEST</div>
+<p class="dnote">Pro pattern: keep a tiny <code>bootstrap/</code> folder whose ONLY job is creating bucket + table with local state, then never touch it again.</p>
+<h3 class="sec"><span class="n">▣</span>How locking works (3 steps)</h3>
+<div class="frow"><div class="blk b-amber" style="min-width:140px;">1 · apply starts<small>conditional-write LockID</small></div><span class="harr">→</span><div class="blk b-crimson" style="min-width:160px;">2 · second apply<small>Error: lock held</small></div><span class="harr">→</span><div class="blk b-green" style="min-width:160px;">3 · first apply ends<small>DELETE LockID</small></div></div>
+<div class="grid2">
+<div class="panel"><div class="ptitle">With lock (safe)</div><div class="code mini">Shell A: terraform apply ............ (holds lock, writing)
+Shell B: terraform apply → Error: Error acquiring the state lock
+  Lock Info: ID xxx, Who: teammate@laptop, Created: 10:02:11
+B waits or exits → no corruption.</div>
+</div>
+<div class="panel"><div class="ptitle">Without lock (disaster)</div><div class="code mini">10:00:00  state v1: { web }
+10:00:20  YOU apply → v2: { web, db }
+10:00:25  SARA apply → OVERWRITES → { web, cache }
+10:00:26  db exists in AWS. Terraform forgot it.
+→ ghost resource. bill grows quietly.</div>
+</div>
+</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> You have the backend. Now the lock lifecycle — <a class="tlink" href="#ch-11">Chapter 11: State Locking</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 13 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-11"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 11</div><h1 class="t">🔒 State Locking — The Mutex Explained</h1></div><span class="hmeta">🟡 7 MIN · T13</span></div></div>
+<p class="lead">Two engineers + concurrent apply = corrupted state. The fix: a <b>DynamoDB lock table</b> holds a single row per backend key. First apply grabs it (conditional-write), others fail fast, lock releases when apply finishes. The contract: <b>only one writer to state at a time, ever.</b></p>
+<div class="mark m-key"><span class="tag">🔑 The lock lifecycle</span><b>apply starts</b> → conditional-write LockID → if row exists, <b>fail fast</b> with who/when/operation → if acquired, <b>do work + write new state to S3</b> → on success, <b>delete the lock row</b>. The lock is a row, not a file.</div>
+<h3 class="sec"><span class="n">▣</span>What the lock error looks like</h3>
+<div class="code">$ terraform apply
+<span class="r">│ Error: Error acquiring the state lock</span>
+<span class="g">│</span>
+<span class="g">│ Error acquiring the state lock: ConditionalCheckFailedException:</span>
+<span class="g">│   Conditional Write failed: LockID = my-bucket/dev/terraform.tfstate</span>
+<span class="g">│</span>
+<span class="g">│ Lock Info:</span>
+<span class="g">│   ID:        abc-123-def-456</span>
+<span class="g">│   Path:      my-bucket/dev/terraform.tfstate</span>
+<span class="g">│   Operation: OperationTypeApply</span>
+<span class="g">│   Who:       teammate@laptop</span>
+<span class="g">│   Created:   2026-09-07 10:02:11 UTC</span>
+<span class="g">│   Version:   1.5.0</span>
+<span class="g">│</span>
+<span class="g">│ Terraform acquires a state lock to protect the state from being</span>
+<span class="g">│ written by multiple users at the same time. Please resolve the issue</span>
+<span class="g">│ by removing the lock manually.</span></div>
+<h3 class="sec"><span class="n">▣</span>Force-unlock — the danger zone</h3>
+<div class="code"># Step 1: read the error — Who, Operation, Created
+# Step 2: CONFIRM the holder is dead
+#   $ ps aux | grep terraform       <span class="g"># on their machine</span>
+#   ask in chat / check CI run status
+# Step 3: only then, release it
+$ terraform force-unlock abc-123-def-456
+Do you really want to force-unlock?  <span class="g"># interactive confirm</span>
+<span class="g"># CI flag (no prompt, dangerous):</span>
+$ terraform force-unlock -force abc-123-def-456
+
+# Step 4: PROVE HEALTH before continuing
+$ terraform plan   <span class="g"># expect sane diff, NOT "create the world"</span></div>
+<div class="mark m-warn"><span class="tag">⚠️ Never hand-delete the lock row</span>Tempting: open DynamoDB console, delete the row, done in 10 seconds. <b>Don't.</b> The command exists because the console bypasses all the safety checks (wrong table? wrong key? live lock?). The error message already told you exactly which row to target.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> You have the lock. Now the state surgery tools — <a class="tlink" href="#ch-12">Chapter 12: State Subcommands</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 14 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-12"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 12</div><h1 class="t">🔧 State Subcommands + CLI Extras</h1></div><span class="hmeta">🟡 7 MIN · T14 + T16</span></div></div>
+<p class="lead">The state is a JSON file. The <code>terraform state</code> subcommands let you <b>operate on it without recreating resources</b>. Refactor names, drop orphans, adopt existing infra. Other CLIs (<code>fmt</code>, <code>graph</code>) keep the code clean and the dependencies visible.</p>
+<div class="mark m-key"><span class="tag">🔑 The 5 state subcommands</span>State subcommands change <b>state, not infrastructure</b>. <code>state rm</code> stops managing without deleting. <code>state mv</code> renames without recreating. <code>import</code> adopts existing infra into management.</div>
+<h3 class="sec"><span class="n">▣</span>State subcommands (5 essential)</h3>
+<table class="tb"><tr><th>Command</th><th>What it does</th><th>When to use</th></tr>
+<tr><td><code>state list</code></td><td>List every resource address in state</td><td>"What's actually managed here?"</td></tr>
+<tr><td><code>state show &lt;addr&gt;</code></td><td>Show the full attributes of one resource</td><td>"What's the actual ID of this VPC?"</td></tr>
+<tr><td><code>state pull</code></td><td>Download the raw state JSON to stdout</td><td>Backup, debugging, hand inspection</td></tr>
+<tr><td><code>state mv &lt;from&gt; &lt;to&gt;</code></td><td>Rename in state (no recreate)</td><td>Refactor <code>web</code> → <code>app</code> without rebuilding</td></tr>
+<tr><td><code>state rm &lt;addr&gt;</code></td><td>Stop managing (does NOT delete from AWS)</td><td>Adopt a manual resource, drop an orphan</td></tr>
+<tr><td><code>terraform import &lt;addr&gt; &lt;id&gt;</code></td><td>Adopt existing infra into state</td><td>"Terraform forgot this VPC, here's the ID"</td></tr>
+</table>
+<p class="dnote"><code>import</code> adopts but does NOT write config for you. Write the matching <code>resource</code> block → <code>import</code> → <code>plan</code> till clean, or the next <code>plan</code> will try to recreate it.</p>
+<h3 class="sec"><span class="n">▣</span>The other CLIs you'll use</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle"><code>fmt</code> — canonical formatting</div>
+<div class="code mini">$ terraform fmt -check   <span class="g"># CI gate: exit 1 if not formatted</span>
+$ terraform fmt           <span class="g"># fix in place</span></div>
+<p class="small">Run before every commit. No-op if already formatted. Add to pre-commit hook.</p>
+</div>
+<div class="panel"><div class="ptitle"><code>graph</code> — dependency map</div>
+<div class="code mini">$ terraform graph | dot -Tsvg &gt; graph.svg
+<span class="g"># installs graphviz, generates SVG of dep graph</span></div>
+<p class="small">Visualize the actual order Terraform will create things in. Great for debugging hidden deps.</p>
+</div>
+</div>
+<div class="mark m-fun"><span class="tag">😄 The rename trap, again</span>Renaming <code>aws_instance.web</code> → <code>aws_instance.app</code> in your <code>.tf</code> is a <b>destroy + create</b>. <b>Always use <code>state mv</code> first</b>, then rename in code. Or use a <code>moved</code> block (stateful rename, no recreate).</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Day 1 closes. Day 2 opens: <a class="tlink" href="#ch-14">Variables &amp; the precedence ladder</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 15 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-13"><div class="pghead"><div class="hrow"><div><div class="kick">PART I · DAY 1 · CH 13</div><h1 class="t">🧹 fmt &amp; destroy — Canon Format, Safe Teardown</h1></div><span class="hmeta">🟢 5 MIN · T15</span></div></div>
+<p class="lead"><code>terraform fmt</code> is your formatting pre-commit hook. <code>terraform destroy</code> is your teardown command — same plan machinery as <code>apply</code>, opposite direction. Both are gateable, both are CI-runnable, both deserve respect.</p>
+<div class="mark m-key"><span class="tag">🔑 destroy is just apply in reverse</span>Same plan/apply loop, but every resource is destroyed instead of created. <code>terraform destroy</code> prompts for confirmation; <code>-auto-approve</code> skips it (use in CI, never in interactive dev).</div>
+<h3 class="sec"><span class="n">▣</span>fmt before → after</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">Before</div>
+<div class="code mini">resource  "aws_vpc"   "main"{
+cidr_block="10.0.0.0/16"
+   tags   =   {Name="x",Env="dev"}
+}</div>
+</div>
+<div class="panel"><div class="ptitle">After <code>fmt</code></div>
+<div class="code mini">resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Env  = "dev"
+    Name = "x"
+  }
+}</div>
+</div>
+</div>
+<p class="dnote">Two-space indent, aligned <code>=</code>, sorted tag keys, blank line between blocks. <code>terraform fmt -check</code> fails CI if not formatted (exit 1). <code>terraform fmt</code> rewrites in place.</p>
+<h3 class="sec"><span class="n">▣</span>destroy — the teardown pattern</h3>
+<div class="code">$ terraform plan -destroy -out=kill.plan
+<span class="g"># preview what's about to die (always plan first)</span>
+
+$ terraform apply kill.plan
+<span class="g"># applies EXACTLY the destroy plan</span>
+
+$ terraform destroy
+<span class="g"># interactive: prompts "Do you really want to destroy?"</span>
+
+$ terraform destroy -auto-approve
+<span class="g"># CI: skips prompt — gate behind human approval</span></div>
+<div class="mark m-warn"><span class="tag">⚠️ Permanence</span>destroy is <b>not</b> reversible. State is updated, AWS resources are gone, bills stop. For anything holding data (RDS, S3 buckets), use <code>prevent_destroy = true</code> in the resource block to fail the destroy with a clear error.</div>
+<h3 class="sec"><span class="n">▣</span>destroy in the lab vs prod</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">Lab / dev env</div><ul class="tick"><li>Always destroy at end of session</li><li>Saves $$, prevents zombie resources</li><li>Use <code>-auto-approve</code> in CI</li></ul></div>
+<div class="panel"><div class="ptitle">Prod</div><ul class="tick"><li>Almost never run naked <code>destroy</code></li><li>Use <code>prevent_destroy = true</code> on critical resources</li><li>Use <code>-target</code> to scope down to specific resources</li></ul></div>
+</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Day 1 done. <a class="tlink" href="#ch-14">Day 2: Variables</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 16 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-14"><div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 14</div><h1 class="t">🎚️ Variables &amp; the Precedence Ladder</h1></div><span class="hmeta">🟡 8 MIN · T17 + T18</span></div></div>
+<p class="lead">Same code, many environments. <b>Variables</b> parameterize inputs. The <b>precedence ladder</b> determines which value wins when multiple are provided. Memorize it: the <b>lowest priority wins</b>.</p>
+<div class="mark m-key"><span class="tag">🔑 The precedence ladder</span><b>defaults &lt; <code>terraform.tfvars</code> (auto-loaded) &lt; <code>-var</code> flag (CLI) &lt; <code>TF_VAR_*</code> env vars (CI/CD + secrets)</b>. Use <code>.tfvars</code> per env, override at runtime, never edit code.</div>
+<h3 class="sec"><span class="n">▣</span>Variables — the full anatomy</h3>
+<div class="code"># variables.tf
+variable "env" {
+  type        = string
+  default     = "dev"
+  description = "which environment we're targeting"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.env)
+    error_message = "env must be dev/staging/prod."
+  }
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
+}
+
+# main.tf — reference as var.NAME
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
+  tags          = { Env = var.env }
+}</div>
+<h3 class="sec"><span class="n">▣</span>The 4 ways to pass variables</h3>
+<div class="code"># 1. defaults in variables.tf (lowest priority)
+# 2. terraform.tfvars (auto-loaded if present)
+env             = "dev"
+instance_type   = "t3.micro"
+
+# 3. -var flag (one-off, highest)
+$ terraform plan -var="env=prod" -var="instance_type=t3.small"
+
+# 4. TF_VAR_* env vars (CI/CD + secrets — never in code!)
+$ export TF_VAR_env=staging
+$ export TF_VAR_db_password=$(cat ~/.dbpass)</div>
+<p class="dnote"><b>Secrets rule:</b> never in <code>.tf</code> or <code>.tfvars</code> (both end up in PRs). Use <code>TF_VAR_*</code> env vars from your CI secret store (GitHub Actions secrets, Vault, etc.).</p>
+<div class="mark m-fun"><span class="tag">😄 The "which one wins" gotcha</span>You have <code>default = "dev"</code> in variables.tf AND <code>-var="env=prod"</code> on the CLI. <b>Prod wins</b> (higher priority, overrides default). Run <code>terraform console</code> and type <code>var.env</code> to see what's actually in scope right now.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> One config, many environments — <a class="tlink" href="#ch-15">Workspaces &amp; Advanced HCL</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 17 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-15"><div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 15</div><h1 class="t">🗂️ Workspaces &amp; Advanced HCL (count · for_each)</h1></div><span class="hmeta">🟡 8 MIN · T19 + T20</span></div></div>
+<p class="lead">One config, isolated state per env (<b>workspaces</b>). One block, N copies (<b>count</b>). One block, N named copies (<b>for_each</b>). These three patterns are how you stop duplicating config.</p>
+<div class="mark m-key"><span class="tag">🔑 The right tool for N copies</span><b>for_each</b> wins almost every time. Removing one named key doesn't churn the rest (stable keys). <code>count</code> with index removal renumbers, breaking all addresses.</div>
+<h3 class="sec"><span class="n">▣</span>Workspaces — same code, isolated state</h3>
+<div class="code">$ terraform workspace list
+<span class="g">* default</span>
+
+$ terraform workspace new dev
+Created and switched to workspace "dev"!
+
+$ terraform workspace new prod
+$ terraform workspace select dev    <span class="g"># switch back</span>
+$ terraform workspace show          <span class="g"># current: dev</span></div>
+<p class="dnote">One config, isolated state per workspace. The <code>default</code> workspace cannot be deleted. Use workspaces for non-prod isolation; for prod-grade isolation, prefer separate buckets/accounts per env.</p>
+<h3 class="sec"><span class="n">▣</span>count vs for_each — the comparison</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">count — N identical copies</div>
+<div class="code mini">resource "aws_instance" "web" {
+  count = 3
+  ami   = "ami-123"
+  tags  = { Name = "web-${count.index}" }
+}
+<span class="g"># addresses: web[0], web[1], web[2]</span></div>
+<p class="small"><b>Trap:</b> remove <code>count = 3</code> → set to 2 → ALL 3 destroy, 2 fresh create. <b>Don't use for resources with identity.</b></p>
+</div>
+<div class="panel"><div class="ptitle">for_each — N named copies</div>
+<div class="code mini">resource "aws_instance" "web" {
+  for_each = toset(["ahmed", "sara", "omar"])
+  ami      = "ami-123"
+  tags     = { Name = "web-${each.key}" }
+}
+<span class="g"># addresses: web["ahmed"], web["sara"], web["omar"]</span></div>
+<p class="small"><b>Win:</b> remove "ahmed" from the set → only web["ahmed"] destroys. The rest keep their stable keys.</p>
+</div>
+</div>
+<h3 class="sec"><span class="n">▣</span>Conditional attributes with for_each</h3>
+<div class="code">variable "create_public_ip" {
+  type    = bool
+  default = true
+}
+
+resource "aws_instance" "web" {
+  for_each          = toset(["a", "b", "c"])
+  ami               = "ami-123"
+  instance_type     = each.key == "a" ? "t3.small" : "t3.micro"
+  associate_public_ip_address = var.create_public_ip
+}</div>
+<p class="dnote">Use <code>each.key</code> and <code>each.value</code> inside the block. <code>for_each</code> accepts a set or a map — set for strings, map for key/value pairs.</p>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Variables in, outputs out — <a class="tlink" href="#ch-16">Outputs</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 18 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-16"><div class="pghead"><div class="hrow"><div><div class="kick">PART II · DAY 2 · CH 16</div><h1 class="t">📤 Outputs — Share, Export, CI/CD</h1></div><span class="hmeta">🟡 6 MIN · T21</span></div></div>
+<p class="lead">Variables are inputs. <b>Outputs</b> are exports — values that surface after <code>apply</code> for humans, other modules, and pipelines to consume. Four uses, all in the same <code>outputs</code> block.</p>
+<div class="mark m-key"><span class="tag">🔑 The 4 uses of outputs</span><b>①</b> Display after apply (read with <code>terraform output</code>). <b>②</b> Share between modules (child exposes, parent consumes). <b>③</b> Remote state access via <code>terraform_remote_state</code>. <b>④</b> CI/CD parsing (raw JSON, scripted pipelines).</div>
+<h3 class="sec"><span class="n">▣</span>Outputs — the full anatomy</h3>
+<div class="code"># outputs.tf
+output "vpc_id" {
+  value       = aws_vpc.main.id
+  description = "the VPC ID — pass to other modules"
+  sensitive   = false   <span class="g"># true hides from CLI output</span>
+}
+
+output "db_password" {
+  value     = aws_db_instance.main.password
+  sensitive = true   <span class="g"># won't print in `terraform output`</span>
+}
+
+output "all_subnet_ids" {
+  value = aws_subnet.public[*].id   <span class="g"># list comprehension</span>
+}
+
+# After apply
+$ terraform apply
+<span class="s">vpc_id = "vpc-0ab123456"</span>
+<span class="s">all_subnet_ids = [</span>
+<span class="s">  "subnet-0aa...",</span>
+<span class="s">  "subnet-0bb...",</span>
+<span class="s">  "subnet-0cc...",</span>
+<span class="s">]</span>
+
+$ terraform output -raw vpc_id        <span class="g"># no quotes, perfect for scripts</span>
+vpc-0ab123456
+$ terraform output -json vpc_id     <span class="g"># JSON for CI/CD</span>
+{"vpc_id":"vpc-0ab123456"}</div>
+<h3 class="sec"><span class="n">▣</span>Sharing outputs across modules</h3>
+<div class="code"># modules/vpc/outputs.tf
+output "vpc_id" { value = aws_vpc.main.id }
+output "public_subnet_ids" { value = aws_subnet.public[*].id }
+
+# root main.tf — consumer
+module "vpc" {
+  source = "./modules/vpc"
+}
+
+resource "aws_instance" "web" {
+  ami       = "ami-123"
+  subnet_id = module.vpc.public_subnet_ids[0]   <span class="g"># read module output</span>
+}</div>
+<p class="dnote">Modules expose values the same way the root does. Reference any output as <code>module.NAME.OUTPUT</code>. For sharing state between <i>separate</i> Terraform projects (different folders, different teams), use the <code>terraform_remote_state</code> data source.</p>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> Day 2 closes. Level 2 opens — <a class="tlink" href="#ch-17">Providers catalog</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 19 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-17"><div class="pghead"><div class="hrow"><div><div class="kick">PART III · LEVEL 2 · CH 17</div><h1 class="t">🌍 Providers — IaaS / PaaS / SaaS</h1></div><span class="hmeta">🟡 6 MIN · T9 (deep)</span></div></div>
+<p class="lead">Providers are <b>translators</b>: your HCL speaks <code>resource "aws_instance" "web" {…}</code>, the provider translates that into the right HTTP call to AWS, GCP, Cloudflare, or GitHub. 3000+ providers exist; you can write your own for in-house systems.</p>
+<div class="mark m-key"><span class="tag">🔑 Three layers of providers</span><b>IaaS</b> (raw infra): AWS, GCP, Azure, Alibaba, DigitalOcean. <b>PaaS</b> (managed platforms): Heroku, Render, Vercel, Supabase. <b>SaaS</b> (third-party APIs): Cloudflare, GitHub, Datadog, PagerDuty, Stripe.</div>
+<h3 class="sec"><span class="n">▣</span>The provider ecosystem at a glance</h3>
+<table class="tb"><tr><th>Layer</th><th>Examples</th><th>What you manage</th></tr>
+<tr><td><b>IaaS</b></td><td>AWS, GCP, Azure, Alibaba, OCI, DigitalOcean, Linode</td><td>VMs, networks, storage, databases (raw primitives)</td></tr>
+<tr><td><b>PaaS</b></td><td>Heroku, Render, Vercel, Fly.io, Supabase</td><td>Apps, services, managed databases (higher-level)</td></tr>
+<tr><td><b>SaaS</b></td><td>Cloudflare, GitHub, GitLab, Datadog, PagerDuty, Stripe</td><td>DNS, repos, monitoring, alerts, billing</td></tr>
+<tr><td><b>In-house</b></td><td>your own custom provider (Go SDK)</td><td>your internal platform's API</td></tr>
+</table>
+<h3 class="sec"><span class="n">▣</span>One apply, three layers</h3>
+<div class="code">resource "aws_s3_bucket" "logs" { bucket = "study-logs" }      <span class="g"># IaaS</span>
+resource "github_repository" "infra" {                            <span class="g"># SaaS</span>
+  name = "infra"
+  visibility = "private"
+}
+resource "cloudflare_record" "root" {                               <span class="g"># SaaS</span>
+  zone_id = var.cf_zone
+  name    = "@"
+  value   = aws_s3_bucket.logs.website_endpoint
+  type    = "CNAME"
+}
+
+$ terraform apply
+<span class="s"># one apply, three different APIs called</span></div>
+<p class="dnote">You can call multiple providers in one <code>apply</code>. The dependency graph spans all of them. An AWS bucket URL feeds directly into a Cloudflare DNS record. Second region? <code>provider "aws" { alias = "eu" }</code>, then <code>provider = aws.eu</code> on the resource.</p>
+<h3 class="sec"><span class="n">▣</span>Version constraints — pin the right way</h3>
+<table class="tb"><tr><th>Operator</th><th>Means</th><th>Example</th><th>Verdict</th></tr>
+<tr><td><code>~&gt; 5.0</code></td><td>allow 5.x, block 6.0</td><td>5.1 → 5.9 ok, 6.0 no</td><td>✅ default</td></tr>
+<tr><td><code>&gt;= 1.6, &lt; 2.0</code></td><td>range</td><td>safe minimum + cap</td><td>✅ for CLI</td></tr>
+<tr><td><code>= 1.9.8</code></td><td>exact</td><td>reproducible</td><td>ok for prod freeze</td></tr>
+<tr><td><code>&gt;= 5.0</code> alone</td><td>no cap</td><td>6.0 surprise breaks</td><td>❌ avoid</td></tr>
+</table>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The escape hatch — <a class="tlink" href="#ch-18">Provisioners</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 20 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-18"><div class="pghead"><div class="hrow"><div><div class="kick">PART III · LEVEL 2 · CH 18</div><h1 class="t">🛠 Provisioners — Doctrine: Last Resort</h1></div><span class="hmeta">🟡 7 MIN · T22</span></div></div>
+<p class="lead">Provisioners run scripts after resource creation or before destruction. They're the escape hatch when the provider doesn't have a feature — and the doctrine is <b>use them last</b>. user_data, Packer, Ansible cover 95% better.</p>
+<div class="mark m-warn"><span class="tag">⚠️ The critical caveat</span>Provisioners run <b>ONLY on the resource's first creation</b>. Re-apply with an unchanged resource does NOT re-run them. They re-run only after destroy + recreate. <b>State never knows if the script succeeded</b> — only that Terraform "tried". Failed provisioner + existing resource = green plan over a half-built box; recover with <code>taint</code> + re-apply. <code>on_failure = continue</code> is for best-effort logging only.</div>
+<h3 class="sec"><span class="n">▣</span>local-exec vs remote-exec</h3>
+<div class="grid2">
+<div class="panel"><div class="ptitle">local-exec (runs on YOUR machine)</div>
+<div class="code mini">resource "aws_instance" "web" {
+  ami           = "ami-123"
+  instance_type = "t3.micro"
+
+  provisioner "local-exec" {
+    command = "echo ${self.private_ip} &gt;&gt; deployed.txt"
+    <span class="g"># runs on the machine running Terraform</span>
+  }
+}</div>
+<p class="small">Use cases: register the new instance in your inventory, post to Slack, write to a file. <b>Does not affect the resource itself.</b></p>
+</div>
+<div class="panel"><div class="ptitle">remote-exec (runs ON the resource)</div>
+<div class="code mini">resource "aws_instance" "web" {
+  ami           = "ami-123"
+  instance_type = "t3.micro"
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("~/.ssh/lab.pem")
+    host        = self.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update -y",
+      "sudo apt-get install -y nginx"
+    ]
+    <span class="g"># runs on the new VM via SSH</span>
+  }
+}</div>
+<p class="small">Use cases: bootstrap the OS. <b>Breaks idempotence</b> if the inline script isn't safe to re-run.</p>
+</div>
+</div>
+<h3 class="sec"><span class="n">▣</span>When to use provisioners (the doctrine)</h3>
+<table class="tb"><tr><th>Need</th><th>Use this, not a provisioner</th></tr>
+<tr><td>Install packages on first boot</td><td><code>user_data</code> / <code>cloud-init</code> (declarative, retryable, in state)</td></tr>
+<tr><td>Bake a golden image</td><td>Packer (builds AMI outside Terraform entirely)</td></tr>
+<tr><td>Configure the running OS</td><td>Ansible (idempotent modules, no SSH key in Terraform)</td></tr>
+<tr><td>External side effect (register, post to Slack)</td><td><code>local-exec</code> is fine</td></tr>
+<tr><td>Something nothing else can do</td><td><code>remote-exec</code> as last resort</td></tr>
+</table>
+<div class="mark m-fun"><span class="tag">😄 The classic mistake</span>You provision an EC2, then <code>remote-exec</code> runs <code>apt install nginx</code> on first boot. Plan looks great. Then next week you change the instance type, apply, and... nginx is <b>still installed</b> (provisioner doesn't re-run). It works because you got lucky. <b>The cure:</b> bake nginx into a Packer AMI and let Terraform deploy images, not scripts.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The Lego brick — <a class="tlink" href="#ch-19">Modules</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 21 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div>
+<div class="sheet" id="ch-19"><div class="pghead"><div class="hrow"><div><div class="kick">PART III · LEVEL 2 · CH 19</div><h1 class="t">🧱 Modules — Package, Version, Reuse</h1></div><span class="hmeta">🟡 6 MIN · T23</span></div></div>
+<p class="lead">A module is a <b>container for multiple resources used together</b>. Every Terraform configuration is itself a module (the root module). Modules can call other modules — that's reuse, packaging, consistent patterns across teams.</p>
+<div class="mark m-key"><span class="tag">🔑 Every config is a module</span>You're always in a module. The <b>root module</b> = where you run <code>terraform apply</code>. <b>Child modules</b> = folders you call via <code>module "x" { source = "..." }</code>. <b>Published modules</b> = on the registry, versioned, immutable.</div>
+<h3 class="sec"><span class="n">▣</span>Module structure</h3>
+<div class="code">modules/ec2/
+  main.tf       <span class="g"># resources; no hardcoded values; uses variables</span>
+  variables.tf  <span class="g"># all inputs + validations</span>
+  outputs.tf    <span class="g"># all exports; never expose secrets unmarked</span>
+  versions.tf   <span class="g"># required_version, required_providers</span></div>
+<h3 class="sec"><span class="n">▣</span>Call + read outputs</h3>
+<div class="code"># modules/ec2/main.tf
+resource "aws_instance" "this" {
+  count         = var.count
+  ami           = var.ami
+  instance_type = var.instance_type
+  tags          = merge(var.tags, { Module = "ec2", Index = count.index })
+}
+
+output "instance_ids" { value = aws_instance.this[*].id }
+
+# root: call + read outputs
+module "ec2_cluster" {
+  source        = "./modules/ec2"
+  count         = 3
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.env == "prod" ? "t3.small" : "t3.micro"
+}
+
+resource "aws_lb_target_group_attachment" "example" {
+  target_group_arn = aws_lb_target_group.app.arn
+  target_id        = module.ec2_cluster.instance_ids[0]
+}</div>
+<table class="tb"><tr><th>Source</th><th>Example</th><th>Versioning</th></tr>
+<tr><td>Registry</td><td><code>"terraform-aws-modules/vpc/aws"</code></td><td>✅ enforced</td></tr>
+<tr><td>Git</td><td><code>"github.com/org/repo//modules/ec2?ref=v1.2.0"</code></td><td>manual pin</td></tr>
+<tr><td>Local</td><td><code>"./modules/ec2"</code></td><td>n/a</td></tr>
+</table>
+<div class="mark m-warn"><span class="tag">⚠️ Provider inheritance</span>Reusable modules = <b>no provider block</b> (accepts the caller's). <code>module "vpc" { providers = { aws = aws.eu } ... }</code> passes a specific provider alias.</div>
+
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The CAPSTONE — <a class="tlink" href="#lab-1">Lab 1</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 22 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div><div class="sheet" id="lab-1"><div class="pghead"><div class="hrow"><div><div class="kick">PART III · CAPSTONE</div><h1 class="t">⭐ Lab 1 — Full Build Chain</h1></div><span class="hmeta">🟠 12 MIN · T24</span></div></div>
+<p class="lead">Stitches every chapter: <b>Provider → VPC → Subnets → Instances → SG → Outputs → Provisioner → Destroy</b>. Tab 2 builds, Tab 1 observes.</p>
+<h3 class="sec"><span class="n">▣</span>The full main.tf (8 resources, one file)</h3>
+<div class="code">terraform {
+  required_providers { aws = { source = "hashicorp/aws", version = "~> 5.0" } }
+}
+
+provider "aws" {
+  region = "us-east-1"
+  access_key = "test"  secret_key = "test"     <span class="g"># Floci: dummy creds; AWS: delete these</span>
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
+  endpoints { ec2 = "http://localhost:4566" }    <span class="g"># Floci only; delete for AWS</span>
+}
+
+resource "aws_vpc" "main" { cidr_block = "10.0.0.0/16" tags = { Name = "capstone" } }
+
+resource "aws_subnet" "a" { vpc_id = aws_vpc.main.id  cidr_block = "10.0.1.0/24"  availability_zone = "us-east-1a" }
+resource "aws_subnet" "b" { vpc_id = aws_vpc.main.id  cidr_block = "10.0.2.0/24"  availability_zone = "us-east-1b" }
+
+resource "aws_security_group" "web" {
+  name = "web-sg"
+  vpc_id = aws_vpc.main.id
+  ingress { from_port = 443  to_port = 443  protocol = "tcp"  cidr_blocks = ["0.0.0.0/0"] }
+  egress  { from_port = 0    to_port = 0    protocol = "-1"   cidr_blocks = ["0.0.0.0/0"] }
+}
+
+resource "aws_instance" "web" {
+  for_each               = toset(["a1","a2","b1","b2"])
+  ami                    = "ami-0c55b159cbfafe1f0"
+  instance_type          = "t3.micro"
+  subnet_id              = startsWith(each.key, "a") ? aws_subnet.a.id : aws_subnet.b.id
+  vpc_security_group_ids = [aws_security_group.web.id]
+  tags                   = { Name = "web-${each.key}" }
+}
+
+output "ips" {
+  value = { for k, inst in aws_instance.web : k => inst.private_ip }
+}
+
+resource "null_resource" "log_ips" {
+  triggers = { ids = jsonencode(aws_instance.web) }
+  provisioner "local-exec" {
+    command = "echo 'instances ready:' >> deployed.txt"
+  }
+}</div>
+<h3 class="sec"><span class="n">▣</span>Two-terminal execution</h3>
+<div class="grid2">
+<div class="termwin"><div class="termhead th-obs">👀 TAB 1 · OBSERVE</div><div class="termbody">floci start
+eval "$(floci env)"
+<span class="p">watch aws ec2 describe-instances</span>   <span class="g"># watch instances appear</span>
+<span class="p">watch aws ec2 describe-vpcs</span>        <span class="g"># watch VPCs</span></div></div>
+<div class="termwin"><div class="termhead th-ctl">⚙️ TAB 2 · CONTROL</div><div class="termbody">cd ~/lab-capstone
+<span class="p">terraform init</span>
+<span class="p">terraform plan -out=tfplan</span>
+<span class="p">terraform apply tfplan</span>
+<span class="p">terraform output -json ips</span>   <span class="g"># → {"a1":"10.0.1.11",...}</span>
+<span class="p">terraform destroy -auto-approve</span></div></div>
+</div>
+<div class="m-exam"><span class="tag">🎓 What this proved</span>You built the entire chain: provider auth → VPC → 2 subnets → 4 instances via for_each → security group → outputs JSON → local-exec provisioner → full teardown. <b>The same code runs against real AWS</b> by deleting the Floci <code>endpoints</code> + <code>skip_*</code> lines and changing auth to SSO/profile. That's the whole IaC story in 8 resources.</div>
+<p class="small center" style="margin-top:14px;">⏭️ <b>Next:</b> The review — <a class="tlink" href="#cheat">Cheat · Quiz · Glossary · Resources</a>.</p>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 23 —</span><span><a class="backtoc" href="#toc">TOC</a> prev | next</span></div></div><div class="sheet" id="cheat"><div class="pghead"><div class="hrow"><div><div class="kick">FINALE</div><h1 class="t">📋 Cheat Sheet · Quiz · Glossary · Resources</h1></div><span class="hmeta">🏁 FINALE</span></div></div>
+<p class="lead">The story in one page: commands, quiz, glossary, resources. Five minutes of review before the interview.</p>
+<h3 class="sec"><span class="n">▣</span>Cheat sheet — the 14 commands</h3>
+<table class="tb"><tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>terraform init</code></td><td>install providers + wire backend</td></tr>
+<tr><td><code>terraform fmt</code></td><td>canonical formatting</td></tr>
+<tr><td><code>terraform validate</code></td><td>syntax check (offline)</td></tr>
+<tr><td><code>terraform plan -out=tfplan</code></td><td>preview diff, save to file</td></tr>
+<tr><td><code>terraform apply tfplan</code></td><td>apply EXACTLY the reviewed plan</td></tr>
+<tr><td><code>terraform destroy</code></td><td>tear it all down</td></tr>
+<tr><td><code>terraform output -raw &lt;name&gt;</code></td><td>read an output value</td></tr>
+<tr><td><code>terraform state list / show / mv / rm</code></td><td>operate on state without recreating</td></tr>
+<tr><td><code>terraform import &lt;addr&gt; &lt;id&gt;</code></td><td>adopt existing infra</td></tr>
+<tr><td><code>terraform force-unlock &lt;ID&gt;</code></td><td>release a stuck lock (DANGEROUS)</td></tr>
+<tr><td><code>terraform workspace &lt;list|new|select&gt;</code></td><td>state isolation per env</td></tr>
+<tr><td><code>terraform graph | dot -Tsvg</code></td><td>visualize the dependency graph</td></tr>
+</table>
+<h3 class="sec"><span class="n">▣</span>Quiz — 8 questions</h3>
+<div class="grid2">
+<div class="qz"><span class="qn">1.</span> What does <code>terraform init</code> do? (jobs 1 &amp; 2)</div>
+<div class="qz"><span class="qn">2.</span> Idempotence in one sentence.</div>
+<div class="qz"><span class="qn">3.</span> The 3 states. What does plan compare?</div>
+<div class="qz"><span class="qn">4.</span> What do <code>+</code> / <code>~</code> / <code>-/+</code> / <code>-</code> mean?</div>
+<div class="qz"><span class="qn">5.</span> Why no keys in <code>.tf</code>? (3 reasons)</div>
+<div class="qz"><span class="qn">6.</span> Resource vs data source.</div>
+<div class="qz"><span class="qn">7.</span> Variable precedence: lowest to highest?</div>
+<div class="qz"><span class="qn">8.</span> count vs for_each — which, and why?</div>
+</div>
+<div class="mark m-key" style="margin-top:8px;"><span class="tag">🔑 Quick answers (open in your notes)</span><b>A1.</b> Install providers + wire backend. <b>A2.</b> apply twice = apply once. <b>A3.</b> Desired vs Known vs Real. <b>A4.</b> +/~/−/+create or update or destroy or recreate. <b>A5.</b> leaks to state+git+rotation cost. <b>A6.</b> managed lifecycle vs read-only lookup. <b>A7.</b> defaults &lt; tfvars &lt; -var &lt; TF_VAR_*. <b>A8.</b> for_each (stable keys on remove).</div>
+</div><div class="sheet" id="cheat-2"><div class="pghead"><div class="hrow"><div><div class="kick">FINALE</div><h1 class="t">Glossary + Resources</h1></div><span class="hmeta">📖 PAGE 2</span></div></div><h3 class="sec" style="margin-top:0"><span class="n">▣</span>Glossary — 20 terms</h3>
+<div class="grid2">
+<div class="glos"><b>apply</b> — executes the planned changes.</div>
+<div class="glos"><b>backend</b> — where <code>terraform.tfstate</code> lives.</div>
+<div class="glos"><b>core</b> — Terraform's brain: parses, graphs, plans, calls plugins.</div>
+<div class="glos"><b>data source</b> — read-only lookup, no lifecycle.</div>
+<div class="glos"><b>desired state</b> — what your <code>.tf</code> declares.</div>
+<div class="glos"><b>drift</b> — reality diverged from code.</div>
+<div class="glos"><b>HCL</b> — HashiCorp Configuration Language.</div>
+<div class="glos"><b>idempotence</b> — apply twice = apply once.</div>
+<div class="glos"><b>IGW</b> — Internet Gateway.</div>
+<div class="glos"><b>known state</b> — what <code>terraform.tfstate</code> records.</div>
+<div class="glos"><b>lock table</b> — DynamoDB row per backend key. Mutex for state writes.</div>
+<div class="glos"><b>module</b> — reusable, parameterized folder.</div>
+<div class="glos"><b>NAT Gateway</b> — managed, ~$32/mo+data, AZ-bound.</div>
+<div class="glos"><b>OIDC</b> — short-lived token CI assumes into IAM roles.</div>
+<div class="glos"><b>plan</b> — the diff: +/~/−.</div>
+<div class="glos"><b>provider</b> — plugin that translates HCL to API calls.</div>
+<div class="glos"><b>provisioner</b> — escape hatch to run scripts. Last resort only.</div>
+<div class="glos"><b>real state</b> — what the cloud looks like (after refresh).</div>
+<div class="glos"><b>SSO</b> — temporary credentials, no long-lived keys.</div>
+<div class="glos"><b>workspace</b> — state isolation per env in one config.</div>
+</div>
+<h3 class="sec" style="margin-top:0"><span class="n">▣</span>Resources — keep these handy</h3>
+<div class="resbox">
+<b>Course deck (this book is built on it):</b> Eng. Mohamed Magdy — Terraform Level 1 + 2<br><br>
+<b>Official:</b> <a href="https://registry.terraform.io">registry.terraform.io</a> · <a href="https://developer.hashicorp.com/terraform">developer.hashicorp.com/terraform</a> · <a href="https://github.com/hashicorp/terraform">github.com/hashicorp/terraform</a><br>
+<b>Learn:</b> <a href="https://github.com/hashicorp/learn-terraform">learn-terraform</a> (free labs) · <a href="https://discuss.hashicorp.com/c/terraform-core/">discuss.hashicorp.com</a> (forum)<br>
+<b>Local emulator:</b> <a href="https://floci.io">floci.io</a> (Floci — free MIT, port 4566)<br>
+<b>Exam:</b> HashiCorp Certified — Terraform Associate (covers most of this book)
+</div>
+<div class="folio"><span>Terraform · Vol 1</span><span class="fnum">— Page 24 —</span><span><a class="backtoc" href="#toc">TOC</a></span></div></div></body></html>

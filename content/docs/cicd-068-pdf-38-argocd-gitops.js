@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["cicd-068-pdf-38-argocd-gitops"]={"html":"\r\n\r\n\r\n\r\n\r\nCI/CD Engineering — PDF 38: ArgoCD &amp; GitOps\r\n","toc":[],"words":292,"assets":[]};

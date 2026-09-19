@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["_unsorted-02-pc1-py"]={"html":"<pre class=\"code\" data-lang=\"py\"><code>d = open(r'C:/Users/eslam/OneDrive/Desktop/CI CD/CI-CD/website/scripts/build.py', 'rb').read().decode('utf-8')\ni = d.find('class=\"bookhero\"')\nprint(repr(d[max(0, i - 1200):i + 1500]))\n</code></pre>","toc":[],"words":15,"assets":[]};

@@ -1,0 +1,50 @@
+---
+- name: Update apt cache (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install package {{ package_name }}
+  package:
+    name: "{{ package_name }}"
+    state: "{{ package_state }}"
+  notify: Restart service
+
+- name: Ensure service {{ service_name }} is {{ service_state }} and enabled={{ service_enabled }}
+  service:
+    name: "{{ service_name }}"
+    state: "{{ service_state }}"
+    enabled: "{{ service_enabled }}"
+  when: service_name is defined and service_name | length > 0
+  ignore_errors: true
+
+- name: Deploy custom config from template (optional)
+  template:
+    src: app.conf.j2
+    dest: /etc/{{ package_name }}/{{ package_name }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart service
+  when: template_enabled | bool
+
+- name: Ensure custom index page (only for web packages)
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload service
+  when: package_name in ['nginx', 'apache2', 'httpd']
+
+- name: Ensure custom index page for eslam.com vhost (WSL)
+  template:
+    src: index.html.j2
+    dest: /var/www/eslam/index.html
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload service
+  when: package_name in ['nginx', 'apache2', 'httpd']

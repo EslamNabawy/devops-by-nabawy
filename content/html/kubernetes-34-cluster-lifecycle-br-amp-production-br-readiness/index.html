@@ -1,0 +1,674 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Cluster Lifecycle & Production Readiness — Kubernetes Book 09</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.page{width:210mm; height:297mm;background:#fff; margin:9mm auto; padding:14mm 14mm 18mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 16px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:18px 0 10px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.6; margin:0 0 12px;}
+p.small,li{font-size:12.5px; line-height:1.55; margin:5px 0;}
+.callout{border-radius:12px; padding:12px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.8px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:11px 14px; margin:14px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:12px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:14px; margin:14px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:9px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:12px 15px; font:12px/1.7 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:14px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.6;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:14px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.8 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:16px 18px; border-radius:14px; white-space:pre; margin:14px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.3px; border:1px solid var(--line); margin:14px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:8px 11px; text-align:left; font-size:12px;}
+.tb td{padding:7.5px 11px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:14px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:14px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:6px 0;}
+ul.tick li{padding:4px 0 4px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; margin:10px 0; background:#fff; font-size:11.8px; line-height:1.5;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:6px 10px; font-size:11.3px; line-height:1.45; margin:7px 0;}
+.gl b{color:#12224d;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin:12px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.road{position:relative; margin:14px 0 6px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 11px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:9px 13px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch03 h3.sec{margin:10px 0 6px}
+#ch03 .callout,#ch03 .cka{margin:7px 0;padding:8px 11px}
+#ch03 .term,#ch03 .mtree,#ch03 table.tb{margin:8px 0}
+#ch03 .term,#ch03 .mtree{padding:9px 12px}
+#ch03 p.lead{margin:0 0 7px}
+#ch03 .grid2,#ch03 .grid3{margin:8px 0;gap:10px}
+#ch03 .card,#ch03 .zone,#ch03 .labstep{padding:9px 11px}
+#ch03 .qz{margin:6px 0;padding:6px 9px}
+#ch03 .gl{margin:3px 0;padding:4px 8px}
+#ch03 .rowc{margin:7px 0}
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+/* L2 typography, scoped per still-overflowing page */
+#ch03 p.small,#ch03 li{font-size:12.2px;line-height:1.42}
+#ch03 .callout,#ch03 .cka{font-size:12.2px;line-height:1.44}
+#ch03 .qz{font-size:11.3px;line-height:1.42}
+#ch03 .gl{font-size:10.8px;line-height:1.36}
+#ch03 .term{font-size:11.6px;line-height:1.55}
+#ch03 .mtree{font-size:11.8px;line-height:1.6}
+#ch03 table.tb{font-size:11.7px} #ch03 .tb td{padding:5px 8px}
+#ch04 p.small,#ch04 li{font-size:12.2px;line-height:1.42}
+#ch04 .callout,#ch04 .cka{font-size:12.2px;line-height:1.44}
+#ch04 .qz{font-size:11.3px;line-height:1.42}
+#ch04 .gl{font-size:10.8px;line-height:1.36}
+#ch04 .term{font-size:11.6px;line-height:1.55}
+#ch04 .mtree{font-size:11.8px;line-height:1.6}
+#ch04 table.tb{font-size:11.7px} #ch04 .tb td{padding:5px 8px}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🏗️</div>
+<h1>CLUSTER LIFECYCLE<br>&amp; PRODUCTION<br>READINESS</h1>
+<div class="sub">Book 09 — the finale. Building and maintaining the cluster itself: kubeadm bootstrap, etcd backup &amp; restore (where every object you've ever applied actually lives), the upgrade choreography, GKE · EKS · AKS compared, multi-cluster thinking, and the exam map that turns nine books into three certifications.</div>
+<div class="row">
+<div class="glass">⚙️ kubeadm<small>bootstrap</small></div>
+<div class="glass">💾 etcd<small>the book of record</small></div>
+<div class="glass">📸 Snapshot<small>backup + restore</small></div>
+<div class="glass">🎬 Upgrade<small>the choreography</small></div>
+</div>
+<div class="row">
+<div class="glass">☁️ GKE·EKS·AKS<small>the big three</small></div>
+<div class="glass">🌐 Multi-cluster<small>fleet thinking</small></div>
+<div class="glass">🎓 Exam map<small>CKA·CKAD·CKS</small></div>
+<div class="glass">✅ Readiness<small>the checklist</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 09 · THE FINALE · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">6 parts · 18 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · Birth &amp; Memory</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>How a Cluster Is Born — kubeadm<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>etcd — The Book of Record<span class="dots"></span><span class="tp">p.4</span></a>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Backup &amp; Restore — The Sacred Drill<span class="dots"></span><span class="tp">p.5</span></a>
+<div class="tocpart">Part II · Growing Old Gracefully</div>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Cluster Upgrades — The Choreography<span class="dots"></span><span class="tp">p.6</span></a>
+<div class="tocpart">Part III · The Managed Question</div>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Managed vs Self-Hosted<span class="dots"></span><span class="tp">p.7</span></a>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>GKE · EKS · AKS — The Big Three<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Multi-Cluster &amp; Fleet Thinking<span class="dots"></span><span class="tp">p.9</span></a>
+<div class="tocpart">Part IV · The Finish Line</div>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>The Exam Map — CKA · CKAD · CKS<span class="dots"></span><span class="tp">p.10</span></a>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>The Production Readiness Checklist<span class="dots"></span><span class="tp">p.11</span></a>
+<div class="tocpart">Part V · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>etcd Snapshot &amp; Restore Drill<span class="dots"></span><span class="tp">p.12</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>The Upgrade Rehearsal<span class="dots"></span><span class="tp">p.13</span></a>
+<div class="tocpart">Part VI · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.17</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>The Series Complete<span class="dots"></span><span class="tp">p.18</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–08.</b> Book 08's finale promised this book would visit "where Helm's release receipts and every object ever applied actually live" — that's <b>etcd</b>, and CH 02–03 hand you its backup drill (the single most-tested CKA skill). Book 04's drain and Book 01's quorum both return as upgrade prerequisites.</div></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">⚙️ How a Cluster Is Born — kubeadm</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Eight books assumed a cluster existed. Now: who builds it? A cluster is just <b>machines running seven binaries</b> (Book 01's cast) with a shared CA and a wired network. <b>kubeadm</b> is the official tool that does this plumbing — <i>not</i> a product, just a disciplined bootstrap.</p>
+<div class="term"><span class="p">$</span> kubeadm init \
+&nbsp;&nbsp;<span class="y">--control-plane-endpoint</span>=<span class="m">"k8s-api.example.com:6443"</span> \
+&nbsp;&nbsp;<span class="y">--pod-network-cidr</span>=<span class="m">10.244.0.0/16</span>
+<span class="g"># output: root CA · certs · static-pod manifests · the join command</span>
+<span class="p">$</span> kubectl apply -f calico.yaml&nbsp;&nbsp;<span class="g"># kubeadm does NOT install a CNI — you do</span>
+<span class="p">$</span> kubeadm join k8s-api.example.com:6443 <span class="y">--token</span> … <span class="y">--discovery-token-ca-cert-hash</span> …
+<span class="g"># run on each worker → kubelet starts → node registers → Ready</span></div>
+<div class="mtree"><b>What kubeadm init actually does</b>
+├── generates PKI: <u>CA, certs</u> for apiserver/etcd/scheduler…
+├── writes <u>static-pod manifests</u> → /etc/kubernetes/manifests
+│   <span class="g">(Book 04 · CH 11: kubelet boots the control plane!)</span>
+├── starts <u>etcd</u> + CP components as static pods
+├── writes <u>kubeconfig</u> → /etc/kubernetes/admin.conf
+└── prints the <b>join command</b> <span class="g">(token + CA hash = trust on first use)</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The bootstrap paradox, revisited:</b> kubeadm doesn't "run" the control plane — it drops <b>manifest files</b> on disk, and the kubelet (the only thing already running) spawns the API Server as static pods. Book 04 · CH 11 explained why they're undeletable; now you know who wrote them.</div></div>
+<table class="tb">
+<tr><th>Tool</th><th>For</th><th>Vibe</th></tr>
+<tr><td><b>kubeadm</b></td><td>vanilla clusters on your VMs/metal</td><td>the official reference — CKA's stage</td></tr>
+<tr><td><b>kops / Cluster API</b></td><td>infrastructure-aware creation (cloud, IaC)</td><td>kubeadm under the hood + lifecycle</td></tr>
+<tr><td><b>managed (GKE/EKS/AKS)</b></td><td>someone else runs the CP (CH 05)</td><td>you run workers only</td></tr>
+<tr><td><b>k3s / minikube / kind</b></td><td>edge, dev, testing</td><td>condensed — what this series ran on</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <code>kubeadm init</code> is <b>ceremony, not magic</b> — generate a CA, write static-pod manifests, let the already-running kubelet conjure the control plane from files, then hand out signed <b>join tokens</b> so workers can trust and be trusted.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The thing kubeadm just booted and you must protect — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: etcd</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">💾 etcd — The Book of Record</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Book 01 called etcd "the memory." Sharper: it's the <b>single source of truth</b> — every Deployment spec, every Secret, every Helm release receipt (Book 08 · CH 01!), every ServiceMonitor ever applied. <b>Back it up or you don't have a cluster — you have a cluster-shaped amnesia waiting to happen.</b></p>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:20px;">💀</div><p class="small"><b>etcd gone, no backup</b><br>every object lost; nodes keep running Pods that nobody can change; rebuild = re-declare everything from Git (if you have it…)</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:20px;">⚠️</div><p class="small"><b>etcd slow</b><br>every API call waits — the whole cluster feels it (Book 07's "API slow" playbook row)</p></div>
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:20px;">✅</div><p class="small"><b>etcd healthy + backed up</b><br>quorum serving (Book 01 · CH 08) · snapshots on a schedule · tested restores</p></div>
+</div>
+<ul class="tick">
+<li>🔐 <b>etcd holds Secrets in plaintext by default</b> (Book 02 · CH 07) — encryption-at-rest + locked-down PKI are etcd hygiene, not options</li>
+<li>⚖️ <b>Quorum math rules here too:</b> 3 members tolerate 1 failure; a <b>2-member etcd is the worst number</b> (Book 01's table, life-or-death edition)</li>
+<li>🗄️ <b>State separation (Book 05, finale-level):</b> etcd = cluster state (specs, wishes). PVs = app data. <b>Back up BOTH</b> — an etcd restore with empty PVs is a database cluster full of empty databases</li>
+</ul>
+<div class="term mini"><span class="g"># talking to etcd directly — mTLS, always (its own certs!):</span>
+<span class="p">$</span> ETCDCTL_API=3 etcdctl \
+&nbsp;&nbsp;<span class="y">--endpoints</span>=https://127.0.0.1:2379 \
+&nbsp;&nbsp;<span class="y">--cacert</span>=/etc/kubernetes/pki/etcd/ca.crt \
+&nbsp;&nbsp;<span class="y">--cert</span>=/etc/kubernetes/pki/etcd/server.crt \
+&nbsp;&nbsp;<span class="y">--key</span>=/etc/kubernetes/pki/etcd/server.key \
+&nbsp;&nbsp;endpoint health
+https://127.0.0.1:2379 <span class="p">is healthy</span></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Two CKA-favorite gotchas:</b> (1) <code>ETCDCTL_API=3</code> — the v2 API is ancient; snapshots don't exist in v2. (2) <b>The certs are mandatory</b> — etcd refuses unauthenticated clients by design; forgetting <code>--cacert/--cert/--key</code> fails with a connection error that looks like "etcd is down" when etcd is fine and you're just anonymous.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> etcd is the <b>book of record for the entire cluster</b> — everything Books 01–08 ever declared lives in its key-space — and its care routine is fixed: <b>quorum membership (odd counts), encryption-at-rest, mTLS access, and snapshots you have actually restored at least once.</b></div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The drill itself — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: Backup &amp; Restore</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">📸 Backup &amp; Restore — The Sacred Drill</h2><span class="dbadge">🟡 6 MIN · CKA-CRITICAL</span></div>
+<p class="lead">Two commands. Guaranteed exam points. Career-saving muscle memory. Take the shot:</p>
+<div class="term"><span class="g"># BACKUP — one snapshot file, consistent point-in-time:</span>
+<span class="p">$</span> ETCDCTL_API=3 etcdctl \
+&nbsp;&nbsp;<span class="y">--endpoints</span>=https://127.0.0.1:2379 \
+&nbsp;&nbsp;<span class="y">--cacert</span>=/etc/kubernetes/pki/etcd/ca.crt \
+&nbsp;&nbsp;<span class="y">--cert</span>=/etc/kubernetes/pki/etcd/server.crt \
+&nbsp;&nbsp;<span class="y">--key</span>=/etc/kubernetes/pki/etcd/server.key \
+&nbsp;&nbsp;<span class="c">snapshot save</span> /backup/etcd-snapshot-$(date +%F).db
+Snapshot saved at /backup/etcd-snapshot-2026-01-15.db
+
+<span class="g"># VERIFY — never trust an unverified backup:</span>
+<span class="p">$</span> ETCDCTL_API=3 etcdctl <span class="y">--write-table</span>=json \
+&nbsp;&nbsp;<span class="c">snapshot status</span> /backup/etcd-snapshot-2026-01-15.db
+<span class="y">HASH&nbsp;&nbsp;&nbsp;&nbsp;TOTAL KEYS&nbsp;&nbsp;TOTAL SIZE</span>
+4a2c…&nbsp;&nbsp;&nbsp;<span class="p">1842</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.2 MB</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Restore is not "put the file back":</b> <code>snapshot restore</code> builds a <b>new etcd data directory</b> (new cluster identity, written to a fresh <code>--data-dir</code>). The dance: <b>stop the API Server → stop etcd → restore to a new data-dir → point etcd at it → restart everything</b>. On a kubeadm cluster that means moving the static-pod manifests out, restoring, and moving them back — the API Server must be <b>down during restore</b>, because it would keep writing to the old, broken reality.</div></div>
+<div class="mtree"><b>The restore choreography (single-CP)</b>
+1 · mv /etc/kubernetes/manifests/*.yaml /tmp/  <span class="g">→ CP static pods die</span>
+2 · <u>snapshot restore</u> --data-dir=/var/lib/etcd-restored /backup/x.db
+3 · edit etcd static-pod yaml → --data-dir=/var/lib/etcd-restored
+4 · mv manifests back → etcd boots from the snapshot
+5 · API Server returns → <u>cluster = the snapshot's moment</u>
+<span class="g">multi-CP: restore ALL members from the SAME snapshot
+(quorum must agree on one history — mixing timelines = split brain)</span></div>
+<table class="tb">
+<tr><th>Backup reality check</th><th>The honest answer</th></tr>
+<tr><td>Does a snapshot include PV data?</td><td><b>No</b> — etcd stores specs, not bytes. Database data needs PV-level backups (Book 05 · CH 06 + volume snapshots)</td></tr>
+<tr><td>Snapshot replaces GitOps?</td><td><b>No — they're a pair.</b> Book 08: Git rebuilds declared state; snapshot recovers <i>exact</i> state including runtime-only fields (status, tokens, Helm receipts)</td></tr>
+<tr><td>How often?</td><td>Scheduled (cron + etcdctl) <b>and</b> before every risky operation (CH 04's upgrades!)</td></tr>
+</table>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <code>snapshot save</code> + <code>snapshot status</code> take minutes and save careers — but restore is a <b>choreography</b> (quiesce → restore to a new data-dir → boot), and a backup you've never restored is a rumor, not a backup. Lab 1 runs the whole drill.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Keeping the cluster itself current — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: Upgrades</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🎬 Cluster Upgrades — The Choreography</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Kubernetes ships three releases a year; running a stale cluster means unsupported APIs and a painful jump eventually. The upgrade is a <b>fixed dance</b> — learn it once, perform it forever.</p>
+<div class="road">
+<div class="step"><span class="stepnum">0</span><span><b>Snapshot etcd</b> (CH 03) — the undo for the entire dance</span></div>
+<div class="step"><span class="stepnum">1</span><span><b>Control Plane:</b> upgrade the <code>kubeadm</code> binary → <code>kubeadm upgrade plan</code> → <code>kubeadm upgrade apply vX.Y</code> → upgrade <code>kubelet &amp; kubectl</code> → restart kubelet</span></div>
+<div class="step"><span class="stepnum">2</span><span><b>Drain the CP node</b> (Book 04 · CH 10) → upgrade → <b>uncordon</b></span></div>
+<div class="step"><span class="stepnum">3</span><span><b>Each worker, one at a time:</b> drain → <code>kubeadm upgrade node</code> → upgrade kubelet → uncordon → verify before the next</span></div>
+</div>
+<table class="tb">
+<tr><th>Rule</th><th>Why</th></tr>
+<tr><td><b>One minor at a time</b> (1.28 → 1.29, never → 1.30)</td><td>skew guarantees only hold between adjacent versions</td></tr>
+<tr><td><b>API Server first, kubelets after</b></td><td>skew policy: kubelet may <b>lag</b> the API Server (up to 3 minors) — never lead it</td></tr>
+<tr><td><b>Control plane before workers</b></td><td>new kubelets must speak to a new-or-equal API Server</td></tr>
+<tr><td><b>Read the "Upgrade notes"</b></td><td>deprecated APIs get <b>removed</b> — your Book 08 CRDs and Helm charts may need version bumps <i>before</i> the cluster jumps</td></tr>
+</table>
+<div class="term mini"><span class="p">$</span> kubeadm upgrade plan
+<span class="y">Components that must be upgraded: etcd · kubelet ×3
+You can now apply: v1.29.x</span>
+<span class="p">$</span> kubectl get nodes -o wide&nbsp;&nbsp;<span class="g"># watch versions march node-by-node:
+# CP 1.29 while workers still 1.28 — HEALTHY SKEW (expected!)</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Workloads ride through untouched:</b> the upgrade moves the <i>platform</i>. Your Pods keep running — drain just asks them to walk across the street (Book 04). Only two things interrupt workloads: API removals (fix manifests first) and drain windows (spread workers, one at a time).</div></div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>On managed clusters (CH 05–06):</b> the vendor performs the CP upgrade — <b>you</b> still own node-pool upgrades and API-deprecation readiness. "Managed" moves the choreography, it doesn't delete it.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> upgrades are a <b>fixed choreography — snapshot, CP first (kubeadm apply), then workers one-by-one (drain → upgrade node → uncordon), one minor at a time, API Server never behind kubelets</b> — and the skill is boring repetition, not improvisation. Lab 2 rehearses it.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ …unless you'd rather never run that dance — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: Managed vs Self-Hosted</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🤝 Managed vs Self-Hosted</h2><span class="dbadge">🟢 5 MIN</span></div>
+<p class="lead">The industry's default answer to CH 04's workload: <b>buy the control plane</b>. But "managed" is a spectrum — knowing exactly <i>which responsibilities transfer</i> is the interview-grade question.</p>
+<table class="tb">
+<tr><th>Responsibility</th><th>Self-hosted (kubeadm)</th><th>Managed (GKE/EKS/AKS)</th></tr>
+<tr><td><b>etcd</b> — backup, quorum, encryption</td><td>you (CH 02–03)</td><td><b>vendor</b> — invisible, SLA-backed</td></tr>
+<tr><td><b>API Server / CP upgrade</b></td><td>you (CH 04's dance)</td><td>vendor performs CP; <b>you</b> upgrade node pools</td></tr>
+<tr><td><b>CP availability (multi-master, LB)</b></td><td>you (Book 01 · CH 08's 3-node math)</td><td>vendor — regionally replicated</td></tr>
+<tr><td><b>Cert rotation, security patching (CP)</b></td><td>you</td><td>vendor</td></tr>
+<tr><td><b>Nodes, kubelets, node pools</b></td><td>you</td><td><b>you</b> — still your drain/upgrade cycle</td></tr>
+<tr><td><b>CNI, CSI, admission policy, workloads</b></td><td colspan="2"><b>YOU</b> — Books 01–08, unchanged</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The one-line division:</b> managed = <i>"we run the brain"</i> (CP + etcd). <b>The body is still yours</b> — nodes, networking policy, RBAC, workloads, observability. Everything from Books 01–08 except CH 02–03's etcd drills transfers over; and even there, <b>you own the data-residency and RBAC-around-etcd questions</b> in regulated environments.</div></div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Go managed when…</div>
+<p class="small" style="margin:0;">your team is small; Kubernetes isn't your product; you want SLA-backed CP + integrated cloud IAM/storage (CH 06's payoff); ops headcount beats hardware budget.</p></div>
+<div class="card" style="border-top:3.5px solid #64748b;"><div class="zlabel" style="text-align:left;">✅ Go self-hosted when…</div>
+<p class="small" style="margin:0;">edge/air-gapped/data-residency; cost at large scale (CP bill × 50 clusters); deep customization; <i>or Kubernetes IS your product</i> (you need kubeadm fluency — hence CKA).</p></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the managed question is really <b>"who owns the control plane's pager?"</b> — vendor takes etcd + CP availability + CP upgrades; <b>you keep every Books-01–08 responsibility on the node and workload side</b>, plus node-pool upgrades, which is why Book 04's drain skill survives every architecture choice.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ The three clouds side by side — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: GKE · EKS · AKS</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">☁️ GKE · EKS · AKS — The Big Three</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">Same Kubernetes, different clouds — the differences that actually bite live in three places: <b>networking model, IAM integration, node pools</b>.</p>
+<table class="tb">
+<tr><th></th><th>🟦 GKE (Google)</th><th>🟧 EKS (AWS)</th><th>🟦 AKS (Azure)</th></tr>
+<tr><td><b>Default networking</b></td><td><b>VPC-native</b> — Pod IPs are real VPC alias-IPs</td><td><b>AWS VPC CNI</b> — Pod IPs drawn from the subnet (ENI limits!)</td><td><b>Azure CNI</b> or <b>kubenet</b> — same IP-from-VPC tradeoff</td></tr>
+<tr><td><b>IAM integration</b></td><td>Google IAM + <b>Workload Identity</b></td><td><b>IRSA</b> (IAM Roles for Service Accounts)</td><td>Entra ID + <b>Workload Identity</b></td></tr>
+<tr><td><b>Standout</b></td><td>Autopilot (Pod-level billing, no nodes to manage)</td><td>largest ecosystem; ALB controller pairs with Book 03's Ingress</td><td>smoothest Entra/AD enterprise fit</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Why the IAM piece matters to YOU:</b> it's Book 02's ServiceAccount story, cloud edition. A Pod that needs S3 access shouldn't hold static keys in a Secret (Book 02 · CH 07's risk) — it should <b>assume a cloud role via its ServiceAccount</b> (IRSA/Workload Identity). Workload identity = the SA token exchanged for short-lived cloud credentials. Same principle: <i>identity for workloads, scoped tight</i>.</div></div>
+<ul class="tick">
+<li>🌐 <b>Networking consequence:</b> VPC-native models mean <b>Pod IPs are routable cloud resources</b> — beautiful (no overlay) but <b>subnet-sized</b>: ENI/IP exhaustion is the classic EKS scaling failure; plan CIDRs like Book 03 taught you to plan Services</li>
+<li>🧮 <b>Node pools everywhere:</b> the Book 04 toolkit (taints, labels, drain) applies <i>per pool</i> — GPU pool tainted (Book 04 · CH 03), spot pool for batch (Book 06 · CH 09's CA loves spot)</li>
+<li>🎯 <b>Portability discipline:</b> everything in this series — vanilla YAML, Helm, Kustomize, GitOps — runs identically on all three. <b>Avoid vendor CRDs in your core manifests</b>; keep cloud-specific bits in overlays (Book 08 · CH 04's structure earns its keep)</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the big three differ mainly in <b>how Pod IPs meet the cloud network, how ServiceAccounts meet cloud IAM, and how node pools are priced and shaped</b> — learn the mapping (CNI model · workload identity · pools) and you can move between all three; your Books-01–08 skills carry over unchanged.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ When one cluster isn't the answer — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: Multi-Cluster</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">🌐 Multi-Cluster &amp; Fleet Thinking</h2><span class="dbadge">🔵 OVERVIEW</span></div>
+<p class="lead">A single cluster is a <b>blast radius</b>. Bad deploys, bad upgrades (CH 04), regional outages — one control plane means one shared fate. Multi-cluster splits it. <b>Honest framing:</b> true "federation" (one API over many clusters) never won; today's practice is <b>independent clusters + shared tooling</b>.</p>
+<div class="grid3">
+<div class="card" style="border-top:3.5px solid #ef4444;"><p class="small"><b>💥 Blast radius</b><br>prod-canary cluster takes the upgrade first (CH 04); a bad release never touches everything at once</p></div>
+<div class="card" style="border-top:3.5px solid #3b82f6;"><p class="small"><b>🌍 Regions &amp; residency</b><br>latency (route to nearest), data laws (EU data stays EU — a hard wall, not a preference)</p></div>
+<div class="card" style="border-top:3.5px solid #10b981;"><p class="small"><b>🔀 Environments</b><br>the Book 08 overlay story, per-cluster instead of per-namespace</p></div>
+</div>
+<table class="tb">
+<tr><th>Challenge</th><th>Today's answer (concept level)</th></tr>
+<tr><td><b>Deploy to many</b></td><td>GitOps fleet: ArgoCD <b>ApplicationSets</b> / Flux multi-cluster — one Git commit, N clusters reconcile (Book 08's pull model, fleet edition)</td></tr>
+<tr><td><b>One DNS across clusters</b></td><td>global load balancing / multi-cluster Ingress (cloud LB + health checks steering between cluster edges — Book 03's LB at fleet level)</td></tr>
+<tr><td><b>Trust between clusters</b></td><td>shared/mirrored CA or service-mesh identity — <b>cross-cluster Service calls are an advanced, opt-in pattern</b>, not default</td></tr>
+<tr><td><b>Consistency</b></td><td>Git as the single spec (Book 08) + Book 09's snapshot discipline per cluster</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>The rule of thumb before going multi:</b> <b>don't</b> — until a concrete driver exists (residency law, region-outage SLA, upgrade blast radius). Multi-cluster multiplies <i>everything</i>: N × upgrades, N × observability, N × etcd discipline. One well-run cluster beats five shaky ones; Book 07's dashboards and Book 08's GitOps are what make N survivable.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> multi-cluster today = <b>many independent clusters + GitOps fleet deployment + global traffic steering</b> — no magic single API — justified only by blast radius, residency, or reach, and affordable only because Books 07–08 made N clusters observable and declarative.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Cash in nine books — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: The Exam Map</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">🎓 The Exam Map — CKA · CKAD · CKS</h2><span class="dbadge">🎓 SERIES CAPSTONE</span></div>
+<p class="lead">Nine books map cleanly onto the three CNCF certifications. This page is your <b>study route converter</b>: each cert's domain list, the books that own it, and the lab skills to drill.</p>
+<table class="tb">
+<tr><th>Cert</th><th>Focus</th><th>Series map</th><th>Drill these labs</th></tr>
+<tr><td><b>CKAD</b> <span class="stbadge st-crea">developer</span></td><td>build &amp; run workloads</td><td>B01 (Pods→Deployments) · B02 (config/secrets/probes…) · B05 (PVCs) · B06 (Jobs/HPA)</td><td>B01 L1–4 · B02 L1–4 · B05 L1 · B06 L2–3</td></tr>
+<tr><td><b>CKA</b> <span class="stbadge st-run">admin</span></td><td>operate clusters</td><td>B01 (architecture, quorum) · B04 (taints/drain) · B05 (PV lifecycle) · B03 (networking/CNI) · <b>B09 (kubeadm, etcd, upgrades)</b> · B07 triage</td><td><b>B09 L1–2</b> · B04 L4 · B05 L1–2 · B03 L3</td></tr>
+<tr><td><b>CKS</b> <span class="stbadge st-term">security</span><br><i>(CKA prerequisite)</i></td><td>harden at runtime</td><td>B02 (RBAC, SecurityContext, PSS, Secret hygiene) · B03 (NetworkPolicy) · B07 (audit) · B08 (policy webhooks) + runtime security (falco, seccomp — beyond this series)</td><td>B02 L2–3 · B03 L3 · re-read B02 CH 12–13</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>All three are hands-on, terminal-based, ~2h exams</b> — no multiple choice. The skills this series drilled as <i>runnable commands</i> are literally the exam tasks: <code>etcdctl snapshot save</code>, <code>kubectl auth can-i --as</code>, NetworkPolicy YAML, drain/uncordon, <code>kubectl taint</code>. Speed comes from the Lab muscle memory, not from reading.</div></div>
+<div class="think"><p class="small" style="margin:0;"><b>Recommended sequence:</b> this series = <b>CKAD + CKA body of knowledge in order</b> (Books 01–09); then add runtime-security reading on top for CKS. Book 01's "exam tip" callouts, every 🔑 box, and each book's quiz were written against these blueprints — re-do the quizzes under time pressure as your final exam-prep pass.</p></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> CKAD = <b>Books 01–02 + 05–06</b> (build), CKA adds <b>04 + 09 + 07</b> (operate), CKS = <b>02 + 03 + 08's webhooks</b> (harden) — three exams, one coherent series, and every lab you already ran was exam practice in disguise.</div></div>
+<p class="lead" style="margin-top:8px;">⏭️ One page to govern them all — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: The Production Checklist</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">✅ The Production Readiness Checklist</h2><span class="dbadge">🎓 THE SERIES IN ONE PAGE</span></div>
+<p class="lead">Nine books, compressed into the questions an SRE asks before saying "yes, ship it." Every line cites its owning book — this is the whole series as a gate.</p>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #326CE5;">
+<div class="zlabel" style="text-align:left;">🏗️ Cluster &amp; etcd (B01 · B09)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ 3+ CP nodes — quorum math sane (B01·CH08)</li>
+<li>☑ etcd snapshots <b>scheduled AND restored once</b> (B09·CH03)</li>
+<li>☑ Secrets encrypted at rest (B02·CH07)</li>
+<li>☑ Upgrade path rehearsed; versions ≤ 1 minor behind (B09·CH04)</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #6366f1;">
+<div class="zlabel" style="text-align:left;">🪪 Identity &amp; access (B02)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ No wildcard RBAC; least-privilege SAs per workload</li>
+<li>☑ default SA cannot do anything (B02·CH11)</li>
+<li>☑ PSS enforce on prod namespaces (B02·CH13)</li>
+<li>☑ No raw Secrets in Git; external-secrets/SOPS</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #7dd3fc;">
+<div class="zlabel" style="text-align:left;">🌐 Traffic &amp; isolation (B03)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ Ingress + TLS at the edge; no raw NodePort prod</li>
+<li>☑ default-deny NetworkPolicy + named allows; DNS allowed first</li>
+<li>☑ CNI actually enforces policies (verified, not assumed)</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #34d399;">
+<div class="zlabel" style="text-align:left;">💾 Workloads &amp; data (B04–06)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ Probes on everything (B07·CH02–04)</li>
+<li>☑ requests/limits set → QoS deliberate (B02·CH14–15)</li>
+<li>☑ Stateful data on PVCs, Retain policy; PV backup story (B05)</li>
+<li>☑ PDBs before the first real drain (B04·CH10)</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #f59e0b;">
+<div class="zlabel" style="text-align:left;">🔭 Observability (B07)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ Metrics + logs central; dashboards exist</li>
+<li>☑ Alerts route to humans who sleep in shifts</li>
+<li>☑ Triage reflex drilled: nodes → pods -A → events</li>
+</ul></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;">
+<div class="zlabel" style="text-align:left;">📦 Delivery (B08)</div>
+<ul class="tick" style="margin:0;">
+<li>☑ Everything declarative & in Git; GitOps reconciling</li>
+<li>☑ helm template / -k preview in CI before apply</li>
+<li>☑ Rollback path proven (helm rollback / rollout undo)</li>
+</ul></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> production readiness isn't a product you buy — it's <b>this checklist, all green</b>: survivable control plane (B01/09), least-privilege identity (B02), sealed edges and rooms (B03), healthy and persistent workloads (B04–06), truth-telling observability (B07), and a delivery system that reconciles (B08). <b>Every ☑ is a chapter you can now defend in an interview.</b></div></div>
+<p class="lead" style="margin-top:8px;">⏭️ Run it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part V: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 etcd Snapshot &amp; Restore Drill</h2><span class="dbadge">🟠 15 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Reach etcd inside minikube (docker driver)</div>
+<div class="term mini"><span class="p">$</span> minikube ssh
+ $ docker exec -it etcd-minikube sh
+<span class="g"># you're inside the etcd static-pod's container —
+# its certs are mounted at /etc/kubernetes/pki/etcd/</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Take + verify the snapshot</div>
+<div class="term mini"><span class="p">$</span> ETCDCTL_API=3 etcdctl \
+&nbsp;&nbsp;<span class="y">--endpoints</span>=https://127.0.0.1:2379 \
+&nbsp;&nbsp;<span class="y">--cacert</span>=/etc/kubernetes/pki/etcd/ca.crt \
+&nbsp;&nbsp;<span class="y">--cert</span>=/etc/kubernetes/pki/etcd/server.crt \
+&nbsp;&nbsp;<span class="y">--key</span>=/etc/kubernetes/pki/etcd/server.key \
+&nbsp;&nbsp;<span class="c">snapshot save</span> /backup/snap1.db
+<span class="p">Snapshot saved at /backup/snap1.db</span>
+<span class="p">$</span> ETCDCTL_API=3 etcdctl --cacert=… --cert=… --key=… \
+&nbsp;&nbsp;<span class="c">snapshot status</span> /backup/snap1.db --write-table
+<span class="y">TOTAL KEYS&nbsp;&nbsp;TOTAL SIZE</span>
+<span class="p">~1800</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;~6 MB&nbsp;&nbsp;<span class="g"># keys = every object you've ever applied!</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 PROVE IT'S REAL STATE</div><div class="tabbody"><span class="g"># exit container; from host kubectl:</span>
+<span class="p">$</span> kubectl create ns snapshot-proof
+<span class="p">$</span> kubectl get ns | <span class="c">grep</span> proof
+<span class="y">snapshot-proof&nbsp;&nbsp;Active</span>
+<span class="g"># this ns exists NOW but not in
+# the snapshot taken a moment ago —
+# a restore would erase it. that's
+# "point-in-time," felt firsthand</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#dc2626;">⚠️ RESTORE — THE HONEST PART</div><div class="tabbody"><span class="g"># full restore on minikube = rebuild
+# (single-node CP, static pods).
+# the DRILL to know cold:</span>
+1 · mv manifests out <span class="g">(CP dies)</span>
+2 · etcdctl snapshot restore \
+&nbsp;&nbsp;&nbsp;&nbsp;--data-dir=/var/lib/etcd-new \
+&nbsp;&nbsp;&nbsp;&nbsp;snap1.db
+3 · point etcd pod at new data-dir
+4 · manifests back → boot
+<span class="g"># memorize the ORDER; the exam
+# runs it on a 3-node CP where it
+# works exactly like CH 03</span></div></div>
+</div>
+<p class="small"><b>Proved:</b> mTLS access, snapshot+status, and point-in-time semantics. <b>Cleanup:</b> <code>kubectl delete ns snapshot-proof</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔬 The Upgrade Rehearsal</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="callout co-tip" style="margin-top:0;"><span class="ico">💡</span><div><b>Honest scope:</b> minikube won't perform a real kubeadm upgrade — but the <b>surrounding choreography</b> (inventory, skew reading, drain discipline, pre-flight snapshot) is 80% of the real dance and fully drillable here.</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Version inventory — the skew table</div>
+<div class="term mini"><span class="p">$</span> kubectl get nodes -o wide
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;VERSION&nbsp;&nbsp;&nbsp;OS-IMAGE</span>
+minikube&nbsp;Ready&nbsp;&nbsp;&nbsp;<span class="p">v1.2x.x</span>&nbsp;&nbsp;Ubuntu…
+<span class="p">$</span> kubectl version --short 2&gt;/dev/null || kubectl version
+<span class="g"># read it like CH 04: is any kubelet NEWER than
+# the API server? (that's the forbidden direction)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Pre-flight snapshot (the step-0 of every upgrade)</div>
+<div class="term mini"><span class="p">$</span> <span class="g"># LAB 1's snapshot command, rerun — labeled for the upgrade:</span>
+<span class="g"># /backup/pre-upgrade-$(date +%F).db
+# rule: no snapshot, no upgrade. ever.</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · The node-march, rehearsed</div>
+<div class="term mini"><span class="p">$</span> kubectl cordon minikube &amp;&amp; kubectl get nodes
+<span class="y">STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="r">Ready,SchedulingDisabled</span>&nbsp;&nbsp;<span class="g"># step 2 of the dance (B04·CH10)</span>
+<span class="p">$</span> kubectl uncordon minikube
+<span class="p">$</span> kubectl get pods -A --no-headers | <span class="c">wc</span> -l
+<span class="g"># your workload census — after a REAL upgrade you'd
+# re-run this and the Book 07 triage reflex to verify
+# everything survived the march</span></div></div>
+<p class="small"><b>Proved:</b> skew reading, snapshot-before-change discipline, and the cordon→uncordon march. The real <code>kubeadm upgrade apply</code> is this rehearsal + one command on a cluster you own.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span><code>kubeadm init</code> starts the control plane by…<br><b>A.</b> running apiserver as a systemd service &nbsp; <b>B.</b> writing static-pod manifests the already-running kubelet picks up &nbsp; <b>C.</b> installing Docker images manually &nbsp; <b>D.</b> calling the cloud API</div>
+<div class="qz"><span class="qn">Q2.</span>What does an etcd snapshot contain?<br><b>A.</b> All PV data &nbsp; <b>B.</b> Cluster state — every object's spec &amp; metadata &nbsp; <b>C.</b> Container images &nbsp; <b>D.</b> Only RBAC rules</div>
+<div class="qz"><span class="qn">Q3.</span>Before <code>snapshot restore</code>, you must…<br><b>A.</b> delete all namespaces &nbsp; <b>B.</b> upgrade kubeadm first &nbsp; <b>C.</b> stop the API Server (and etcd), then restore to a new data-dir &nbsp; <b>D.</b> nothing — restore is hot</div>
+<div class="qz"><span class="qn">Q4.</span>Upgrading a cluster 1.28 → 1.30 in one step is…<br><b>A.</b> recommended &nbsp; <b>B.</b> fine for managed clusters &nbsp; <b>C.</b> forbidden — one minor version at a time &nbsp; <b>D.</b> required for kubeadm</div>
+<div class="qz"><span class="qn">Q5.</span>Valid version skew during an upgrade?<br><b>A.</b> kubelet newer than API Server &nbsp; <b>B.</b> kubelet older than API Server (never newer) &nbsp; <b>C.</b> kubelet equal always &nbsp; <b>D.</b> skew doesn't matter</div>
+<div class="qz"><span class="qn">Q6.</span>On a managed cluster (EKS), who upgrades the node pools' kubelets?<br><b>A.</b> the vendor, automatically always &nbsp; <b>B.</b> nobody — not needed &nbsp; <b>C.</b> you — via managed node-group upgrades (drain discipline still yours) &nbsp; <b>D.</b> the CNI</div>
+<div class="qz"><span class="qn">Q7.</span>EKS/AKS/GKE's "workload identity" is the cloud edition of…<br><b>A.</b> NetworkPolicy &nbsp; <b>B.</b> ServiceAccounts assuming scoped cloud roles — no static keys in Secrets &nbsp; <b>C.</b> Taints &nbsp; <b>D.</b> ResourceQuota</div>
+<div class="qz"><span class="qn">Q8.</span>Today's multi-cluster practice is best described as…<br><b>A.</b> one global kubectl API over all clusters &nbsp; <b>B.</b> independent clusters + GitOps fleet deployment + global traffic steering &nbsp; <b>C.</b> a single giant etcd &nbsp; <b>D.</b> deprecated kubefed everywhere</div>
+<div class="qz"><span class="qn">Q9.</span>The mandatory etcdctl flags for any snapshot command are…<br><b>A.</b> none — open by default &nbsp; <b>B.</b> --endpoints + CA/cert/key (mTLS) + ETCDCTL_API=3 &nbsp; <b>C.</b> only a password &nbsp; <b>D.</b> --insecure</div>
+<div class="qz"><span class="qn">Q10.</span>CKA's most heavily weighted hands-on area maps to which part of this series?<br><b>A.</b> Helm templating &nbsp; <b>B.</b> cluster administration — etcd backup/restore, upgrades, networking, troubleshooting (B03/04/09) &nbsp; <b>C.</b> sidecar patterns &nbsp; <b>D.</b> GitOps UIs</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>B</b></td><td>The bootstrap paradox: kubelet + manifest files conjure the CP — CH 01</td></tr>
+<tr><td>2</td><td><b>B</b></td><td>Specs &amp; metadata only; PV bytes need their own backup — CH 02/03</td></tr>
+<tr><td>3</td><td><b>C</b></td><td>Restore = quiesce, restore to NEW data-dir, boot — CH 03, Lab 1</td></tr>
+<tr><td>4</td><td><b>C</b></td><td>Skew guarantees hold only between adjacent minors — CH 04</td></tr>
+<tr><td>5</td><td><b>B</b></td><td>kubelet may lag, never lead, the API Server — CH 04</td></tr>
+<tr><td>6</td><td><b>C</b></td><td>Vendor does CP; node pools stay your drain-cycle duty — CH 05/06</td></tr>
+<tr><td>7</td><td><b>B</b></td><td>SA → cloud role, short-lived creds — Book 02's identity model, cloud edition — CH 06</td></tr>
+<tr><td>8</td><td><b>B</b></td><td>Federation never won; fleets + steering won — CH 07</td></tr>
+<tr><td>9</td><td><b>B</b></td><td>mTLS by design + v3 API — the anonymous-client trap — CH 02, Lab 1</td></tr>
+<tr><td>10</td><td><b>B</b></td><td>CKA = operate: etcd, upgrades, network, triage — CH 08's map</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Series mastered — exam-ready</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–2, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q3?</b> The restore choreography is <i>the</i> CKA etcd task — order matters more than flags. Missed Q6? "Managed" moving-but-not-deleting the choreography is the conceptual hinge of Part III.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>kubeadm</b> — official bootstrap tool: generates PKI, writes static-pod manifests, prints join tokens.</div>
+<div class="gl"><b>Join token / CA hash</b> — trust-on-first-use credentials letting a worker's kubelet register securely.</div>
+<div class="gl"><b>etcd</b> — the cluster's key-value source of truth; quorum-based (odd members); holds every object incl. Helm receipts.</div>
+<div class="gl"><b>etcdctl</b> — etcd client; v3 API required for snapshots; mTLS flags mandatory.</div>
+<div class="gl"><b>snapshot save / status / restore</b> — consistent backup → verify → rebuild data-dir (new identity, API Server down during).</div>
+<div class="gl"><b>Version skew</b> — supported mixing during upgrades; kubelet ≤ API Server, adjacent minors only.</div>
+<div class="gl"><b>kubeadm upgrade apply / node</b> — CP-side / worker-side upgrade commands; one minor per hop.</div>
+<div class="gl"><b>Managed Kubernetes</b> — vendor runs CP + etcd (GKE/EKS/AKS); you own nodes, CNI/CSI choices, workloads.</div>
+<div class="gl"><b>Node pool</b> — a group of like nodes (per taints/labels/size) managed as a unit — the drain/upgrade unit in clouds.</div>
+<div class="gl"><b>Workload Identity / IRSA</b> — ServiceAccount-assumed cloud roles; short-lived creds instead of static keys.</div>
+<div class="gl"><b>VPC-native / VPC CNI / Azure CNI</b> — Pod IPs drawn from the cloud network (no overlay) — routable but subnet-bound.</div>
+<div class="gl"><b>Multi-cluster</b> — many independent clusters; fleet GitOps (ApplicationSets) + global LB steering; no unified API.</div>
+<div class="gl"><b>Blast radius</b> — how much one failure touches; the reason clusters (and upgrades) are split.</div>
+<div class="gl"><b>CKA / CKAD / CKS</b> — CNCF hands-on certs: operate / build / harden — mapped in CH 08.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">💾 etcd — the sacred commands</div><div class="term mini"><span class="c">ETCDCTL_API=3 etcdctl \
+&nbsp;&nbsp;--endpoints=https://127.0.0.1:2379 \
+&nbsp;&nbsp;--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+&nbsp;&nbsp;--cert=/etc/kubernetes/pki/etcd/server.crt \
+&nbsp;&nbsp;--key=/etc/kubernetes/pki/etcd/server.key \
+&nbsp;&nbsp;snapshot save /backup/snap.db</span>
+<span class="p">$</span> … <span class="c">snapshot status</span> snap.db --write-table
+<span class="g">restore: stop APISERVER → snapshot restore
+&nbsp;&nbsp;--data-dir=/var/lib/etcd-new → repoint
+&nbsp;&nbsp;etcd → boot. multi-CP: same snapshot
+&nbsp;&nbsp;on ALL members.</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🎬 Upgrade choreography</div><div class="term mini"><span class="g">0 · SNAPSHOT (no snapshot, no upgrade)</span>
+1 · CP: kubeadm upgrade plan
+&nbsp;&nbsp;&nbsp;&nbsp;kubeadm upgrade apply v1.X
+&nbsp;&nbsp;&nbsp;&nbsp;upgrade kubelet+kubectl, restart
+2 · drain CP → uncordon
+3 · per worker (one at a time):
+&nbsp;&nbsp;&nbsp;&nbsp;drain → kubeadm upgrade node
+&nbsp;&nbsp;&nbsp;&nbsp;→ kubelet → uncordon → verify
+<span class="g">ONE MINOR per hop · kubelet never
+newer than apiserver · read API-removal
+notes BEFORE jumping</span></div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">☁️ The big three</div><table class="tb" style="margin:0;"><tr><th></th><th>Network</th><th>Workload ID</th></tr><tr><td>GKE</td><td>VPC-native</td><td>Workload Identity</td></tr><tr><td>EKS</td><td>AWS VPC CNI</td><td>IRSA</td></tr><tr><td>AKS</td><td>Azure CNI/kubenet</td><td>Entra + WI</td></tr></table>
+<div class="term mini" style="margin-top:6px;"><span class="g">managed = vendor runs CP+etcd;
+YOU run node pools, CNI policy, workloads
+— Books 01–08 skills transfer 100%</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🎓 Exam map</div><div class="term mini"><span class="g">CKAD:</span> B01·02·05·06 <span class="g">(build)</span>
+<span class="g">CKA:</span>&nbsp; + B03·04·07·09 <span class="g">(operate —
+&nbsp;&nbsp;etcd/upgrades/network/triage)</span>
+<span class="g">CKS:</span>&nbsp; B02·03·08-webhooks
+&nbsp;&nbsp;+ runtime security <span class="g">(harden)</span>
+<span class="g">all hands-on: the LABS are the prep</span></div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>kubeadm = PKI + static-pod manifests + join tokens; the kubelet boots the control plane from files</li>
+<li>etcd snapshots = cluster state only (never PV data); restore is cold — API Server down, new data-dir, same snapshot on all members</li>
+<li>Upgrades: snapshot → CP first → workers one-by-one; one minor per hop; kubelet may lag, never lead</li>
+<li>Managed = vendor owns CP pager; you keep node pools, drain discipline, CNI policy, and every Books-01–08 duty</li>
+<li>Cloud trio differs by CNI model + workload identity (SA→cloud role, no static keys) + node pools</li>
+<li>Multi-cluster = independent clusters + GitOps fleet + global steering — justified by blast radius/residency only</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ The Series Complete</h2><span class="dbadge">🎓 9 OF 9</span></div>
+<div class="mtree"><b>☸️ THE NINE-BOOK ARC — one machine, taught layer by layer:</b>
+├── <u>01 Architecture</u>     <span class="g">brain + muscle · reconcile loop · namespaces</span>
+├── <u>02 Config &amp; Access</u>  <span class="g">configmaps · secrets · RBAC · QoS</span>
+├── <u>03 Networking</u>       <span class="g">services · ingress+TLS · policies · DNS</span>
+├── <u>04 Scheduling</u>       <span class="g">taints · affinity · priority · drain</span>
+├── <u>05 Storage</u>          <span class="g">PV/PVC · classes · stateful data · CSI</span>
+├── <u>06 Workloads</u>        <span class="g">daemonsets · jobs · canaries · autoscaling</span>
+├── <u>07 Observability</u>    <span class="g">probes · prometheus · loki · triage</span>
+├── <u>08 Delivery</u>         <span class="g">helm · kustomize · CRDs · operators · gitops</span>
+└── <u>09 Lifecycle</u>       <span class="g">kubeadm · etcd · upgrades · clouds · exams</span></div>
+<p class="lead">You started with "what is a cluster?" — a brain and muscle. You end able to build the brain, back it up, upgrade it, place workloads on the muscle, connect them, observe them, and let Git keep the whole story true. <b>That is the complete operator's arc.</b></p>
+<h3 class="sec">🧭 Where to go from here</h3>
+<ul class="tick">
+<li>🎓 <b>Certify:</b> CH 08's map — sit CKAD, then CKA; add runtime security reading for CKS</li>
+<li>🔬 <b>Practice:</b> rebuild a multi-node cluster with kubeadm (3 VMs) — CH 01's ceremony, felt for real; then break it and restore from Lab 1's snapshot</li>
+<li>🚀 <b>Ship:</b> run one real project the full Book-08 way — Helm or Kustomize + GitOps + Book-07 observability, on GKE/EKS/AKS (CH 06's notes apply)</li>
+<li>📚 <b>Go deeper:</b> service meshes, eBPF/Cilium, multi-tenancy, platform engineering — every one of them stands on these nine layers</li>
+</ul>
+<div class="callout co-fun"><span class="ico">🏺</span><div><b>The last word, in the series' oldest joke's spirit:</b> Kubernetes is just a reconciliation loop that refuses to give up on your wishes. You now know every kind of wish it accepts, every gate they pass, and every way it keeps its promises. <b>Declare wisely. 🎬</b></div></div>
+<div class="center" style="margin-top:14px;font-size:22px;">— End of Book 09 · End of Series · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 09 · Cluster Lifecycle · The Complete Kubernetes Series</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 18</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

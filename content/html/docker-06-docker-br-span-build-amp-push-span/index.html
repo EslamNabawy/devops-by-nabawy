@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 02 — Docker Build & Push | Jenkins Labs</title>
+<style>
+:root{--paper:#f5f6f4;--white:#fff;--ink:#161a19;--muted:#68706d;--line:#d5dad7;--panel:#111614;--panel-2:#1a201d;--text-light:#e8eeeb;--text-muted:#9ca8a3;--accent:#00b87c;--accent-dark:#008f61;--blue:#4387ff;--amber:#d99a24;--red:#d94b4b;--artifact:#8b6cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0c0f0e;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4;margin:0}
+.page{width:210mm;min-height:297mm;padding:14mm 15mm 16mm;margin:8mm auto;position:relative;background:var(--paper);page-break-after:always;overflow:hidden;display:flex;flex-direction:column}
+.page:last-child{page-break-after:auto}
+@media print{body{background:#fff}.page{margin:0;box-shadow:none}h3.sec,.phead h2{break-after:avoid}.terminal,.step,.callout,.kv,.pipeline,.lanes,.vflow,.arch,.cmp,.artifact-box{break-inside:avoid}}
+.phead{font-size:8.5px;letter-spacing:2.2px;color:var(--muted);text-transform:uppercase}
+.phead .ch{color:var(--accent-dark);font-weight:800}
+.phead h2{font-size:18px;letter-spacing:1px;color:var(--ink);margin:2px 0 6px;text-transform:uppercase}
+.phead hr{border:none;border-top:1.5px solid var(--ink);margin-bottom:9px}
+.pfoot{margin-top:auto;padding-top:7px;font-size:8.5px;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--line);letter-spacing:1px}
+h3.sec{font-size:16px;margin:14px 0 7px;text-transform:uppercase;letter-spacing:.5px;break-after:avoid}
+h3.sec .n{color:var(--accent-dark);font-family:"Cascadia Code",Consolas,monospace;font-size:11px;margin-right:8px}
+p.body{font-size:11.2px;line-height:1.62;margin:7px 0}
+p.small{font-size:10.5px;line-height:1.6;color:#3a4440}
+code,.mono{font-family:"SFMono-Regular","Cascadia Code",Consolas,monospace}
+.cover{background:var(--panel);color:var(--text-light);justify-content:flex-start;padding-top:12mm}
+.cover .brand{font-size:8.5px;letter-spacing:4px;color:var(--text-muted);text-transform:uppercase}
+.cover h1{font-size:42px;line-height:.95;margin:10px 0 3px;letter-spacing:.5px;font-weight:800}
+.cover h1 span{color:var(--accent)}
+.cover .lab-no{font-size:11px;letter-spacing:6px;color:var(--accent);margin-bottom:2px;font-weight:700}
+.cover .sub{font-size:12px;color:var(--text-muted);line-height:1.65;max-width:152mm;margin:6px 0 10px}
+.cover .tri{font-size:8.5px;letter-spacing:2.2px;color:var(--accent);line-height:2;margin-bottom:10px}
+.vpipe{display:flex;flex-direction:column;margin:6px 0 10px}
+.vnode{display:flex;align-items:center;gap:10px;min-height:26px}
+.vnode .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 10px rgba(0,184,124,.5);flex:none}
+.vnode .dot.amber{border-color:var(--amber);box-shadow:0 0 10px rgba(217,154,36,.45)}
+.vnode .dot.blue{border-color:var(--blue);box-shadow:0 0 10px rgba(67,135,255,.45)}
+.vnode .dot.purple{border-color:var(--artifact);box-shadow:0 0 10px rgba(139,108,255,.45)}
+
+.cover .vnode img{filter:drop-shadow(0 0 0.9px #18E299) drop-shadow(0 0 4px rgba(24,226,153,.22));}
+.cover .vnode img[src*="github"]{background:none;border-radius:0;padding:0;box-shadow:none;filter:drop-shadow(0 0 0.9px #18E299) drop-shadow(0 0 5px rgba(24,226,153,.28));}
+.cover .vnode img[src*="github"]{background:none;border-radius:0;padding:0;box-shadow:none;filter:drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white) drop-shadow(0.7px 0.7px 0 white) drop-shadow(-0.7px -0.7px 0 white) drop-shadow(-0.7px 0.7px 0 white) drop-shadow(0.7px -0.7px 0 white);}
+/* icon: github white on dark, black on light — no halo */
+.cover .vnode img[src*="github"]{filter:invert(1) brightness(1.05);background:none;box-shadow:none;border-radius:0;padding:0;}
+.cover .vnode img:not([src*="github"]){filter:none;}
+/* icon: outline/black icons white on dark covers */
+.cover .vnode img[src*="github"], .cover .vnode img[src*="workflow"], .cover .vnode img[src*="hammer"], .cover .vnode img[src*="package"], .cover .vnode img[src*="database"], .cover .vnode img[src*="puzzle"], .cover .vnode img[src*="server"], .cover .vnode img[src*="terminal"], .cover .vnode img[src*="shield"], .cover .vnode img[src*="activity"], .cover .vnode img[src*="webhook"], .cover .vnode img[src*="wrench"], .cover .vnode img[src*="flask"], .cover .vnode img[src*="rocket"]{filter:invert(1) brightness(1.05);}
+.vnode img{width:20px;height:20px;flex:none;object-fit:contain}
+.vnode b{font-size:10px;letter-spacing:1.6px}
+.vnode small{font-size:8.5px;color:var(--text-muted)}
+.vline{width:2px;height:12px;background:#2c3531;margin-left:4px}
+.cover .stats{display:flex;gap:8px;margin:8px 0 0}
+.cover .stats .s{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:6px;text-align:center;flex:1}
+.cover .stats .s b{font-size:14px;color:var(--accent);display:block;line-height:1}
+.cover .stats .s small{font-size:8px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase}
+.cover .foot{font-size:8.5px;color:var(--text-muted);letter-spacing:2px;margin-top:auto;padding-top:14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.08)}
+.cover .sig{font-family:"Brush Script MT","Segoe Script","Snell Roundhand",cursive;font-size:26px;color:var(--accent);transform:rotate(-4deg);text-shadow:0 0 14px rgba(0,184,124,.45);white-space:nowrap}
+.opener .bignum{font-size:56px;font-weight:800;line-height:1}
+.opener .ctitle{font-size:24px;letter-spacing:3px;margin:2px 0 8px}
+.opener .lede{font-size:12.5px;line-height:1.65;max-width:155mm;margin:6px 0}
+.opener .lede em{color:var(--accent-dark);font-style:normal;font-weight:700}
+.step{background:var(--white);border:1px solid var(--line);padding:9px 11px;margin:6px 0;font-size:11px;line-height:1.6}
+.step h4{font-size:10px;letter-spacing:.8px;margin-bottom:2px}
+.step h4 .tag{color:var(--accent-dark)}
+.terminal{background:#101413;color:#d6e2dc;border-radius:8px;padding:10px 12px;font-family:"SFMono-Regular","Cascadia Code",Consolas,monospace;font-size:9.2px;line-height:1.65;margin:7px 0;overflow-x:auto;white-space:pre}
+.terminal .c{color:#8b9a94}
+.terminal .g{color:var(--accent)}
+.terminal .a{color:var(--amber)}
+.terminal .r{color:var(--red)}
+.terminal .b{color:var(--blue)}
+.terminal .p{color:var(--artifact)}
+ul.tight{font-size:11px;line-height:1.6;margin:5px 0 5px 18px}
+ul.tight li{margin-bottom:2px}
+.olist{font-size:11px;line-height:1.6;margin:5px 0 5px 18px}
+.olist li{margin-bottom:2px}
+table.cmp{width:100%;border-collapse:collapse;font-size:10.5px;margin:8px 0}
+table.cmp th{background:var(--panel);color:var(--text-light);font-size:8px;letter-spacing:1px;padding:6px 7px;text-align:left}
+table.cmp td{border:1px solid var(--line);padding:6px 7px;background:var(--white);line-height:1.5}
+table.cmp td:first-child{font-weight:700;background:#eef0ee}
+.kv{background:var(--white);border:1px solid var(--line);padding:9px 11px;margin:7px 0;font-size:11px;line-height:1.6}
+.kv b{color:var(--accent-dark)}
+.callout{border-left:3px solid var(--accent);background:var(--white);padding:9px 11px;margin:8px 0}
+.callout h4{font-size:8.5px;letter-spacing:1.8px;color:var(--accent-dark);margin-bottom:3px}
+.callout p{font-size:11px;line-height:1.6}
+.callout.amber{border-left-color:var(--amber)}
+.callout.amber h4{color:var(--amber)}
+.callout.red{border-left-color:var(--red)}
+.callout.red h4{color:var(--red)}
+.callout.blue{border-left-color:var(--blue)}
+.callout.blue h4{color:var(--blue)}
+.callout.purple{border-left-color:var(--artifact)}
+.callout.purple h4{color:var(--artifact)}
+.pipeline{display:flex;align-items:center;gap:5px;margin:8px 0;flex-wrap:wrap}
+.pipeline .stage{background:var(--white);border:1px solid var(--line);border-left:3px solid var(--accent);padding:7px 8px;min-width:78px;flex:1;text-align:center}
+.pipeline .stage.fail{border-left-color:var(--red)}
+.pipeline .stage.wait{border-left-color:var(--amber)}
+.pipeline .stage.artifact{border-left-color:var(--artifact)}
+.pipeline .stage.blue{border-left-color:var(--blue)}
+.pipeline .stage strong{font-size:9px;letter-spacing:.8px;display:block}
+.pipeline .stage small{font-size:8px;color:var(--muted)}
+.pipeline .stage .no{font-family:"Cascadia Code",Consolas,monospace;font-size:7.5px;color:var(--muted);letter-spacing:1px}
+.pipeline .conn{width:14px;height:2px;background:var(--line);position:relative;flex:none}
+.pipeline .conn:after{content:"›";position:absolute;right:-6px;top:-8px;color:var(--muted);font-size:12px}
+.arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:center;margin:8px 0}
+.arch .box{background:var(--white);border:1px solid var(--line);padding:7px 8px;text-align:center}
+.arch .box b{font-size:9px;letter-spacing:.8px;display:block}
+.arch .box small{font-size:8.5px;color:var(--muted)}
+.arch .arrow{color:var(--muted);font-size:16px;text-align:center}
+.status{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.8px;font-weight:700}
+.status .dot{width:7px;height:7px;border-radius:50%}
+.status.pass{color:var(--accent-dark)}
+.status.pass .dot{background:var(--accent)}
+.status.fail{color:var(--red)}
+.status.fail .dot{background:var(--red)}
+.status.wait{color:var(--amber)}
+.status.wait .dot{background:var(--amber)}
+.status.run{color:var(--blue)}
+.status.run .dot{background:var(--blue)}
+.status.skip{color:var(--muted)}
+.status.skip .dot{background:var(--line);border:1px solid var(--muted)}
+.badge{font-size:7.5px;letter-spacing:1.1px;padding:2px 7px;border-radius:10px;border:1px solid var(--line);background:var(--white);font-weight:700}
+.badge.green{border-color:var(--accent);color:var(--accent-dark)}
+.badge.amber{border-color:var(--amber);color:#8a6a10}
+.badge.blue{border-color:var(--blue);color:var(--blue)}
+.badge.purple{border-color:var(--artifact);color:var(--artifact)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.card{background:var(--white);border:1px solid var(--line);padding:9px 10px}
+.card h4{font-size:9px;letter-spacing:1.2px;margin-bottom:3px}
+.card p{font-size:10.5px;line-height:1.6;color:var(--muted)}
+.card strong{font-size:11px;color:var(--ink)}
+.lanes{margin:8px 0}
+.lanes .lane{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);background:var(--white);margin-bottom:5px;font-size:10.5px}
+.lanes .lane .env{font-weight:700;font-size:8.5px;letter-spacing:1.4px;min-width:68px}
+.lanes .lane.dev{border-left:3px solid var(--blue)}
+.lanes .lane.stg{border-left:3px solid var(--amber)}
+.lanes .lane.prod{border-left:3px solid var(--accent)}
+.artifact-box{background:var(--panel);color:var(--text-light);border-radius:8px;padding:12px 14px;margin:8px 0;display:flex;align-items:center;gap:12px;border:1px solid rgba(255,255,255,.08)}
+.artifact-box .icon{width:42px;height:42px;border-radius:8px;background:rgba(139,108,255,.18);border:1px solid rgba(139,108,255,.35);display:flex;align-items:center;justify-content:center;flex:none}
+.artifact-box .icon img{width:22px;height:22px}
+.artifact-box b{font-size:11px;letter-spacing:1px;display:block}
+.artifact-box small{font-size:9px;color:var(--text-muted)}
+.artifact-box .tag{margin-left:auto;font-family:"Cascadia Code",Consolas,monospace;font-size:8px;letter-spacing:1px;background:rgba(139,108,255,.2);border:1px solid rgba(139,108,255,.35);padding:4px 8px;border-radius:10px;color:var(--artifact)}
+.flow2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+.flow2 .fbox{background:var(--white);border:1px solid var(--line);padding:9px 10px}
+.flow2 .fbox h4{font-size:8.5px;letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase}
+.flow2 .fbox h4.green{color:var(--accent-dark)}
+.flow2 .fbox h4.purple{color:var(--artifact)}
+.mini-pipe{display:flex;flex-direction:column;gap:0}
+.mini-pipe .mp{font-size:9.5px;display:flex;align-items:center;gap:6px;padding:3px 0}
+.mini-pipe .mp .d{width:7px;height:7px;border-radius:50%;flex:none}
+.mini-pipe .mp .arr{color:var(--muted);font-size:10px;margin-left:2.5px}
+.cred-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cred-compare .cc{background:var(--white);border:1px solid var(--line);padding:8px 10px}
+.cred-compare .cc.bad{border-left:3px solid var(--red)}
+.cred-compare .cc.good{border-left:3px solid var(--accent)}
+.cred-compare .cc h4{font-size:8.5px;letter-spacing:1.2px;margin-bottom:4px}
+.cred-compare .cc p{font-size:10.5px;line-height:1.55}
+@media screen and (max-width:700px){.page{width:auto;min-height:0;margin:0 auto;padding:14px 12px 18px}h3.sec{font-size:14px}.cover h1{font-size:28px}.grid2,.flow2,.cred-compare{grid-template-columns:1fr}.arch{grid-template-columns:1fr}.arch .arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 — COVER -->
+<div class="page cover">
+<div class="brand">CI/CD Systems &nbsp;·&nbsp; Pipeline Control Room &nbsp;·&nbsp; Jenkins Labs</div>
+<div class="lab-no">LAB 02</div>
+<h1>DOCKER<br><span>BUILD &amp; PUSH</span></h1>
+<div class="sub">From repository to registry to runtime. Jenkins pulls source, builds an immutable image, authenticates with vaulted credentials, tags by build number, pushes to Docker Hub, and optionally runs the same artifact inside a <b style="color:var(--text-light)">FLOCI</b> simulated AWS environment.</div>
+<div class="tri">IMAGE_NAME:LOCAL → TAG:BUILD-N → PUSH → FLOCI DEPLOY &nbsp;·&nbsp; withCredentials · BUILD_NUMBER</div>
+
+<div class="vpipe">
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/jenkins/jenkins.svg" alt="Jenkins"><b>01 — ENVIRONMENT SETUP</b><small>Load config · env IMAGE_NAME / IMAGE_TAG</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot blue"></span><img src="../assets/icons/git/github.svg" alt="GitHub"><b>02 — CODE CHECKOUT</b><small>checkout scm · hello.py + Dockerfile + Jenkinsfile</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/docker/docker.svg" alt="Docker"><b>03 — DOCKER BUILD</b><small>docker build -t app:local .</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot amber"></span><img src="../assets/icons/security/shield.svg" alt="Auth"><b>04 — AUTHENTICATION</b><small>withCredentials · docker login --password-stdin</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot purple"></span><img src="../assets/icons/general/package.svg" alt="Tag"><b>05 — IMAGE TAGGING</b><small>docker tag app:local → myusername/app:build-N</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot purple"></span><img src="../assets/icons/general/database.svg" alt="Registry"><b>06 — IMAGE PUSH</b><small>docker push myusername/app:build-N → Docker Hub</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/deployment/rocket.svg" alt="Deploy"><b>07 — APPLICATION DEPLOYMENT</b><small>when DEPLOY_TO_FLOCI → run hello.py in FLOCI simulation</small></div>
+</div>
+
+<div class="stats">
+<div class="s"><b>7</b><small>Stages</small></div>
+<div class="s"><b>1</b><small>Immutable Tag / Build</small></div>
+<div class="s"><b>0</b><small>Hardcoded Secrets</small></div>
+<div class="s"><b>2</b><small>Flows: Core + Extended</small></div>
+</div>
+
+<div class="foot"><span>LAB 02 · DOCKER BUILD · PUSH · FLOCI &nbsp;·&nbsp; 01 / 07</span><span class="sig">Nabawy</span></div>
+</div>
+
+<!-- PAGE 2 — ARCHITECTURE: BOTH FLOWS -->
+<div class="page">
+<div class="phead"><span class="ch">CI/CD Systems</span> &nbsp; Lab 02 — Docker Build &amp; Push<hr><h2>Architecture</h2>Core build-push & extended 7-stage with FLOCI</div>
+
+<h3 class="sec"><span class="n">01 /</span> Two Views of the Same Pipeline</h3>
+<p class="body">The <b>core flow</b> is four operations (Build → Login &amp; Tag → Push) fed by a Git source and the Jenkins credentials store. The <b>extended flow</b> is the seven numbered stages that Jenkins actually executes, ending with an optional deployment into <b>FLOCI's simulated AWS</b> — not real cloud.</p>
+
+<div class="flow2">
+<div class="fbox" style="border-top:2px solid var(--blue)">
+<h4 class="green"><img src="../assets/icons/docker/docker.svg" alt="" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"> Core Build-Push Flow (Image 2)</h4>
+<div class="mini-pipe">
+<div class="mp"><span class="d" style="background:var(--blue)"></span><b>Git Source Repository</b> <span style="color:var(--muted);font-size:8.5px">hello.py · requirements.txt · Dockerfile · Jenkinsfile</span></div>
+<div class="mp"><span class="arr">↓</span> <span style="font-size:8.5px;color:var(--muted);letter-spacing:1px">git clone</span></div>
+<div class="mp"><span class="d" style="background:var(--accent)"></span><b>Jenkins CI/CD Pipeline Orchestrator</b></div>
+<div style="margin-left:8px;border-left:2px dashed var(--line);padding:4px 0 4px 10px;display:flex;flex-direction:column;gap:2px">
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--blue)"></span> Pull Code — <span class="mono" style="font-size:9px">git clone [repo_url]</span></div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--blue)"></span> Build Setup — tool configure (docker, build-env)</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--accent)"></span> Docker Build — <span class="mono" style="font-size:9px">docker build -t app:local</span></div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--amber)"></span> Login &amp; Tag — <span class="mono" style="font-size:9px">docker login + docker tag app:local → build-123</span></div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--artifact)"></span> Docker Push — <span class="mono" style="font-size:9px">docker push myusername/app:build-123</span></div>
+</div>
+<div class="mp"><span class="arr">↓</span> <span style="font-size:8.5px;color:var(--muted);letter-spacing:1px">upload</span></div>
+<div class="mp"><span class="d" style="background:var(--artifact)"></span><b>Docker Hub Registry</b> <span style="color:var(--muted);font-size:8.5px">User Repositories · Image Tiers</span></div>
+</div>
+<div style="margin-top:6px;background:#111614;color:#9ca8a3;font-family:monospace;font-size:8.5px;padding:6px 8px;border-radius:6px;display:flex;align-items:center;gap:6px"><img src="../assets/icons/security/shield.svg" alt="" style="width:14px;height:14px;opacity:.7"> Jenkins Credentials Store —<span style="color:#d6e2dc">fetch dockerhub-creds</span> → feeds Login &amp; Tag</div>
+</div>
+
+<div class="fbox" style="border-top:2px solid var(--accent)">
+<h4 class="purple"><img src="../assets/icons/deployment/rocket.svg" alt="" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"> Extended 7-Stage Flow with FLOCI (Image 3)</h4>
+<div class="mini-pipe">
+<div class="mp"><span class="d" style="background:var(--ink)"></span><b>GitHub Repository</b> <span style="color:var(--muted);font-size:8.5px">webhook trigger →</span></div>
+<div style="margin-left:8px;border-left:2px solid var(--accent);padding:4px 0 4px 10px;display:flex;flex-direction:column;gap:2px">
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--accent)"></span> 01 Environment Setup — Load Env</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--blue)"></span> 02 Code Checkout — Retrieve Repo</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--accent)"></span> 03 Docker Build — v${BUILD_NUMBER}</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--amber)"></span> 04 Authentication — Login to Registry</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--artifact)"></span> 05 Image Tagging — Apply Build Tag</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--artifact)"></span> 06 Image Push — to Registry</div>
+<div class="mp" style="padding:1px 0"><span class="d" style="background:var(--accent)"></span> 07 Application Deployment — Run App</div>
+</div>
+<div class="mp"><span class="arr">─→</span> <b>FLOCI AWS Simulation</b> <span style="color:var(--muted);font-size:8.5px">Provider: aws → floci</span></div>
+<div style="margin-top:4px;background:#ede9ff;border:1px solid #d9d0ff;padding:5px 8px;border-radius:6px;font-size:9px;display:flex;align-items:center;gap:6px"><img src="../assets/icons/general/package.svg" alt="" style="width:14px;height:14px"> chip/container icon → running <span class="mono">hello.py</span> inside simulation</div>
+</div>
+</div>
+</div>
+
+<h3 class="sec"><span class="n">02 /</span> Stage Lane — Where Each Stage Runs</h3>
+<div class="lanes">
+<div class="lane dev"><span class="env">JENKINS</span> <span class="mono" style="font-size:9.5px">01 Setup · 02 Checkout · 03 Build · 04 Auth · 05 Tag · 06 Push</span> <span class="badge blue" style="margin-left:auto">controller / agent</span></div>
+<div class="lane stg" style="border-left-color:var(--artifact)"><span class="env">REGISTRY</span> <span class="mono" style="font-size:9.5px">06 Push lands → myusername/app:build-N visible on Docker Hub</span> <span class="badge purple" style="margin-left:auto">Docker Hub</span></div>
+<div class="lane prod"><span class="env">FLOCI</span> <span class="mono" style="font-size:9.5px">07 Deploy — same image runs as simulated container</span> <span class="badge green" style="margin-left:auto">simulated</span></div>
+</div>
+
+<div class="callout blue"><h4>CONTINUITY</h4><p>Lab 01 proved <b>commit → webhook → build</b>. This lab answers the next question: <b>what does the build produce?</b> An immutable, tagged image that any environment — including FLOCI — can run without rebuilding.</p></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · ARCHITECTURE</span><span>02 / 07</span></div>
+</div>
+
+<!-- PAGE 3 — PRE-FLIGHT + STEPS 1-2 + withCredentials -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 02 — Docker<hr><h2>Pre-Flight & Setup</h2>Step 0 — before you mutate anything</div>
+
+<h3 class="sec"><span class="n">03 /</span> Step 0 — Pre-Flight Check</h3>
+<p class="small">Do this entire section <b>before Step 1</b> so the pipeline builds end-to-end without stalling mid-setup.</p>
+<table class="cmp"><tr><th style="width:18%">Check</th><th>Command / Location</th><th>Decision</th></tr>
+<tr><td>Tools</td><td><span class="mono">curl -s -o /dev/null -w "%{http_code}" http://localhost:8080</span><br><span class="mono">docker --version</span> · <span class="mono">docker info</span> · <span class="mono">git --version</span><br>Jenkins: <b>Docker Pipeline</b> + <b>Credentials Binding</b> plugins installed</td><td>Confirm Jenkins user can run docker (group / socket / DiD). Check plugin manager.</td></tr>
+<tr><td>Credentials</td><td><b>Manage Jenkins → Credentials</b> → search for Docker Hub credential<br>Docker Hub: <span class="mono">Account Settings → Security → New Access Token</span></td><td>Reuse if present. If none: need username + <b>access token</b> (not password).</td></tr>
+<tr><td>Repo / Job</td><td><span class="mono">hello.py</span> · <span class="mono">requirements.txt</span> · <span class="mono">Dockerfile</span> · <span class="mono">Jenkinsfile</span> exist?<br>Pipeline job exists? Docker Hub namespace? Webhook configured?</td><td>Note repo URL/branch, image name (<span class="mono">myusername/app</span>), visibility (public/private).</td></tr>
+<tr><td>FLOCI</td><td>FLOCI endpoint / simulation config documented?</td><td>Only if stage 07 in scope — get interface/command from user in Step 0.4.</td></tr>
+</table>
+
+<div class="callout amber"><h4>ASK IN ONE BATCH — BEFORE STEP 1</h4><p>Only ask for what is genuinely missing after the checks: <b>Docker Hub username + access token</b> (if no Jenkins credential), <b>image namespace</b> + tagging convention (<span class="mono">build-${BUILD_NUMBER}</span>), <b>FLOCI in scope?</b> (+ endpoint), <b>Git URL/branch</b>. Then proceed uninterrupted.</p></div>
+
+<h3 class="sec"><span class="n">04 /</span> Steps 1–2 — Repository &amp; Credentials</h3>
+<div class="grid2">
+<div class="step"><h4><span class="tag">01 —</span> Prepare the Repository</h4> Ensure the repo contains <span class="mono">hello.py</span> · <span class="mono">requirements.txt</span> · <span class="mono">Dockerfile</span> · <span class="mono">Jenkinsfile</span> (built in Step 3). Commit missing pieces and push. Skip/reuse anything already present.</div>
+<div class="step"><h4><span class="tag">02 —</span> Add Docker Hub Credentials to Jenkins</h4><b>Manage Jenkins → Credentials → Add</b><br>Kind: <b>Username with password</b><br>Username = Docker Hub user<br>Password = <b>access token</b> (not account password)<br>ID = <span class="mono">dockerhub-creds</span></div>
+</div>
+
+<div class="cred-compare">
+<div class="cc bad"><h4><span class="status fail"><span class="dot"></span> NEVER</span> — Hardcoded in Jenkinsfile</h4><div class="terminal" style="margin:4px 0">sh 'docker login -u myuser -p s3cret123' <span class="r">← in Git history forever</span></div><p>Secret visible in SCM, logs, and diffs. Revoking means rewriting history.</p></div>
+<div class="cc good"><h4><span class="status pass"><span class="dot"></span> ALWAYS</span> — withCredentials Binding</h4><div class="terminal" style="margin:4px 0"><span class="b">withCredentials</span>([usernamePassword(<span class="b">credentialsId</span>: 'dockerhub-creds',<br>  usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {<br>  sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'<br>}</div><p>Injected at runtime, masked in logs, never stored in Git. Token scoped &amp; revocable.</p></div>
+</div>
+
+<div class="terminal"><span class="c"># verify tools before you start</span>
+$ docker --version
+<span class="g">Docker version 26.x, build xxxxx</span>
+$ docker info | head -5
+<span class="c">Server: Docker Engine — check Jenkins user can run docker commands</span>
+$ curl -s -o /dev/null -w "%{http_code}" http://localhost:8080
+<span class="g">200</span>  <span class="c">← Jenkins reachable</span></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · PRE-FLIGHT</span><span>03 / 07</span></div>
+</div>
+
+<!-- PAGE 4 — JENKINSFILE + PIPELINE DIAGRAM + withCredentials -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 02 — Docker<hr><h2>Pipeline as Code</h2>Step 3 — Jenkinsfile · seven stages</div>
+
+<h3 class="sec"><span class="n">05 /</span> Full Jenkinsfile — Seven Stages</h3>
+<p class="small">Structure matches Image 3's numbered flow. <span class="mono">IMAGE_TAG = build-${env.BUILD_NUMBER}</span> makes every build immutable. The last stage is conditional — only runs when <span class="mono">DEPLOY_TO_FLOCI == true</span>.</p>
+<div class="terminal">pipeline {
+  agent any
+  environment {
+    IMAGE_NAME = "myusername/app"
+    IMAGE_TAG  = "build-${env.BUILD_NUMBER}"
+  }
+  stages {
+    stage('Environment Setup') {
+      steps { echo 'Loading environment/config...' }
+    }
+    stage('Code Checkout') {
+      steps { checkout scm }
+    }
+    stage('Docker Build') {
+      steps { sh "docker build -t ${IMAGE_NAME}:local ." }
+    }
+    stage('Authentication') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                         usernameVariable: 'DOCKER_USER',
+                                         passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+        }
+      }
+    }
+    stage('Image Tagging') {
+      steps { sh "docker tag ${IMAGE_NAME}:local ${IMAGE_NAME}:${IMAGE_TAG}" }
+    }
+    stage('Image Push') {
+      steps { sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}" }
+    }
+    stage('Application Deployment') {
+      when { expression { return params.DEPLOY_TO_FLOCI == true } }
+      steps {
+        <span class="c">// FLOCI interface depends on Step 0.4 — fill per user-supplied details</span>
+        echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} into FLOCI simulation..."
+      }
+    }
+  }
+}</div>
+
+<h3 class="sec"><span class="n">06 /</span> Pipeline Diagram</h3>
+<div class="pipeline">
+<div class="stage"><span class="no">01</span><strong>ENV SETUP</strong><small>load config</small></div><div class="conn"></div>
+<div class="stage blue"><span class="no">02</span><strong>CHECKOUT</strong><small>checkout scm</small></div><div class="conn"></div>
+<div class="stage"><span class="no">03</span><strong>BUILD</strong><small>docker build</small></div><div class="conn"></div>
+<div class="stage wait"><span class="no">04</span><strong>AUTH</strong><small>withCredentials</small></div><div class="conn"></div>
+<div class="stage artifact"><span class="no">05</span><strong>TAG</strong><small>build-N</small></div><div class="conn"></div>
+<div class="stage artifact"><span class="no">06</span><strong>PUSH</strong><small>docker push</small></div><div class="conn"></div>
+<div class="stage" style="border-left-style:dashed"><span class="no">07</span><strong>DEPLOY</strong><small>FLOCI · when</small></div>
+</div>
+
+<div class="artifact-box">
+<div class="icon"><img src="../assets/icons/general/package.svg" alt="Artifact"></div>
+<div><b>ARTIFACT — myusername/app:build-123</b><small>Built once from commit SHA · tagged immutably · pulled everywhere without rebuild</small></div>
+<div class="tag">PURPLE · ARTIFACT</div>
+</div>
+
+<div class="callout purple"><h4>withCredentials PATTERN</h4><p><span class="mono">usernamePassword(credentialsId: 'dockerhub-creds')</span> injects two env vars at runtime. Jenkins <b>masks</b> <span class="mono">$DOCKER_PASS</span> in console output (<span class="mono">****</span>). Using <span class="mono">--password-stdin</span> avoids the password appearing in process args. Prefer a <b>scoped access token</b> over the account password — tokens are revokable per purpose.</p></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · JENKINSFILE</span><span>04 / 07</span></div>
+</div>
+
+<!-- PAGE 5 — STEPS 4-5 RUN & VALIDATE + ARTIFACT + STATUS -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 02 — Docker<hr><h2>Run & Validate</h2>Steps 4–5 — trigger · push · prove</div>
+
+<h3 class="sec"><span class="n">07 /</span> Step 4 — Configure the Pipeline Job</h3>
+<div class="step"><h4><span class="tag">JOB —</span> Create or reuse a Pipeline job pointing at the Git repo.</h4> Use <b>Pipeline script from SCM</b> so it reads the <span class="mono">Jenkinsfile</span> directly from the repo. Set up the GitHub webhook trigger (companion task) so pushes trigger this pipeline automatically.</div>
+
+<h3 class="sec"><span class="n">08 /</span> Step 5 — Run and Validate End-to-End</h3>
+<p class="small">Trigger via webhook push or manually. Confirm each stage completes in order.</p>
+<div class="terminal"><span class="c"># trigger — push a commit or click Build Now</span>
+$ git commit --allow-empty -m "trigger docker build" && git push
+
+<span class="c"># expected stage progression in Jenkins Blue Ocean / Console</span>
+[01] Environment Setup   <span class="g">● PASSED</span>  <span class="c">Loading environment/config...</span>
+[02] Code Checkout       <span class="g">● PASSED</span>  <span class="c">checkout scm — commit a1b2c3d</span>
+[03] Docker Build        <span class="g">● PASSED</span>  <span class="c">Successfully built 7f91c2 · tagged app:local</span>
+[04] Authentication      <span class="g">● PASSED</span>  <span class="c">Login Succeeded (password masked ****)</span>
+[05] Image Tagging       <span class="g">● PASSED</span>  <span class="c">tagged myusername/app:build-42</span>
+[06] Image Push          <span class="g">● PASSED</span>  <span class="c">build-42: digest: sha256:… size: 1234</span>
+[07] Application Deploy  <span class="a">○ SKIPPED</span>  <span class="c">when DEPLOY_TO_FLOCI == false</span>
+<span class="c"># with DEPLOY_TO_FLOCI == true →</span>
+[07] Application Deploy  <span class="g">● PASSED</span>  <span class="c">Deploying myusername/app:build-42 into FLOCI...</span></div>
+
+<div class="step"><h4><span class="tag">VERIFY —</span> Three proofs</h4>
+<ul class="tight">
+<li><b>Docker Hub:</b> <span class="mono">myusername/app:build-N</span> appears under the expected repository. <span class="badge green">● PUSHED</span></li>
+<li><b>Increment:</b> Push a second commit → new tag <span class="mono">build-N+1</span> — <span class="mono">BUILD_NUMBER</span> auto-increments. <span class="badge blue">● IMMUTABLE</span></li>
+<li><b>FLOCI (if in scope):</b> Simulation reflects the running <span class="mono">hello.py</span> container. <span class="badge green">● DEPLOYED</span></li>
+</ul>
+</div>
+
+<h3 class="sec"><span class="n">09 /</span> Status Indicators</h3>
+<table class="cmp"><tr><th>State</th><th>Meaning</th><th>Where to See It</th></tr>
+<tr><td><span class="status run"><span class="dot"></span>BUILDING</span></td><td><span class="mono">docker build</span> in progress</td><td>Agent executor · Docker daemon log · stage view</td></tr>
+<tr><td><span class="status pass"><span class="dot"></span>PASSED</span></td><td>Stage succeeded</td><td>Console Output — green stage header</td></tr>
+<tr><td><span class="status pass"><span class="dot"></span>PUSHED</span></td><td>Image visible on Docker Hub</td><td><span class="mono">docker pull myusername/app:build-N</span> locally</td></tr>
+<tr><td><span class="status wait"><span class="dot"></span>WAITING</span></td><td>Auth pending / tag pending</td><td>Stage waiting for prior stage</td></tr>
+<tr><td><span class="status skip"><span class="dot"></span>SKIPPED</span></td><td>Stage 07 when FLOCI not in scope</td><td><span class="mono">when { DEPLOY_TO_FLOCI == false }</span></td></tr>
+<tr><td><span class="status fail"><span class="dot"></span>FAILED</span></td><td>Login denied / push rejected / build error</td><td>Console red · Docker Hub 401/403 · check credential ID + token scope</td></tr>
+</table>
+
+<div class="kv"><b>PROOF —</b> The same commit SHA was built once, tagged immutably as <span class="mono">build-N</span>, and pushed as a reusable artifact. The registry is the handoff. Any environment pulls the <b>same bytes</b>. <span class="badge green">● ARTIFACT PROVED</span></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · VALIDATE</span><span>05 / 07</span></div>
+</div>
+
+<!-- PAGE 6 — GOTCHAs + FAILURE MODES -->
+<div class="page">
+<div class="phead"><span class="ch">Labs</span> &nbsp; Lab 02 — Docker<hr><h2>Gotchas & Failure Modes</h2>What breaks and how to recover</div>
+
+<h3 class="sec"><span class="n">10 /</span> Gotchas</h3>
+<div class="callout red"><h4>GOTCHA — NEVER HARDCODE THE SECRET</h4><p>Putting the Docker Hub password/token directly in the Jenkinsfile commits it to Git history forever. Always use <span class="mono">withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', ...)])</span> with <span class="mono">--password-stdin</span>. The token is masked as <span class="mono">****</span> in logs.</p></div>
+<div class="callout red"><h4>GOTCHA — ACCESS TOKEN, NOT ACCOUNT PASSWORD</h4><p>Docker Hub access tokens are scoped and revokable per purpose. Generate under <span class="mono">Account Settings → Security → New Access Token</span>. If the token leaks you revoke one token, not the whole account. The stored Jenkins credential's password field holds the token.</p></div>
+<div class="callout amber"><h4>GOTCHA — DOCKER-IN-DOCKER vs SOCKET MOUNT</h4><p>Don't assume the execution model. Run <span class="mono">docker info</span> on the actual Jenkins agent to confirm whether it uses a mounted <span class="mono">/var/run/docker.sock</span> or Docker-in-Docker. Wrong assumption → <span class="mono">Cannot connect to the Docker daemon</span> at build time. Decide in Step 0.</p></div>
+<div class="callout amber"><h4>GOTCHA — FLOCI IS NOT REAL AWS</h4><p>The Application Deployment stage is FLOCI-specific. Real AWS CLI/ECR docs do not apply. Get the actual FLOCI interface and deploy command from the user in Step 0.4 — don't guess at syntax. Stage 07 stays <span class="mono">when { DEPLOY_TO_FLOCI == true }</span> so the pipeline passes without it when out of scope.</p></div>
+<div class="callout"><h4>GOTCHA — REPO VISIBILITY &amp; FIRST PUSH</h4><p>Docker Hub auto-creates the repository on first push if the account allows. Confirm expected visibility (<b>public vs private</b>) before pushing. A private repo with a public assumption breaks downstream pulls.</p></div>
+
+<h3 class="sec"><span class="n">11 /</span> Failure → Recovery Map</h3>
+<table class="cmp"><tr><th>Failure</th><th>Where to Look</th><th>Fix</th></tr>
+<tr><td><span class="status fail"><span class="dot"></span> docker login denied</span></td><td>Stage 04 console: <span class="mono">401 Unauthorized</span></td><td>Verify credential ID = <span class="mono">dockerhub-creds</span>, token not expired, scope includes push</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span> docker push 403</span></td><td>Stage 06 console: <span class="mono">denied: requested access</span></td><td>Namespace mismatch (<span class="mono">myusername</span> must match Docker Hub account) or repo is private without auth</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span> Cannot connect to daemon</span></td><td>Stage 03: <span class="mono">docker build</span> fails immediately</td><td>Mount socket / run DiD; add Jenkins user to <span class="mono">docker</span> group; check <span class="mono">docker info</span></td></tr>
+<tr><td><span class="status fail"><span class="dot"></span> Dockerfile not found</span></td><td>Stage 03: <span class="mono">failed to process Dockerfile</span></td><td>Confirm <span class="mono">Dockerfile</span> at repo root; <span class="mono">checkout scm</span> pulled correct branch</td></tr>
+<tr><td><span class="status wait"><span class="dot"></span> Build tag already exists</span></td><td>Stage 05/06: push overwrites or is rejected</td><td>Always use <span class="mono">build-${BUILD_NUMBER}</span> — never <span class="mono">latest</span> alone for CI</td></tr>
+<tr><td><span class="status fail"><span class="dot"></span> FLOCI deploy fails</span></td><td>Stage 07 console</td><td>Validate FLOCI endpoint/creds from Step 0.4; confirm conditional <span class="mono">when</span> logic</td></tr>
+</table>
+
+<div class="terminal"><span class="c"># quick diagnostics when a stage fails</span>
+$ docker pull myusername/app:build-42   <span class="c">← proves registry + tag exist</span>
+$ echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin  <span class="c">← test creds locally</span>
+$ docker info && docker --version       <span class="c">← confirm execution model</span>
+$ curl -s http://localhost:8080 | head <span class="c">← Jenkins reachable?</span></div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · GOTCHAS</span><span>06 / 07</span></div>
+</div>
+
+<!-- PAGE 7 — PROOF + INTERVIEW + SYSTEM MAP -->
+<div class="page">
+<div class="phead"><span class="ch">CI/CD Systems</span> &nbsp; Lab 02 — Docker<hr><h2>Proof & System Map</h2>What this lab proved · where it sits</div>
+
+<h3 class="sec"><span class="n">12 /</span> Proof</h3>
+<div class="kv"><b>PROVED —</b> Jenkins produced a Docker image from source, authenticated via vaulted credentials without hardcoding secrets, tagged it immutably with <span class="mono">build-${BUILD_NUMBER}</span>, pushed it to Docker Hub, and — when in scope — ran the same artifact inside FLOCI. A second commit incremented the tag automatically. <span class="badge green">● DOCKER BUILD &amp; PUSH PROVED</span> <span class="badge purple">● FLOCI DEPLOY PROVED</span></div>
+
+<div class="artifact-box">
+<div class="icon"><img src="../assets/icons/general/database.svg" alt="Registry"></div>
+<div><b>REGISTRY AS HANDOFF</b><small>Source → Build → Tag → Push → Pull → Run. Every environment runs <b style="color:var(--text-light)">the same digest</b>, not a rebuild.</small></div>
+<div class="tag">REGISTRY</div>
+</div>
+
+<h3 class="sec"><span class="n">13 /</span> Interview Checks</h3>
+<div class="grid2">
+<div class="card"><h4>WHY withCredentials + --password-stdin?</h4><p>Injects the secret as env vars at runtime, masks it in logs (<span class="mono">****</span>), avoids it appearing in process args or Git history. <span class="mono">--password-stdin</span> keeps it out of <span class="mono">ps</span>.</p></div>
+<div class="card"><h4>WHY build-${BUILD_NUMBER} NOT latest?</h4><p><span class="mono">latest</span> is mutable and unrepeatable. <span class="mono">build-N</span> is immutable — you can roll back to any N, and every deploy is traceable to one Jenkins build.</p></div>
+<div class="card"><h4>WHY IS STAGE 07 CONDITIONAL?</h4><p>FLOCI is a simulation, not always in scope. <span class="mono">when { DEPLOY_TO_FLOCI == true }</span> lets the same Jenkinsfile cover both flows — pipeline passes with 6 stages when deployment is out of scope, 7 when in.</p></div>
+<div class="card"><h4>WHAT DOES A GREEN BUILD NOT PROVE?</h4><p>It proves the checks in <em>that</em> pipeline passed — build, login, push. It doesn't prove the app works in production. Registry presence ≠ runtime correctness.</p></div>
+</div>
+
+<h3 class="sec"><span class="n">14 /</span> Lab 02 in the Control Room Loop</h3>
+<div class="vpipe" style="margin:6px 0 8px">
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/git/github.svg" alt="GitHub"><b>SOURCE</b><small>GitHub push · hello.py + Dockerfile + Jenkinsfile</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot blue"></span><img src="../assets/icons/jenkins/jenkins.svg" alt="Jenkins"><b>PIPELINE</b><small>Jenkins orchestrator · 7 stages · withCredentials</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot purple"></span><img src="../assets/icons/general/package.svg" alt="Artifact"><b>ARTIFACT</b><small>myusername/app:build-N · immutable image</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot purple"></span><img src="../assets/icons/general/database.svg" alt="Registry"><b>REGISTRY</b><small>Docker Hub · User Repositories · Image Tiers</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/deployment/rocket.svg" alt="Deploy"><b>DEPLOY</b><small>FLOCI simulation (when in scope) → running hello.py</small></div><div class="vline"></div>
+<div class="vnode"><span class="dot"></span><img src="../assets/icons/jenkins/jenkins.svg" alt="Observe"><b>OBSERVE</b><small>stage view · console · Docker Hub · FLOCI state</small></div>
+<div style="margin-left:4px;margin-top:6px;width:2px;height:8px;background:#2c3531"></div>
+<div style="margin-left:0;font-size:8.5px;color:var(--accent-dark);letter-spacing:1.4px">└────────────→ FEEDBACK → NEXT COMMIT → BUILD-N+1</div>
+</div>
+
+<div class="callout blue"><h4>WHAT COMES NEXT</h4><p>Lab 02's artifact is the unit that later labs multiply and reuse. <b>Lab 03</b> builds it per branch via multibranch discovery. <b>Lab 04</b> extracts shared logic into a versioned library. <b>Lab 05</b> applies the same gated pipeline to infrastructure on FLOCI.</p></div>
+
+<div class="printnote" style="font-size:8.5px;color:var(--muted);border:1px dashed var(--line);padding:7px 9px;margin-top:6px;line-height:1.6"><b>SOURCE:</b> <span class="mono">jenkins labs/Jenkins_Docker_Build_Push_DockerHub_FLOCI_Deploy.md</span> &nbsp;·&nbsp; Print: <span class="mono">Ctrl/Cmd+P → Save as PDF → Background graphics ON → A4</span> &nbsp;·&nbsp; Icons: docker · jenkins · package · database · rocket · github · shield.</div>
+
+<div class="pfoot"><span>CI/CD Engineering Manual</span><span>LAB 02 · DOCKER BUILD &amp; PUSH</span><span>07 / 07</span></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+---
+# roles/mariadb/tasks/main.yml
+
+- name: Load OS-specific variables (packages/service names differ per distro)
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_facts['os_family'] }}.yml"
+    - "default.yml"
+  loop_control:
+    label: "{{ item }}"
+
+# ---------------------------------------------------------------------------
+# 1. Install MariaDB using the distro package manager
+# ---------------------------------------------------------------------------
+- name: Install MariaDB server and client packages
+  ansible.builtin.package:
+    name: "{{ mariadb_packages }}"
+    state: present
+
+- name: Install PyMySQL (required by the community.mysql modules)
+  ansible.builtin.package:
+    name: "{{ mariadb_python_mysql_package }}"
+    state: present
+
+# ---------------------------------------------------------------------------
+# 2. Enable MariaDB on boot and make sure it's running
+# ---------------------------------------------------------------------------
+- name: Enable and start the MariaDB service
+  ansible.builtin.service:
+    name: "{{ mariadb_service_name }}"
+    enabled: true
+    state: started
+
+# ---------------------------------------------------------------------------
+# 3. Create a folder for configuration in /opt/<mariadb>
+# ---------------------------------------------------------------------------
+- name: Create configuration directory under /opt
+  ansible.builtin.file:
+    path: "{{ mariadb_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# ---------------------------------------------------------------------------
+# 4. Deploy both the conf file and initd.sql into that folder
+# ---------------------------------------------------------------------------
+- name: Deploy MariaDB configuration file (my.cnf)
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: "{{ mariadb_conf_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart mariadb
+
+- name: Deploy database init SQL script (initdb.sql)
+  ansible.builtin.template:
+    src: initdb.sql.j2
+    dest: "{{ mariadb_initdb_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Link custom config into MariaDB's includedir so it actually gets read
+  ansible.builtin.file:
+    src: "{{ mariadb_conf_file }}"
+    dest: "{{ mariadb_includedir }}/99-custom.cnf"
+    state: link
+    force: true
+  notify: Restart mariadb
+
+# ---------------------------------------------------------------------------
+# 5. Restart MariaDB now so the new configuration takes effect immediately
+#    (the two tasks above only *notify* the restart; this forces it to run
+#    right here instead of waiting until the end of the play)
+# ---------------------------------------------------------------------------
+- name: Apply new configuration now (flush restart handler)
+  ansible.builtin.meta: flush_handlers
+
+- name: Make sure MariaDB is up after the restart
+  ansible.builtin.service:
+    name: "{{ mariadb_service_name }}"
+    state: started
+
+# ---------------------------------------------------------------------------
+# 6. Create a new database
+# ---------------------------------------------------------------------------
+- name: Create application database
+  community.mysql.mysql_db:
+    name: "{{ mariadb_db_name }}"
+    state: present
+    encoding: "{{ mariadb_character_set_server }}"
+    login_unix_socket: "{{ mariadb_login_unix_socket }}"
+
+# ---------------------------------------------------------------------------
+# 7. Create a new user and grant it full permissions on that database
+# ---------------------------------------------------------------------------
+- name: Create application database user with full privileges on the db
+  community.mysql.mysql_user:
+    name: "{{ mariadb_db_user }}"
+    password: "{{ mariadb_db_password }}"
+    host: "{{ mariadb_db_user_host }}"
+    priv: "{{ mariadb_db_name }}.*:ALL"
+    state: present
+    login_unix_socket: "{{ mariadb_login_unix_socket }}"
+
+# ---------------------------------------------------------------------------
+# 8. Use the initd.sql script to initialize the database
+# ---------------------------------------------------------------------------
+- name: Import initdb.sql to initialize the database schema/data
+  community.mysql.mysql_db:
+    name: "{{ mariadb_db_name }}"
+    state: import
+    target: "{{ mariadb_initdb_file }}"
+    login_unix_socket: "{{ mariadb_login_unix_socket }}"
+  when: mariadb_run_initdb | bool

@@ -1,0 +1,268 @@
+/* tokens.css */
+/* tokens.css — ALL hex colors and font families live here. Nothing else
+   may contain a hex literal or font-family. */
+:root {
+  --t-paper: #ffffff;
+  --t-ink: #1c1a15;
+  --t-muted: #6b6455;
+  --t-line: #e3ddcf;
+  --t-accent: #1f6feb;
+  --t-focus: #1f6feb;
+  --t-danger: #a03f3c;
+  --t-radius: 10px;
+  --t-font: "InterVariable", "Segoe UI", "Noto Naskh Arabic", system-ui,
+    sans-serif;
+  --t-mono: "JetBrains Mono", Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  --t-paper: #14120e;
+  --t-ink: #ece6d8;
+  --t-muted: #a89e8a;
+  --t-line: #35301f;
+  --t-accent: #7aa7f5;
+  --t-focus: #7aa7f5;
+  --t-danger: #f4928a;
+}
+/* Track hues: mark + tint, light then dark. Hue = identity only. */
+:root {
+  --tr-linux-mark: #796006; --tr-linux-tint: #F4EBD1;
+  --tr-aws-mark: #974C00; --tr-aws-tint: #FFE6D6;
+  --tr-docker-mark: #006E8C; --tr-docker-tint: #D3F1FD;
+  --tr-kubernetes-mark: #3860AC; --tr-kubernetes-tint: #E2ECFD;
+  --tr-terraform-mark: #6F4FA1; --tr-terraform-tint: #EEE7FD;
+  --tr-ansible-mark: #A03F3C; --tr-ansible-tint: #FFE4E1;
+  --tr-jenkins-mark: #973F6E; --tr-jenkins-tint: #FFE2EE;
+  --tr-cicd-mark: #137738; --tr-cicd-tint: #DCF2DF;
+  --tr-aiops-mark: #06726E; --tr-aiops-tint: #D2F3F0;
+}
+:root[data-theme="dark"] {
+  --tr-linux-mark: #CFAD4E; --tr-linux-tint: #302504;
+  --tr-aws-mark: #EC9C63; --tr-aws-tint: #391F0C;
+  --tr-docker-mark: #49C1EA; --tr-docker-tint: #012B39;
+  --tr-kubernetes-mark: #87B1FD; --tr-kubernetes-tint: #19263F;
+  --tr-terraform-mark: #BD9FF2; --tr-terraform-tint: #2A203B;
+  --tr-ansible-mark: #F4928A; --tr-ansible-tint: #3B1C1A;
+  --tr-jenkins-mark: #EA91BC; --tr-jenkins-tint: #381C2A;
+  --tr-cicd-mark: #76C788; --tr-cicd-tint: #122D19;
+  --tr-aiops-mark: #35C9C2; --tr-aiops-tint: #022D2B;
+}
+
+/* base.css */
+/* base.css — reset, type scale, layout, focus. */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--t-paper); color: var(--t-ink);
+  font-family: var(--t-font); line-height: 1.6; font-size: 16px;
+}
+:root[data-reading="0"] body { font-size: 15px; }
+:root[data-reading="2"] body { font-size: 18px; }
+h1, h2, h3 { line-height: 1.25; text-wrap: balance; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1rem; }
+a { color: var(--t-accent); }
+:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); }
+.skip-link { position: absolute; left: -999px; }
+.skip-link:focus { left: 8px; top: 8px; background: var(--t-paper);
+  padding: 8px 12px; z-index: 99; }
+.muted { color: var(--t-muted); font-size: 0.85em; }
+.warn { border: 1px solid var(--t-danger); padding: 8px 12px;
+  border-radius: var(--t-radius); }
+.view { max-width: 860px; margin: 0 auto; padding: 16px 16px 96px; }
+.hint { color: var(--t-muted); font-size: 0.9rem; }
+code, pre { font-family: var(--t-mono); font-size: 0.9em; }
+.table-scroll { overflow-x: auto; }
+.skeleton span { display: block; height: 14px; margin: 8px 0;
+  background: var(--t-line); border-radius: 4px; }
+.empty { padding: 32px 16px; text-align: center; }
+
+/* components.css */
+/* components.css — buttons, chips, rows, strip, modal, toast, palette. */
+.btn { display: inline-block; padding: 10px 16px; min-height: 44px;
+  border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  background: var(--t-paper); color: var(--t-ink); cursor: pointer;
+  font-size: 1rem; text-decoration: none; }
+.btn-primary { background: var(--t-ink); color: var(--t-paper);
+  border-color: var(--t-ink); }
+.btn-ghost { border-color: transparent; }
+.iconbtn { min-width: 44px; min-height: 44px; background: none;
+  border: none; font-size: 1.2rem; cursor: pointer; color: var(--t-ink); }
+.chip { display: inline-block; padding: 6px 10px; margin: 2px;
+  border: 1px solid var(--t-line); border-radius: 999px; font-size: 0.8rem;
+  background: var(--t-paper); color: var(--t-ink); cursor: pointer; }
+.chip.on { background: var(--t-ink); color: var(--t-paper); }
+.chip-pending { border-style: dashed; }
+.chips { display: inline-flex; gap: 4px; margin-left: 8px; }
+.kind { font-size: 0.75rem; color: var(--t-muted); white-space: nowrap; }
+.icon { width: 20px; height: 20px; vertical-align: -4px; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { border-bottom: 1px solid var(--t-line); content-visibility: auto;
+  contain-intrinsic-size: 64px; }
+.row > a { display: flex; gap: 10px; align-items: baseline;
+  padding: 12px 4px; text-decoration: none; color: inherit;
+  min-height: 44px; }
+.row-t { flex: 1; display: flex; flex-direction: column; }
+.row-t strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.glyph-done { color: var(--t-ink); }
+.glyph-reading { color: var(--t-muted); }
+.glyph-todo { color: var(--t-muted); }
+.ring { display: inline-flex; align-items: center; gap: 8px; }
+.ring svg { width: 40px; height: 40px; }
+.ring-bg { fill: none; stroke: var(--t-line); stroke-width: 3; }
+.ring-fg { fill: none; stroke: var(--t-ink); stroke-width: 3;
+  stroke-dasharray: 0 100; }
+.segbar { display: block; height: 6px; background: var(--t-line);
+  border-radius: 3px; overflow: hidden; }
+.segbar-f { display: block; height: 100%; background: var(--t-ink); }
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 12px;
+  align-items: center; padding: 10px 16px; background: var(--t-paper);
+  border-bottom: 1px solid var(--t-line); }
+.brand { font-weight: 700; text-decoration: none; color: var(--t-ink); }
+.topnav { display: flex; gap: 12px; }
+.topnav a { text-decoration: none; color: var(--t-ink); padding: 10px 4px; }
+.topnav a[aria-current="page"] { text-decoration: underline; }
+.search-trigger { flex: 1; display: flex; gap: 8px; align-items: center;
+  border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  padding: 10px 12px; background: var(--t-paper); color: var(--t-muted);
+  cursor: pointer; min-height: 44px; text-align: left; }
+.strip { position: sticky; top: 57px; z-index: 15; display: flex; gap: 6px;
+  overflow-x: auto; padding: 8px 16px; background: var(--t-paper);
+  border-bottom: 1px solid var(--t-line); }
+.strip-node { display: inline-flex; gap: 6px; align-items: center;
+  border: 1px solid var(--t-line); border-radius: 999px; padding: 8px 12px;
+  background: var(--t-paper); color: var(--t-ink); white-space: nowrap;
+  min-height: 44px; cursor: pointer; }
+.strip-node .dot { width: 10px; height: 10px; border-radius: 50%;
+  background: var(--t-muted); }
+.strip-node[data-track="linux"] .dot { background: var(--tr-linux-mark); }
+.strip-node[data-track="aws"] .dot { background: var(--tr-aws-mark); }
+.strip-node[data-track="docker"] .dot { background: var(--tr-docker-mark); }
+.strip-node[data-track="kubernetes"] .dot { background: var(--tr-kubernetes-mark); }
+.strip-node[data-track="terraform"] .dot { background: var(--tr-terraform-mark); }
+.strip-node[data-track="ansible"] .dot { background: var(--tr-ansible-mark); }
+.strip-node[data-track="jenkins"] .dot { background: var(--tr-jenkins-mark); }
+.strip-node[data-track="cicd"] .dot { background: var(--tr-cicd-mark); }
+.strip-node[data-track="aiops"] .dot { background: var(--tr-aiops-mark); }
+.strip-node[aria-pressed="true"] { border-color: var(--t-ink);
+  border-width: 2px; }
+section[data-track="linux"] > h2 { color: var(--tr-linux-mark); }
+section[data-track="aws"] > h2 { color: var(--tr-aws-mark); }
+section[data-track="docker"] > h2 { color: var(--tr-docker-mark); }
+section[data-track="kubernetes"] > h2 { color: var(--tr-kubernetes-mark); }
+section[data-track="terraform"] > h2 { color: var(--tr-terraform-mark); }
+section[data-track="ansible"] > h2 { color: var(--tr-ansible-mark); }
+section[data-track="jenkins"] > h2 { color: var(--tr-jenkins-mark); }
+section[data-track="cicd"] > h2 { color: var(--tr-cicd-mark); }
+section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
+.filters { padding: 8px 16px; max-width: 860px; margin: 0 auto; }
+.fgroup h3 { font-size: 0.8rem; color: var(--t-muted); margin: 8px 0 4px; }
+.modal-back { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
+  z-index: 50; display: flex; justify-content: center; align-items: flex-start;
+  padding-top: 10vh; }
+.modal { background: var(--t-paper); border-radius: var(--t-radius);
+  padding: 16px; width: min(560px, 92vw); max-height: 70vh; overflow: auto; }
+.palette input { width: 100%; padding: 12px; font-size: 1rem;
+  border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  background: var(--t-paper); color: var(--t-ink); }
+.pal-list { list-style: none; margin: 8px 0; padding: 0; }
+.pal-list button { width: 100%; text-align: left; padding: 10px;
+  background: none; border: none; color: var(--t-ink); cursor: pointer;
+  min-height: 44px; }
+.pal-list .active button { background: var(--t-line); }
+.toast-stack { position: fixed; bottom: 76px; left: 50%;
+  transform: translateX(-50%); z-index: 99; }
+.toast { background: var(--t-ink); color: var(--t-paper); padding: 12px 16px;
+  border-radius: var(--t-radius); display: flex; gap: 12px;
+  align-items: center; }
+.toast button { color: inherit; }
+.drop-overlay { position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, 0.5); display: flex; align-items: center;
+  justify-content: center; }
+.drop-overlay[hidden] { display: none; }
+.drop-card { background: var(--t-paper); color: var(--t-ink);
+  padding: 32px; border-radius: var(--t-radius); text-align: center; }
+.bottomnav { display: none; }
+@media (max-width: 640px) {
+  .bottomnav { display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 20; background: var(--t-paper);
+    border-top: 1px solid var(--t-line); justify-content: space-around; }
+  .bottomnav a { padding: 14px; color: var(--t-ink); text-decoration: none; }
+  .topnav { display: none; }
+}
+
+/* views.css */
+/* views.css — roadmap, reader, pdf, shots, drawer. */
+.stages { list-style: none; margin: 0; padding: 0; }
+.stage { margin: 16px 0; }
+.stage > h2 { font-size: 0.9rem; color: var(--t-muted);
+  text-transform: none; }
+.jobs { list-style: none; margin: 0; padding: 0; display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.job { display: flex; gap: 8px; align-items: center; width: 100%;
+  padding: 12px; min-height: 56px; border: 2px solid var(--t-line);
+  border-radius: var(--t-radius); background: var(--t-paper);
+  color: var(--t-ink); cursor: pointer; text-align: left; }
+.job .dot { width: 12px; height: 12px; border-radius: 50%;
+  background: var(--t-muted); flex: none; }
+.job[data-track="linux"] .dot { background: var(--tr-linux-mark); }
+.job[data-track="aws"] .dot { background: var(--tr-aws-mark); }
+.job[data-track="docker"] .dot { background: var(--tr-docker-mark); }
+.job[data-track="kubernetes"] .dot { background: var(--tr-kubernetes-mark); }
+.job[data-track="terraform"] .dot { background: var(--tr-terraform-mark); }
+.job[data-track="ansible"] .dot { background: var(--tr-ansible-mark); }
+.job[data-track="jenkins"] .dot { background: var(--tr-jenkins-mark); }
+.job[data-track="cicd"] .dot { background: var(--tr-cicd-mark); }
+.job[data-track="aiops"] .dot { background: var(--tr-aiops-mark); }
+.job.here { border-color: var(--t-ink); }
+.here-tag { font-size: 0.75rem; border: 1px solid var(--t-ink);
+  border-radius: 999px; padding: 2px 8px; }
+.roadmap .stage { opacity: 0; transform: translateX(12px); }
+.roadmap.ran .stage { opacity: 1; transform: none;
+  transition: opacity 0.25s ease, transform 0.25s ease; }
+/* Chanel test: removed per-stage cascade delays — one motion, no accessory. */
+:root[data-motion="on"] .roadmap .stage { transition: none; opacity: 1;
+  transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .roadmap .stage { transition: none; opacity: 1; transform: none; }
+}
+.drawer { width: min(560px, 94vw); }
+.drawer ol { padding-left: 20px; }
+.drawer li { padding: 6px 0; }
+.reader .article { max-width: 68ch; }
+.reader .article img { max-width: 100%; height: auto; cursor: zoom-in; }
+.reader .article pre { position: relative; overflow-x: auto;
+  border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  padding: 12px; }
+.copybtn { position: absolute; top: 6px; right: 6px; }
+.readbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.readnav { display: flex; justify-content: space-between; gap: 8px;
+  margin-top: 32px; }
+.readnav2 { display: flex; gap: 16px; margin-top: 8px; }
+.reader.focus .topbar, .reader.focus .strip, .reader.focus .bottomnav {
+  display: none; }
+.callout { border: 1px solid var(--t-line);
+  border-left-width: 4px; border-radius: 8px; padding: 8px 12px;
+  margin: 12px 0; }
+.outline { margin: 12px 0; }
+.pdfframe { width: 100%; height: 75vh; border: 1px solid var(--t-line);
+  border-radius: var(--t-radius); }
+.pdfbar { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill,
+  minmax(160px, 1fr)); gap: 8px; }
+.shots img { width: 100%; height: auto; border: 1px solid var(--t-line);
+  border-radius: 8px; }
+.continue { border: 2px solid var(--t-ink); border-radius: var(--t-radius);
+  padding: 12px 16px; margin-bottom: 16px; }
+
+/* print.css */
+/* print.css — clean lesson printing: no chrome, URLs expanded. */
+@media print {
+  .topbar, .strip, .bottomnav, .filters, .readbar, .readnav, .readnav2,
+  .toast-stack, .drop-overlay, .continue, .outline { display: none; }
+  .view { max-width: none; padding: 0; }
+  .reader .article { max-width: none; }
+  a[href^="http"]:after { content: " (" attr(href) ")"; }
+}
+

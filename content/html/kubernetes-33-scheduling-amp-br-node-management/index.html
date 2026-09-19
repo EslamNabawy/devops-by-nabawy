@@ -1,0 +1,799 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Scheduling & Node Management — Kubernetes Book 04</title>
+<style>
+:root{ --k8s:#326CE5; --navy:#12224d; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0; }
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#dfe5ee; font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+/* FIX: fixed height (not min-height) → a .page div can NEVER spill onto a ghost printed page */
+.page{width:210mm; height:297mm; background:#fff; margin:9mm auto; padding:13mm 14mm 17mm; position:relative; box-shadow:0 4px 18px rgba(15,23,42,.18); page-break-after:always; overflow:hidden;}
+.page::before{content:''; position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg,#326CE5,#8b5cf6,#10b981);}
+@media print{ body{background:#fff;} .page{margin:0; box-shadow:none;} }
+html{scroll-behavior:smooth;} .page:last-child{page-break-after:auto;}
+/* compacted vertical rhythm — everything fits the 267mm content box with headroom */
+.pghead{display:flex; align-items:center; gap:10px; margin:2px 0 14px;}
+.chip{background:var(--k8s); color:#fff; font-weight:800; border-radius:8px; padding:4px 11px; font-size:12px; letter-spacing:.04em;}
+h2.t{font-size:23px; color:var(--navy); margin:0; font-weight:800; bookmark-level:1; bookmark-label:content();}
+.dbadge{margin-left:auto; background:#eef2ff; color:#4338ca; border:1.5px solid #c7d2fe; border-radius:999px; padding:3px 11px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.pgfoot{position:absolute; bottom:8mm; left:14mm; right:14mm; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; border-top:1px solid var(--line); padding-top:5px;}
+.pgfoot a{color:#64748b; text-decoration:none;} .pgfoot a:hover{color:var(--k8s);}
+h3.sec{font-size:15px; color:var(--navy); margin:14px 0 8px; font-weight:800;}
+p.lead{font-size:13.5px; line-height:1.55; margin:0 0 10px;}
+p.small,li{font-size:12.5px; line-height:1.5; margin:4px 0;}
+.callout{border-radius:12px; padding:10px 13px; margin:11px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.6px; line-height:1.5;}
+.callout .ico{font-size:19px; line-height:1.2;}
+.co-key{background:#fffbeb; border:1.5px solid #fcd34d;} .co-tip{background:#eff6ff; border:1.5px solid #93c5fd;}
+.co-fun{background:#fdf4ff; border:1.5px solid #e9d5ff;} .co-warn{background:#fef2f2; border:1.5px solid #fca5a5;}
+.cka{background:#f0fdfa; border:1.5px solid #2dd4bf; border-radius:12px; padding:10px 13px; margin:11px 0; display:flex; gap:10px; align-items:flex-start; font-size:12.5px; line-height:1.5;}
+.cka .ico{font-size:19px; line-height:1.2;}
+.nb{border-radius:10px; padding:8px 12px; text-align:center; font-weight:700; font-size:12.5px; color:#fff; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.nb small{display:block; font-weight:500; font-size:10.5px; opacity:.93; margin-top:2px; line-height:1.3;}
+.c-blue{background:#3b82f6}.c-indigo{background:#6366f1}.c-violet{background:#8b5cf6}.c-green{background:#22c55e}
+.c-emerald{background:#10b981}.c-amber{background:#f59e0b}.c-orange{background:#f97316}.c-teal{background:#14b8a6}
+.c-sky{background:#0ea5e9}.c-cyan{background:#06b6d4}.c-rose{background:#f43f5e}.c-red{background:#ef4444}.c-slate{background:#64748b}.c-navy{background:#334155}
+.pod{display:inline-block; border:2px solid #ec4899; color:#be185d; background:#fdf2f8; border-radius:999px; padding:3px 11px; font-size:11px; font-weight:700;}
+.kchip{display:inline-flex; align-items:center; gap:6px; background:#f1f5f9; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-size:12px; font-weight:700; color:#334155;}
+.kchip small{color:#64748b;}
+.stem{width:2.5px; height:16px; background:#94a3b8; margin:0 auto;}
+.barwrap{display:flex; justify-content:center;} .hbar{border-top:2.5px solid #94a3b8; height:0;}
+.bar2{width:50%}.bar3{width:66.7%}
+.cols{display:flex;} .col{flex:1; padding:0 6px; display:flex; flex-direction:column; align-items:center;}
+.col .stub{width:2.5px; height:16px; background:#94a3b8;}
+.dn{text-align:center; color:#94a3b8; font-size:13px; line-height:1.4; margin:2px 0;}
+.harr{color:#94a3b8; font-size:13px; align-self:center;}
+.rowc{display:flex; align-items:center; justify-content:center; gap:10px; margin:10px 0; flex-wrap:wrap;}
+.zone{border:2.5px dashed; border-radius:16px; padding:12px; margin:12px 0;}
+.zone-cp{border-color:#818cf8; background:rgba(238,242,255,.6);} .zone-wk{border-color:#34d399; background:rgba(236,253,245,.6);}
+.zone-net{border-color:#7dd3fc; background:rgba(240,249,255,.55);} .zone-store{border-color:#c4b5fd; background:rgba(245,243,255,.55);}
+.zlabel{font-weight:800; letter-spacing:.1em; font-size:10.5px; color:#475569; text-transform:uppercase; margin-bottom:8px; text-align:center;}
+.term{background:#0f172a; color:#e2e8f0; border-radius:12px; padding:11px 14px; font:12px/1.65 'Consolas','SF Mono','Cascadia Code',monospace; white-space:pre; overflow:hidden; margin:12px 0;}
+.term .p{color:#4ade80;} .term .c{color:#93c5fd;} .term .y{color:#fbbf24;} .term .r{color:#f87171;} .term .m{color:#f9a8d4;} .term .g{color:#94a3b8;}
+.term.mini{font-size:10.8px; padding:9px 12px; line-height:1.55;}
+.termbar{display:flex; gap:6px; padding:8px 12px; background:#1e293b; border:1.5px solid #334155; border-bottom:none; border-radius:12px 12px 0 0; margin-top:12px;}
+.termbar span{width:11px; height:11px; border-radius:50%; display:inline-block;}
+.term.tbr{border-radius:0 0 12px 12px; margin-top:0;}
+.mtree{font:12.5px/1.7 'Consolas','SF Mono',monospace; background:#0f172a; color:#cbd5e1; padding:14px 17px; border-radius:14px; white-space:pre; margin:12px 0;}
+.mtree b{color:#7dd3fc;} .mtree i{color:#fbbf24; font-style:normal;} .mtree em{color:#f9a8d4; font-style:normal;} .mtree u{color:#86efac; text-decoration:none;} .mtree s{color:#a5b4fc; text-decoration:none;} .mtree .g{color:#94a3b8;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; font-size:12.1px; border:1px solid var(--line); margin:12px 0;}
+.tb th{background:var(--k8s); color:#fff; padding:7px 10px; text-align:left; font-size:11.8px;}
+.tb td{padding:6.5px 10px; border-bottom:1px solid #eef2f7; background:#fff; vertical-align:top;}
+.tb tr:nth-child(even) td{background:#f8fafc;} .tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:12px 0;}
+.card{border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; background:#fff;}
+.think{background:linear-gradient(135deg,#eef2ff,#fdf2f8); border:1.5px solid #c7d2fe; border-radius:14px; padding:12px 14px;}
+.center{text-align:center;}
+ul.tick{list-style:none; padding:0; margin:5px 0;}
+ul.tick li{padding:3px 0 3px 2px; display:flex; gap:9px; align-items:flex-start;}
+.cover{background:linear-gradient(160deg,#0a1a45 0%,#1e3a8a 48%,#326CE5 100%); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover::before{display:none;}
+.cover .wheel{font-size:86px; line-height:1; filter:drop-shadow(0 6px 18px rgba(0,0,0,.4));}
+.cover h1{font-size:42px; margin:18px 0 6px; font-weight:900; letter-spacing:.01em;}
+.cover .sub{font-size:15px; opacity:.92; max-width:150mm; line-height:1.6;}
+.glass{background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.28); backdrop-filter:blur(4px); border-radius:16px; padding:13px 18px; font-weight:700; font-size:13.5px;}
+.glass small{display:block; font-weight:500; opacity:.85; margin-top:3px; font-size:11px;}
+.cover .row{display:flex; gap:16px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.orb{position:absolute; border-radius:50%; background:rgba(255,255,255,.06);}
+.ver{position:absolute; bottom:12mm; left:0; right:0; text-align:center; font-size:11px; letter-spacing:.28em; opacity:.72;}
+.tocrow{display:flex; align-items:baseline; padding:4px 4px; font-size:12.2px;}
+.tocrow .tnum{color:#326CE5; font-weight:900; width:38px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted #cbd5e1; margin:0 9px 4px;}
+.tocrow .tp{font-weight:700; color:#475569;}
+a.tocrow{text-decoration:none; color:inherit;} a.tocrow:hover{background:#f1f5f9; border-radius:6px;}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin:8px 0;}
+.tocpart{grid-column:1/-1; font-weight:800; color:var(--navy); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; margin:8px 0 2px; padding-bottom:3px; border-bottom:2px solid var(--line);}
+.cb{width:13px; height:13px; border:2px solid #94a3b8; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:-2px; flex:none;}
+.stbadge{display:inline-block; padding:2px 10px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap;}
+.st-run{background:#d1fae5; color:#065f46; border:1.5px solid #6ee7b7;} .st-pend{background:#fef3c7; color:#92400e; border:1.5px solid #fcd34d;}
+.st-term{background:#fee2e2; color:#991b1b; border:1.5px solid #fca5a5;} .st-comp{background:#e2e8f0; color:#334155; border:1.5px solid #cbd5e1;}
+.qz{border:1.5px solid var(--line); border-radius:11px; padding:8px 11px; margin:8px 0; background:#fff; font-size:11.6px; line-height:1.48;}
+.qz .qn{font-weight:900; color:#326CE5; margin-right:5px;}
+.gl{border-left:4px solid #c7d2fe; background:#f8fafc; border-radius:8px; padding:5px 9px; font-size:11.1px; line-height:1.4; margin:5px 0;}
+.gl b{color:#12224d;}
+.tabwin{border-radius:13px; overflow:hidden; border:1.5px solid #334155; box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.tabhead{padding:6px 12px; font-weight:800; font-size:11.5px; color:#fff; display:flex; align-items:center; gap:8px; letter-spacing:.03em;}
+.tabbody{background:#0f172a; color:#e2e8f0; font:11.5px/1.7 'Consolas','SF Mono',monospace; padding:10px 13px; white-space:pre;}
+.tabbody .p{color:#4ade80;} .tabbody .c{color:#93c5fd;} .tabbody .y{color:#fbbf24;} .tabbody .r{color:#f87171;} .tabbody .g{color:#94a3b8;}
+.labstep{border:1.5px solid var(--line); border-radius:13px; padding:11px 13px; margin:10px 0; background:#fff;}
+.labcols{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:7px;}
+.labtag{font-size:10px; font-weight:800; letter-spacing:.06em; color:#64748b; margin-bottom:3px;}
+.ok{color:#059669; font-weight:800;} .bad{color:#dc2626; font-weight:800;}
+.road{position:relative; margin:12px 0 4px 13px;}
+.road::before{content:''; position:absolute; left:1.5px; top:10px; bottom:12px; width:3px; background:linear-gradient(#326CE5,#8b5cf6,#10b981); border-radius:3px;}
+.step{position:relative; margin:0 0 9px 26px; background:#f8fafc; border:1.5px solid var(--line); border-radius:11px; padding:8px 12px; display:flex; gap:10px; align-items:center;}
+.step::before{content:''; position:absolute; left:-30.5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; border:3.5px solid #326CE5;}
+.stepnum{font-weight:900; color:#326CE5; font-size:15px; min-width:24px;}
+.navtop{position:fixed; right:14px; bottom:14px; z-index:50; background:var(--navy); color:#fff; border-radius:999px; padding:7px 13px; font-size:11px; font-weight:800; text-decoration:none; box-shadow:0 4px 12px rgba(15,23,42,.35);}
+@media print{.navtop{display:none;}}
+a.backtop{font-size:11px; color:#64748b; text-decoration:none;} a.backtop:hover{color:#326CE5;}
+code{background:#f1f5f9; border:1px solid var(--line); border-radius:5px; padding:0 5px; font:0.92em 'Consolas',monospace;}
+</style><style id="page-fixes">
+/* L1 spacing-only, scoped per overflowing page */
+#ch04 h3.sec{margin:10px 0 6px}
+#ch04 .callout,#ch04 .cka{margin:7px 0;padding:8px 11px}
+#ch04 .term,#ch04 .mtree,#ch04 table.tb{margin:8px 0}
+#ch04 .term,#ch04 .mtree{padding:9px 12px}
+#ch04 p.lead{margin:0 0 7px}
+#ch04 .grid2,#ch04 .grid3{margin:8px 0;gap:10px}
+#ch04 .card,#ch04 .zone,#ch04 .labstep{padding:9px 11px}
+#ch04 .qz{margin:6px 0;padding:6px 9px}
+#ch04 .gl{margin:3px 0;padding:4px 8px}
+#ch04 .rowc{margin:7px 0}
+</style>
+</head><body>
+<a class="navtop" href="#toc">▤ TOC</a>
+
+<!-- ═══ COVER ═══ -->
+<div class="page cover" id="cover">
+<div class="orb" style="width:220px;height:220px;top:40px;left:30px"></div>
+<div class="orb" style="width:140px;height:140px;bottom:60px;right:40px"></div>
+<div class="wheel">🎯</div>
+<h1>SCHEDULING &amp;<br>NODE MANAGEMENT</h1>
+<div class="sub">Book 04 of the series — inside the Scheduler's decision: filter, score, bind. The full taints &amp; tolerations system, node/pod affinity, topology spread, priority &amp; preemption, and the maintenance discipline: cordon, drain, static Pods.</div>
+<div class="row">
+<div class="glass">🎯 Scheduler<small>filter → score → bind</small></div>
+<div class="glass">🚧 Taints<small>all 3 effects</small></div>
+<div class="glass">🔑 Tolerations<small>the keys</small></div>
+<div class="glass">🧲 Affinity<small>node &amp; pod</small></div>
+</div>
+<div class="row">
+<div class="glass">⚖️ Spread<small>zones &amp; skew</small></div>
+<div class="glass">👑 Priority<small>+ preemption</small></div>
+<div class="glass">🛠️ Drain<small>maintenance</small></div>
+<div class="glass">🪨 Static Pods<small>kubelet-born</small></div>
+</div>
+<div class="ver">K8S KNOWLEDGE BASE · BOOK 04 · CONTINUES BOOKS 01–03 · 2026</div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="page" id="toc">
+<div class="pghead"><span class="chip">📖</span><h2 class="t">Contents — click any row</h2><span class="dbadge">7 parts · 20 chapters</span></div>
+<div class="tocgrid">
+<div class="tocpart">Part I · The Scheduler's Mind</div>
+<a class="tocrow" href="#ch01"><span class="cb"></span><span class="tnum">CH 01</span>How Scheduling Works<span class="dots"></span><span class="tp">p.3</span></a>
+<a class="tocrow" href="#ch02"><span class="cb"></span><span class="tnum">CH 02</span>The Scheduling Toolbox<span class="dots"></span><span class="tp">p.4</span></a>
+<div class="tocpart">Part II · Taints &amp; Tolerations — Full System</div>
+<a class="tocrow" href="#ch03"><span class="cb"></span><span class="tnum">CH 03</span>Taints — Effects &amp; Use Cases<span class="dots"></span><span class="tp">p.5</span></a>
+<a class="tocrow" href="#ch04"><span class="cb"></span><span class="tnum">CH 04</span>Tolerations — Operators &amp; tolerationSeconds<span class="dots"></span><span class="tp">p.6</span></a>
+<a class="tocrow" href="#ch05"><span class="cb"></span><span class="tnum">CH 05</span>Well-Known Taints — The Cluster's Own<span class="dots"></span><span class="tp">p.7</span></a>
+<div class="tocpart">Part III · Affinity &amp; Spread</div>
+<a class="tocrow" href="#ch06"><span class="cb"></span><span class="tnum">CH 06</span>nodeSelector &amp; Node Affinity<span class="dots"></span><span class="tp">p.8</span></a>
+<a class="tocrow" href="#ch07"><span class="cb"></span><span class="tnum">CH 07</span>Pod Affinity &amp; Anti-Affinity<span class="dots"></span><span class="tp">p.9</span></a>
+<a class="tocrow" href="#ch08"><span class="cb"></span><span class="tnum">CH 08</span>topologySpreadConstraints<span class="dots"></span><span class="tp">p.10</span></a>
+<div class="tocpart">Part IV · Priority &amp; Eviction</div>
+<a class="tocrow" href="#ch09"><span class="cb"></span><span class="tnum">CH 09</span>Priority Classes &amp; Preemption<span class="dots"></span><span class="tp">p.11</span></a>
+<div class="tocpart">Part V · Node Operations</div>
+<a class="tocrow" href="#ch10"><span class="cb"></span><span class="tnum">CH 10</span>Cordon, Drain &amp; Uncordon<span class="dots"></span><span class="tp">p.12</span></a>
+<a class="tocrow" href="#ch11"><span class="cb"></span><span class="tnum">CH 11</span>Static Pods<span class="dots"></span><span class="tp">p.13</span></a>
+<div class="tocpart">Part VI · Labs</div>
+<a class="tocrow" href="#lab1"><span class="cb"></span><span class="tnum">LAB 1</span>Node Affinity — Required vs Preferred<span class="dots"></span><span class="tp">p.14</span></a>
+<a class="tocrow" href="#lab2"><span class="cb"></span><span class="tnum">LAB 2</span>Anti-Affinity — Prove the Separation<span class="dots"></span><span class="tp">p.15</span></a>
+<a class="tocrow" href="#lab3"><span class="cb"></span><span class="tnum">LAB 3</span>Priority &amp; Preemption Live<span class="dots"></span><span class="tp">p.16</span></a>
+<a class="tocrow" href="#lab4"><span class="cb"></span><span class="tnum">LAB 4</span>The Maintenance Cycle<span class="dots"></span><span class="tp">p.17</span></a>
+<div class="tocpart">Part VII · Prove It</div>
+<a class="tocrow" href="#quiz"><span class="cb"></span><span class="tnum">QUIZ</span>Self-Check Quiz<span class="dots"></span><span class="tp">p.18</span></a>
+<a class="tocrow" href="#key"><span class="cb"></span><span class="tnum">KEY</span>Answer Key + Scoring<span class="dots"></span><span class="tp">p.19</span></a>
+<a class="tocrow" href="#gloss"><span class="cb"></span><span class="tnum">GLOSS</span>Glossary<span class="dots"></span><span class="tp">p.20</span></a>
+<a class="tocrow" href="#cheat"><span class="cb"></span><span class="tnum">CHEAT</span>One-Page Cheat Sheet<span class="dots"></span><span class="tp">p.21</span></a>
+<a class="tocrow" href="#finale"><span class="cb"></span><span class="tnum">FINALE</span>Where to Next → Book 05<span class="dots"></span><span class="tp">p.22</span></a>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Assumes Books 01–03.</b> Book 01 · CH 07 + Lab 5 gave you taints' first taste; CH 23 showed Pending = "the Scheduler said no". This book opens the black box: <i>every reason the Scheduler says yes or no, and every knob you own</i>.</div></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span>◀ cover · start ▶</span><span>Page 2</span></div>
+</div>
+
+<!-- ═══ CH01 ═══ -->
+<div class="page" id="ch01"><div class="pghead"><span class="chip">CH 01</span><h2 class="t">🎯 How Scheduling Works</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The Scheduler is a control loop (Book 01 · CH 02) with one job: for each <b>unscheduled</b> Pod, pick the best feasible Node and <b>bind</b> the Pod to it. Every decision is a three-stage funnel:</p>
+<div class="zone zone-cp">
+<div class="zlabel">The funnel — every Pod, every time</div>
+<div class="rowc"><div class="kchip">🆕 Pod appears<small>&nbsp;schedulerName: default</small></div><span class="harr">──►</span>
+<div class="nb c-rose" style="min-width:170px;">1 · FILTER<small>feasible nodes only</small></div><span class="harr">──►</span>
+<div class="nb c-amber" style="min-width:170px;">2 · SCORE<small>rank the survivors</small></div><span class="harr">──►</span>
+<div class="nb c-emerald" style="min-width:130px;">3 · BIND<small>write it down</small></div></div>
+<p class="dnote">filter kills nodes that <i>can't</i> take the Pod · score ranks nodes that <i>can</i> · the highest score wins</p>
+</div>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">1 · FILTER — hard constraints</div>
+<ul class="tick" style="margin:0;">
+<li>Pod's <b>requests</b> fit the node's allocatable (Book 02 · CH 14)</li>
+<li><b>Taints</b> tolerated? (Part II of this book)</li>
+<li><b>nodeSelector / required affinity</b> match?</li>
+<li>Ports, volumes, hostNetwork conflicts</li>
+</ul>
+<p class="small" style="margin:5px 0 0;"><b>Zero nodes survive → Pod stays Pending.</b> This is the #1 cause.</p></div>
+<div class="card" style="border-top:3.5px solid #f59e0b;"><div class="zlabel" style="text-align:left;">2 · SCORE — soft preferences</div>
+<ul class="tick" style="margin:0;">
+<li><b>Preferred affinity/anti-affinity</b> weights</li>
+<li><b>Spreading</b> vs packing balance (CH 08)</li>
+<li>Image locality (image already pulled?), pod spread across zones…</li>
+</ul>
+<p class="small" style="margin:5px 0 0;">Every plugin votes 0–100; sum decides. <b>Ties → random.</b></p></div>
+</div>
+<div class="term mini"><span class="g"># the binding is a real API object — you can see the decision:</span>
+<span class="p">$</span> kubectl get pod web -o jsonpath=<span class="m">'{.spec.nodeName}'</span>
+minikube</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Scheduling is one-time, not a lease:</b> once bound, the Scheduler never reconsiders. If the node degrades, the <b>kubelet</b> and node-lifecycle controller react (taints → evict) — the Scheduler only picks <i>new</i> placements. Re-scheduling happens only if the Pod <i>dies and is recreated</i>.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> <i>Filter decides IF a node can; Score decides WHICH node should; Bind makes it official</i> — and every tool in this book plugs into exactly one of those stages.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ The full knob inventory — <a href="#ch02" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 02: The Scheduling Toolbox</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#toc">▤ TOC</a> · <a href="#ch02">next ▶</a></span><span>Page 3</span></div></div>
+
+<!-- ═══ CH02 ═══ -->
+<div class="page" id="ch02"><div class="pghead"><span class="chip">CH 02</span><h2 class="t">🧰 The Scheduling Toolbox</h2><span class="dbadge">🟢 5 MIN</span></div>
+<p class="lead">Five mechanisms decide placement. Knowing <i>which stage</i> each one acts in tells you which to reach for:</p>
+<table class="tb">
+<tr><th>Tool</th><th>Stage</th><th>Hard or soft?</th><th>One-line job</th></tr>
+<tr><td><b>Resources (requests)</b></td><td>Filter + Score</td><td>hard (capacity)</td><td>"this Pod needs 500Mi / 250m somewhere"</td></tr>
+<tr><td><b>Taints + Tolerations</b></td><td>Filter</td><td>hard (node repels)</td><td>"keep ordinary Pods OFF this node"</td></tr>
+<tr><td><b>Node affinity / nodeSelector</b></td><td>Filter / Score</td><td>both (required / preferred)</td><td>"this Pod WANTS certain nodes"</td></tr>
+<tr><td><b>Pod (anti-)affinity</b></td><td>Filter / Score</td><td>both</td><td>"co-locate / separate from other Pods"</td></tr>
+<tr><td><b>topologySpread</b></td><td>Score (+ filter)</td><td>soft or hard</td><td>"spread evenly across zones/nodes"</td></tr>
+</table>
+<div class="rowc">
+<div class="kchip">🚧 taints<small>&nbsp;node pushes away</small></div>
+<span class="harr">⇄</span>
+<div class="kchip">🧲 affinity<small>&nbsp;pod pulls toward</small></div>
+<span class="harr">⇄</span>
+<div class="kchip">⚖️ spread<small>&nbsp;distribution discipline</small></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Direction matters — the classic confusion:</b> taints are <b>node-side repulsion</b> (the node refuses visitors without keys). Affinity is <b>pod-side attraction</b> (the Pod states its preferences). They never do each other's job — taints can't attract, affinity can't evict.</div></div>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:20px;">🗄️</div><p class="small"><b>Dedicate nodes</b><br>GPU / memory-huge<br>→ taints + tolerations</p></div>
+<div class="card center" style="border-top:3.5px solid #3b82f6;"><div style="font-size:20px;">📍</div><p class="small"><b>Pin to hardware</b><br>SSD, region, zone<br>→ node affinity</p></div>
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:20px;">🕸️</div><p class="small"><b>Resilience layout</b><br>HA across zones<br>→ spread + anti-affinity</p></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Decision shortcut:</b> keeping things <b>OFF</b> nodes → taints. Getting things <b>ON</b> specific nodes → node affinity. Relationships <b>between Pods</b> → pod affinity/anti-affinity. <b>Evenness</b> → spread. The rest of the book is these four, in depth.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ Part II opens with the repulsion side — <a href="#ch03" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 03: Taints — Effects &amp; Use Cases</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch01">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch03">next ▶</a></span><span>Page 4</span></div></div>
+
+<!-- ═══ CH03 ═══ -->
+<div class="page" id="ch03"><div class="pghead"><span class="chip">CH 03</span><h2 class="t">🚧 Taints — Effects &amp; Use Cases</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A taint is a <b>node-side repulsion field</b>: <code>key=value:effect</code>. Book 01's Lab 5 proved the mechanics — this page is the full strategic picture.</p>
+<div class="term mini"><span class="p">$</span> kubectl taint node node1 <span class="c">gpu=nvidia</span>:<span class="y">NoSchedule</span>
+node/node1 tainted
+<span class="p">$</span> kubectl taint node node1 <span class="c">gpu=nvidia</span>:NoSchedule-<span class="g">&nbsp;&nbsp;# trailing dash = remove</span></div>
+<table class="tb">
+<tr><th>Effect</th><th>Running Pods</th><th>New Pods</th><th>Use case</th></tr>
+<tr><td><span class="stbadge st-run">NoSchedule</span></td><td>stay</td><td>blocked unless tolerated</td><td>dedicate nodes (GPU, SSD, prod-only)</td></tr>
+<tr><td><span class="stbadge st-pend">PreferNoSchedule</span></td><td>stay</td><td>avoided if alternatives exist</td><td>soft segregation — "try not to"</td></tr>
+<tr><td><span class="stbadge st-term">NoExecute</span></td><td><b>EVICTED</b> now</td><td>blocked unless tolerated</td><td>remove workloads when a node degrades</td></tr>
+</table>
+<h3 class="sec">🎯 The three strategic uses</h3>
+<div class="grid3">
+<div class="card" style="border-top:3.5px solid #3b82f6;"><p class="small" style="margin:0;"><b>1 · Dedication</b><br><code>dedicated=ml:NoSchedule</code> — only ML team's Pods (which tolerate) may land. A reservation <i>without</i> reserving capacity.</p></div>
+<div class="card" style="border-top:3.5px solid #8b5cf6;"><p class="small" style="margin:0;"><b>2 · Special hardware</b><br><code>gpu=nvidia:NoSchedule</code> — prevents accidental placement of Pods that can't use the GPU… and of Pods that would <i>waste</i> it.</p></div>
+<div class="card" style="border-top:3.5px solid #ef4444;"><p class="small" style="margin:0;"><b>3 · Node condition → eviction</b><br>The control plane itself taints sick nodes with <b>NoExecute</b> — workloads flee a dying node automatically (CH 05).</p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Two traps:</b> (1) taints don't <b>attract</b> — a tolerated Pod <i>may</i> land elsewhere; to pin it, combine taints with <b>node affinity</b> (CH 06). (2) <b>NoExecute is a weapon</b> — adding one manually evicts production Pods mid-flight. Book 01 · Lab 5's trick question (taint <i>after</i> Pod exists) is this effect in action.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> taints come in three strengths — <i>block new (NoSchedule), gently avoid (PreferNoSchedule), or evict existing (NoExecute)</i> — and their job description is "keep the wrong workloads off this node."</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ The key side of the lock — <a href="#ch04" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 04: Tolerations</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch02">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch04">next ▶</a></span><span>Page 5</span></div></div>
+
+<!-- ═══ CH04 ═══ -->
+<div class="page" id="ch04"><div class="pghead"><span class="chip">CH 04</span><h2 class="t">🔑 Tolerations — Operators &amp; tolerationSeconds</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">A toleration is a <b>Pod-side permission</b>: "I may land on (or survive on) nodes carrying this taint." Match rule: <b>key + operator (+ value) + effect</b>.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">tolerations</span>:
+  - <span class="c">key</span>: gpu
+    <span class="c">operator</span>: <span class="y">Equal</span>          <span class="g"># default — value must match exactly</span>
+    <span class="c">value</span>: nvidia
+    <span class="c">effect</span>: NoSchedule
+  - <span class="c">key</span>: <span class="m">"dedicated"</span>
+    <span class="c">operator</span>: <span class="y">Exists</span>        <span class="g"># ANY value, as long as key exists</span>
+    <span class="c">effect</span>: NoSchedule
+  - <span class="c">key</span>: <span class="m">""</span>
+    <span class="c">operator</span>: <span class="y">Exists</span>
+    <span class="c">effect</span>: <span class="m">""</span>              <span class="g"># tolerate EVERYTHING (use with fear)</span></div>
+<table class="tb">
+<tr><th>Operator</th><th>Matches</th><th>Value field</th></tr>
+<tr><td><code>Equal</code> <span class="stbadge st-comp">default</span></td><td>key exists <b>and</b> value is identical</td><td>required</td></tr>
+<tr><td><code>Exists</code></td><td>key exists, any value (wildcard)</td><td>must be <b>empty</b></td></tr>
+</table>
+<h3 class="sec">⏱️ tolerationSeconds — the grace timer (NoExecute only)</h3>
+<div class="term"><span class="c">tolerations</span>:
+- <span class="c">key</span>: node.kubernetes.io/not-ready
+  <span class="c">operator</span>: <span class="y">Exists</span>
+  <span class="c">effect</span>: NoExecute
+  <span class="c">tolerationSeconds</span>: <span class="y">300</span>   <span class="g"># if the taint lasts &gt; 5 min → THEN evict me</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The resilience dial:</b> a transient blip (&lt; 5 min) → your Pod rides it out. A real outage → eviction after the grace period. This is <i>exactly</i> how the default tolerations on Deployments behave — it's why brief node hiccups don't mass-evict your fleet.</div></div>
+<ul class="tick">
+<li>🚫 No <code>tolerationSeconds</code> + NoExecute tolerated = <b>survive forever</b> on the tainted node</li>
+<li>🧩 Effect matching is literal: a toleration for <code>NoSchedule</code> does nothing against <code>NoExecute</code> on the same key</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> tolerations are the <b>only</b> way past a taint — <code>Equal</code> for exact locks, <code>Exists</code> for skeleton keys, and <code>tolerationSeconds</code> turns a hard eviction into a grace period.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ The taints you didn't create — <a href="#ch05" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 05: Well-Known Taints</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch03">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch05">next ▶</a></span><span>Page 6</span></div></div>
+
+<!-- ═══ CH05 ═══ -->
+<div class="page" id="ch05"><div class="pghead"><span class="chip">CH 05</span><h2 class="t">🏥 Well-Known Taints — The Cluster's Own</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">The node-lifecycle controller and kubelet <b>taint nodes automatically</b> as conditions change. These aren't your taints — they're the cluster's immune response, and recognizing them is a diagnostic superpower.</p>
+<table class="tb">
+<tr><th>Taint</th><th>Effect</th><th>Meaning</th></tr>
+<tr><td><code>node.kubernetes.io/not-ready</code></td><td>NoSchedule/NoExecute</td><td>node's Ready condition = False (kubelet heartbeat lost)</td></tr>
+<tr><td><code>node.kubernetes.io/unreachable</code></td><td>NoExecute/NoSchedule</td><td>node unreachable (network partition) — later becomes not-ready</td></tr>
+<tr><td><code>node.kubernetes.io/disk-pressure</code></td><td>NoSchedule</td><td>disk running out — no NEW pods (existing keep running)</td></tr>
+<tr><td><code>node.kubernetes.io/memory-pressure</code></td><td>NoSchedule</td><td>memory scarcity on the node</td></tr>
+<tr><td><code>node.kubernetes.io/network-unavailable</code></td><td>NoSchedule</td><td>networking not configured yet (some clouds)</td></tr>
+<tr><td><code>node.kubernetes.io/unschedulable</code></td><td>NoSchedule</td><td>added by <code>kubectl cordon</code> — CH 10</td></tr>
+<tr><td><code>node-role.kubernetes.io/control-plane</code></td><td>NoSchedule</td><td>the brain-protection taint (Book 01 · CH 07)</td></tr>
+</table>
+<div class="mtree" style="font-size:12px;"><b>Node degrades</b> <span class="g">→</span> <u>NotReady / Unreachable</u> <span class="g">NoExecute taint applied</span>
+      │
+      ├─ pods <b>without</b> toleration → evicted <span class="g">(grace per tolerationSeconds)</span>
+      ├─ deployments recreate them on healthy nodes <span class="g">← Book 01 · CH 06 loop</span>
+      └─ node recovers → taint removed → schedulable again</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Debug move:</b> mysterious Pending + "node(s) had untolerated taint" in events (Book 01 · CH 23)? Run <code>kubectl describe node N | grep Taints</code> — the taint list <i>is</i> the diagnosis. <code>disk-pressure</code> appearing on nodes is also your cue for storage cleanup (Book 05's territory).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> the cluster self-medicates with taints — <i>sick nodes get NoExecute'd, workloads evacuate, healthy nodes absorb the load</i> — and self-healing "magic" from Book 01 is really this mechanism plus reconciliation.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ Part III: now the Pod speaks — <a href="#ch06" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 06: Node Affinity</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch04">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch06">next ▶</a></span><span>Page 7</span></div></div>
+
+<!-- ═══ CH06 ═══ -->
+<div class="page" id="ch06"><div class="pghead"><span class="chip">CH 06</span><h2 class="t">🧲 nodeSelector &amp; Node Affinity</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Pod-side attraction to specific nodes. <code>nodeSelector</code> is the simple ancestor; <b>node affinity</b> adds operators, weights, and soft preferences.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">nodeSelector</span>:              <span class="g"># the simple form: hard, exact-match only</span>
+    disk: ssd
+  <span class="c">affinity</span>:
+    <span class="c">nodeAffinity</span>:
+      <span class="c">requiredDuringSchedulingIgnoredDuringExecution</span>:   <span class="g"># HARD (filter)</span>
+        <span class="c">nodeSelectorTerms</span>:
+        - <span class="c">matchExpressions</span>:
+          - { <span class="c">key</span>: disk, <span class="c">operator</span>: <span class="y">In</span>, <span class="c">values</span>: [<span class="m">ssd</span>, <span class="m">nvme</span>] }
+      <span class="c">preferredDuringSchedulingIgnoredDuringExecution</span>:  <span class="g"># SOFT (score)</span>
+      - <span class="c">weight</span>: <span class="y">80</span>            <span class="g"># 1–100 — a vote, not a veto</span>
+        <span class="c">preference</span>:
+          <span class="c">matchExpressions</span>:
+          - { <span class="c">key</span>: zone, <span class="c">operator</span>: <span class="y">In</span>, <span class="c">values</span>: [<span class="m">east</span>] }</div>
+<table class="tb">
+<tr><th>Operators</th><th>Meaning</th></tr>
+<tr><td><code>In</code> · <code>NotIn</code></td><td>value is / is not in the list</td></tr>
+<tr><td><code>Exists</code> · <code>DoesNotExist</code></td><td>key present / absent (any value)</td></tr>
+<tr><td><code>Gt</code> · <code>Lt</code></td><td>numeric greater/less than (node labels as numbers)</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Decode the long names — they're the whole contract:</b> <code>required…</code> = filter (no match → Pending). <code>preferred…</code> = score (hint). <b>IgnoredDuringExecution</b> = if the node's labels <i>change after</i> your Pod is running, the Pod <b>stays</b> — affinity is checked at scheduling time only. (The mirror concept <code>RequiredDuringExecution</code> exists for pod affinity — live re-evaluation.)</div></div>
+<div class="rowc">
+<div class="kchip">label node: <code>kubectl label node n1 disk=ssd</code></div>
+<span class="harr">→</span>
+<div class="kchip">Pod with <code>disk In [ssd]</code></div>
+<span class="harr">→</span>
+<div class="kchip">lands only there</div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> node affinity = nodeSelector with superpowers — <b>operators for matching, weights for preferences, and "IgnoredDuringExecution" meaning the lock is checked once, at scheduling time</b>. Lab 1 proves the hard/soft split live.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ Affinity between Pods — <a href="#ch07" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 07: Pod Affinity &amp; Anti-Affinity</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch05">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch07">next ▶</a></span><span>Page 8</span></div></div>
+
+<!-- ═══ CH07 ═══ -->
+<div class="page" id="ch07"><div class="pghead"><span class="chip">CH 07</span><h2 class="t">👥 Pod Affinity &amp; Anti-Affinity</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Node affinity asks "which <i>nodes</i>?" — pod affinity asks "near which <i>other Pods</i>?", measured through a <b>topology domain</b> (same node? same zone? same region?).</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">affinity</span>:
+    <span class="c">podAffinity</span>:             <span class="g"># CO-LOCATE — "keep me near my cache"</span>
+      <span class="c">requiredDuringSchedulingIgnoredDuringExecution</span>:
+      - <span class="c">topologyKey</span>: <span class="y">kubernetes.io/hostname</span>   <span class="g"># same NODE</span>
+        <span class="c">labelSelector</span>:
+          <span class="c">matchLabels</span>: { <span class="c">app</span>: cache }
+    <span class="c">podAntiAffinity</span>:         <span class="g"># SEPARATE — "never put replicas together"</span>
+      <span class="c">preferredDuringSchedulingIgnoredDuringExecution</span>:
+      - <span class="c">weight</span>: <span class="y">100</span>
+        <span class="c">podAffinityTerm</span>:
+          <span class="c">topologyKey</span>: <span class="y">topology.kubernetes.io/zone</span>  <span class="g"># different ZONES</span>
+          <span class="c">labelSelector</span>:
+            <span class="c">matchLabels</span>: { <span class="c">app</span>: web }</div>
+<table class="tb">
+<tr><th>topologyKey (common)</th><th>Domain = "together means…"</th></tr>
+<tr><td><code>kubernetes.io/hostname</code></td><td>same physical node</td></tr>
+<tr><td><code>topology.kubernetes.io/zone</code></td><td>same availability zone</td></tr>
+<tr><td><code>topology.kubernetes.io/region</code></td><td>same region</td></tr>
+</table>
+<div class="grid2">
+<div class="card" style="border-top:3.5px solid #10b981;"><div class="zlabel" style="text-align:left;">✅ Affinity (co-locate)</div>
+<p class="small" style="margin:0;"><b>web + its cache</b> on one node → localhost-fast calls, one bill. <b>Latency-sensitive pairs</b> that talk constantly.</p></div>
+<div class="card" style="border-top:3.5px solid #ef4444;"><div class="zlabel" style="text-align:left;">✅ Anti-affinity (separate)</div>
+<p class="small" style="margin:0;"><b>3 replicas of web</b> on 3 zones → one zone dies, 2/3 survive. <b>Never stack the blast radius.</b></p></div>
+</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>required anti-affinity is a placement cliff:</b> more replicas than topology domains → the extras sit <b>Pending forever</b> (3 replicas, 1 node = 1 runs, 2 Pending — Lab 2 proves it). Production default: <b>preferred + weight 100</b>, or better — topologySpread (CH 08).</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> pod (anti-)affinity = relationship rules between Pods, expressed as "same/different <i>topology domain</i>" — powerful for latency and HA, but <code>required</code> versions trade flexibility for guarantees.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ The modern alternative — <a href="#ch08" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 08: topologySpreadConstraints</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch06">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch08">next ▶</a></span><span>Page 9</span></div></div>
+
+<!-- ═══ CH08 ═══ -->
+<div class="page" id="ch08"><div class="pghead"><span class="chip">CH 08</span><h2 class="t">⚖️ topologySpreadConstraints</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Anti-affinity answers "are any Pods here?" — spread answers a better question: <b>"is the distribution <i>even</i>?"</b> One constraint replaces a pile of weights.</p>
+<div class="term"><span class="c">spec</span>:
+  <span class="c">topologySpreadConstraints</span>:
+  - <span class="c">maxSkew</span>: <span class="y">1</span>                       <span class="g"># max allowed imbalance</span>
+    <span class="c">topologyKey</span>: <span class="y">topology.kubernetes.io/zone</span>
+    <span class="c">whenUnsatisfiable</span>: <span class="y">DoNotSchedule</span>  <span class="g"># or: ScheduleAnyway (soft)</span>
+    <span class="c">labelSelector</span>:
+      <span class="c">matchLabels</span>: { <span class="c">app</span>: web }
+  <span class="g"># — maxSkew = (most pods in one domain) − (fewest)
+  # — domains with ZERO pods count too (they pull new pods!)</span></div>
+<div class="zone zone-net" style="max-width:160mm;margin:0 auto;">
+<div class="zlabel">maxSkew: 1 in action — 6 replicas, 3 zones</div>
+<div class="rowc">
+<div class="nb c-emerald" style="min-width:130px;">zone-a<small>2 🫛🫛</small></div>
+<div class="nb c-emerald" style="min-width:130px;">zone-b<small>2 🫛🫛</small></div>
+<div class="nb c-emerald" style="min-width:130px;">zone-c<small>2 🫛🫛</small></div>
+</div>
+<p class="dnote">2−2−2 → skew 0 ✅ &nbsp;·&nbsp; 3−2−1 → skew 2 ❌ next Pod forced to zone-c &nbsp;·&nbsp; 3−3−0 → skew 3, but 0-domain "pulls" until fed</p>
+</div>
+<table class="tb">
+<tr><th>whenUnsatisfiable</th><th>Behavior when the rule can't hold</th></tr>
+<tr><td><code>DoNotSchedule</code></td><td>hard — Pod waits (Pending) until it can comply</td></tr>
+<tr><td><code>ScheduleAnyway</code></td><td>soft — place anyway, but the score penalty steers future Pods</td></tr>
+</table>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Spread vs anti-affinity — when which?</b> Anti-affinity: <i>boolean</i> togetherness, per-Pod-pair relationships, cheap on small sets. Spread: <i>numeric</i> evenness across N domains, scales to hundreds of replicas, and — the killer feature — counts <b>empty domains</b>, so a fresh zone always receives traffic first.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> topologySpreadConstraints = "keep skew ≤ maxSkew across this topology" — the modern, scalable answer to "spread my replicas," with a hard mode (<code>DoNotSchedule</code>) and a soft mode (<code>ScheduleAnyway</code>).</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ When scarcity gets violent — <a href="#ch09" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 09: Priority &amp; Preemption</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch07">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch09">next ▶</a></span><span>Page 10</span></div></div>
+
+<!-- ═══ CH09 ═══ -->
+<div class="page" id="ch09"><div class="pghead"><span class="chip">CH 09</span><h2 class="t">👑 Priority Classes &amp; Preemption</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">When nothing fits anywhere, a high-priority Pod may <b>evict lower-priority Pods</b> to make room. Priority is the cluster's pecking order under scarcity.</p>
+<div class="term"><span class="c">apiVersion</span>: scheduling.k8s.io/v1
+<span class="c">kind</span>: PriorityClass
+<span class="c">metadata</span>: { <span class="c">name</span>: high-priority }
+<span class="c">value</span>: <span class="y">1000000</span>              <span class="g"># higher = more important</span>
+<span class="c">globalDefault</span>: <span class="y">false</span>        <span class="g"># one class MAY be the default</span>
+<span class="c">preemptionPolicy</span>: <span class="y">PreemptLowerPriority</span>  <span class="g"># default; or Never</span></div>
+<div class="term mini"><span class="c">spec</span>:
+  <span class="c">priorityClassName</span>: high-priority   <span class="g"># attach to the Pod</span></div>
+<table class="tb">
+<tr><th>Built-in class</th><th>Value</th><th>Reserved for</th></tr>
+<tr><td><code>system-node-critical</code></td><td>2,000,001,000</td><td>kubelet-essential: CNI, kube-proxy</td></tr>
+<tr><td><code>system-cluster-critical</code></td><td>2,000,000,000</td><td>CoreDNS, metrics — cluster functions</td></tr>
+<tr><td><i>your Pods (no class)</i></td><td>0</td><td>everything below the system floor</td></tr>
+</table>
+<h3 class="sec">🗡️ How preemption actually fires</h3>
+<div class="mtree" style="font-size:12px;"><b>High-prio Pod → Pending</b> <span class="g">(no node fits — filter fails on resources)</span>
+      │ scheduler tries placement
+      ▼
+<u>Preemption attempt</u>: find node where evicting <b>lower-prio</b> victims
+   would free enough for the whole Pod (incl. its requests!)
+      ▼
+victims deleted gracefully <span class="g">(their owners recreate them — elsewhere, later)</span>
+      ▼
+high-prio Pod scheduled into the gap ✅</div>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Two honesty notes:</b> (1) preemption is <b>resource-arithmetic, not revenge</b> — the scheduler only kills the <i>minimum set</i> of lowest-priority victims, and only when the high-prio Pod genuinely can't fit. (2) Your Pods' priority also decides <b>kubelet eviction order</b> under node pressure — layered on top of QoS from Book 02 · CH 15.</div></div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> PriorityClass = a number that means "in a shortage, I eat first" — driving both <b>preemption at scheduling time</b> and <b>eviction order at runtime</b>. Lab 3 watches a real preemption.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ Part V: now <i>you</i> touch the nodes — <a href="#ch10" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">CH 10: Cordon, Drain &amp; Uncordon</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch08">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch10">next ▶</a></span><span>Page 11</span></div></div>
+
+<!-- ═══ CH10 ═══ -->
+<div class="page" id="ch10"><div class="pghead"><span class="chip">CH 10</span><h2 class="t">🛠️ Cordon, Drain &amp; Uncordon</h2><span class="dbadge">🟡 6 MIN · CORE</span></div>
+<p class="lead">Node maintenance (kernel upgrades, hardware swaps) without downtime = a three-verb dance. <b>Cordon</b> stops new arrivals; <b>drain</b> evacuates; <b>uncordon</b> reopens.</p>
+<div class="term"><span class="p">$</span> kubectl cordon node1           <span class="g"># 1 · add unschedulable taint (CH 05)</span>
+node/node1 cordoned
+<span class="p">$</span> kubectl drain node1 <span class="y">--ignore-daemonsets</span> <span class="y">--delete-emptydir-data</span>
+node/node1 cordoned                    <span class="g"># drain cordons for you too</span>
+evicting pod shop/web-7d9f             <span class="g"># graceful eviction — PDB-aware!</span>
+pod/web-7d9f evicted
+<span class="p">$</span> # …do the maintenance…
+<span class="p">$</span> kubectl uncordon node1        <span class="g"># 3 · reopen</span>
+node/node1 uncordoned</div>
+<table class="tb">
+<tr><th>Flag</th><th>Why it exists</th></tr>
+<tr><td><code>--ignore-daemonsets</code></td><td>DaemonSet Pods are node-bound by design (log agents, CNI) — drain <b>skips</b> them; without the flag drain aborts</td></tr>
+<tr><td><code>--delete-emptydir-data</code></td><td>Pods with <code>emptyDir</code> lose data on eviction — drain refuses by default; the flag says "ephemeral, go ahead"</td></tr>
+<tr><td><code>--force</code></td><td>evict Pods <b>not managed by a controller</b> (standalone Pods die with no replacement — you were warned, Book 01 · CH 15)</td></tr>
+<tr><td><code>--grace-period / --timeout</code></td><td>tune eviction grace; PDBs can block indefinitely → drain waits/times out</td></tr>
+</table>
+<div class="callout co-warn"><span class="ico">⚠️</span><div><b>Drain respects PodDisruptionBudgets (PDBs)</b> — "keep ≥ 2 web replicas alive" pauses drain until it can evict safely. Production rule: <i>define PDBs before your first real drain</i>, or the "safety" is zero. (Also: cordon ≠ drain — cordon alone just stops <i>new</i> placements.)</div></div>
+<div class="road">
+<div class="step"><span class="stepnum">1</span><span><b>cordon</b> — no NEW Pods land (existing keep running)</span></div>
+<div class="step"><span class="stepnum">2</span><span><b>drain</b> — evict everything the controllers can recreate, PDB-respecting</span></div>
+<div class="step"><span class="stepnum">3</span><span><b>maintain</b> — patch, reboot, swap hardware</span></div>
+<div class="step"><span class="stepnum">4</span><span><b>uncordon</b> — taint removed; Scheduler refills the node</span></div>
+</div>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> maintenance = <i>cordon (close the door) → drain (empty the room, politely) → uncordon (reopen)</i> — and the two flags you'll type forever are <code>--ignore-daemonsets</code> and <code>--delete-emptydir-data</code>. Lab 4 runs the full cycle.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch09">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#ch11">next ▶</a></span><span>Page 12</span></div></div>
+
+<!-- ═══ CH11 ═══ -->
+<div class="page" id="ch11"><div class="pghead"><span class="chip">CH 11</span><h2 class="t">🪨 Static Pods</h2><span class="dbadge">🟡 5 MIN</span></div>
+<p class="lead">Static Pods are created and managed <b>directly by the kubelet</b>, from manifest files on the node's disk — no Deployment, no Scheduler, no controller. The Scheduler's total bypass.</p>
+<div class="mtree" style="font-size:12px;">kubelet flags: <u>--pod-manifest-path=/etc/kubernetes/manifests</u>
+      │ watches the dir (default on kubeadm)
+      ▼
+<b>file appears</b> → kubelet runs the Pod      <span class="g">no API call needed</span>
+<b>file edited</b>  → Pod updated               <span class="g">file IS the spec</span>
+<b>file deleted</b> → Pod dies
+<b>kubectl delete</b> → Pod briefly dies → <b>kubelet recreates it</b> <span class="r">(undeletable!)</span></div>
+<div class="term mini"><span class="p">$</span> kubectl get pods -n kube-system
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;READY&nbsp;&nbsp;STATUS</span>
+etcd-minikube&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g"># ← static!</span>
+kube-apiserver-minikube&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g"># ← static!</span>
+kube-controller-manager-minikube&nbsp;1/1&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g"># ← static!</span>
+kube-scheduler-minikube&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g"># ← static!</span>
+coredns-7db6d8ff4b-abcde&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;&nbsp;&nbsp;Running&nbsp;&nbsp;<span class="g"># ← Deployment</span></div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>The bootstrap paradox, solved:</b> the Control Plane runs as static Pods because <i>something must run the API Server before the API Server exists</i>. The kubelet + a folder of YAML boot the entire brain — chicken, meet egg. (The <code>-minikube</code> / <code>-nodename</code> suffix: kubelet also creates a read-only <b>mirror Pod</b> in the API so you can <code>kubectl get</code> them.)</div></div>
+<ul class="tick">
+<li>🧪 Your own static Pod: drop a valid Pod manifest into the manifest dir → running within seconds, Scheduler never involved</li>
+<li>🚧 They ignore taints, affinity, and drain-eviction logic (the file rules) — that's why <code>drain --ignore-daemonsets</code> and static/mirror pods go together</li>
+</ul>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>One sentence:</b> static Pods are <b>kubelet-and-disk only</b> — the mechanism that boots the control plane itself, undeletable through kubectl because the source of truth is a file on the node.</div></div>
+<p class="lead" style="margin-top:6px;">⏭️ Prove all of it with your hands — <a href="#lab1" style="color:#326CE5;font-weight:700;text-decoration:none;border-bottom:2px dotted #326CE5;">Part VI: Labs</a></p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch10">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab1">labs ▶</a></span><span>Page 13</span></div></div>
+
+<!-- ═══ LAB 1 ═══ -->
+<div class="page" id="lab1"><div class="pghead"><span class="chip">LAB 1</span><h2 class="t">🔬 Node Affinity — Required vs Preferred</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Label the node + hard affinity</div>
+<div class="term mini"><span class="p">$</span> kubectl label node minikube disk=ssd
+<span class="p">$</span> kubectl create deploy aff --image=nginx --replicas=2
+<span class="p">$</span> kubectl patch deploy aff <span class="y">--type</span>=merge <span class="y">-p</span> <span class="m">'{"spec":{"template":{"spec":{
+  "affinity":{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":
+  {"nodeSelectorTerms":[{"matchExpressions":[{"key":"disk","operator":"In",
+  "values":["ssd"]}]}]}}}}}}}'</span>
+<span class="p">$</span> kubectl get pods -o wide&nbsp;&nbsp;<span class="g"># all on minikube ✓ (label matches)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · Break the label — watch required bite</div>
+<div class="term mini"><span class="p">$</span> kubectl label node minikube disk-
+<span class="p">$</span> kubectl scale deploy aff --replicas=<span class="y">3</span>
+<span class="p">$</span> kubectl get pods
+<span class="y">aff-xxx&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;Running</span>&nbsp;&nbsp;&nbsp;<span class="g"># old pods: IgnoredDuringExecution — STAY</span>
+<span class="r">aff-yyy&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;Pending</span>&nbsp;&nbsp;&nbsp;<span class="g"># new pod: no node matches → filter fails</span>
+<span class="p">$</span> kubectl describe pod -l app=aff | <span class="c">grep</span> -A2 Events | <span class="c">tail</span> -2
+<span class="r">0/1 nodes are available: 1 node(s) didn't match … affinity</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Switch to preferred — same break, different outcome</div>
+<div class="term mini"><span class="p">$</span> kubectl delete deploy aff &amp;&amp; kubectl create deploy soft --image=nginx --replicas=2
+<span class="p">$</span> kubectl patch deploy soft <span class="y">--type</span>=merge <span class="y">-p</span> <span class="m">'{"spec":{"template":{"spec":{
+  "affinity":{"nodeAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":
+  [{"weight":80,"preference":{"matchExpressions":[{"key":"disk","operator":"In",
+  "values":["ssd"]}]}}]}}}}}}'</span>
+<span class="p">$</span> kubectl scale deploy soft --replicas=3&nbsp;&nbsp;<span class="g"># label still gone…</span>
+<span class="p">$</span> kubectl get pods&nbsp;&nbsp;<span class="g"># 3/3 Running — preferred only VOTES, never vetoes</span></div></div>
+<p class="small"><b>Proved:</b> required = filter (Pending on mismatch), preferred = score (never blocks), <b>IgnoredDuringExecution</b> = running Pods stay. <b>Teardown:</b> <code>kubectl delete deploy soft</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#ch11">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab2">next ▶</a></span><span>Page 14</span></div></div>
+
+<!-- ═══ LAB 2 ═══ -->
+<div class="page" id="lab2"><div class="pghead"><span class="chip">LAB 2</span><h2 class="t">🔬 Anti-Affinity — Prove the Separation</h2><span class="dbadge">🟠 10 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Required anti-affinity on a ONE-node cluster</div>
+<div class="term mini"><span class="p">$</span> kubectl create deploy sep --image=nginx --replicas=3
+<span class="p">$</span> kubectl patch deploy sep <span class="y">--type</span>=merge <span class="y">-p</span> <span class="m">'{"spec":{"template":{"spec":{
+  "affinity":{"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":
+  [{"topologyKey":"kubernetes.io/hostname",
+    "labelSelector":{"matchLabels":{"app":"sep"}}}]}}}}}}'</span>
+<span class="p">$</span> kubectl get pods
+<span class="y">sep-aaa&nbsp;&nbsp;&nbsp;1/1&nbsp;&nbsp;Running</span>&nbsp;&nbsp;<span class="g"># fits — node is empty of "sep"</span>
+<span class="r">sep-bbb&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;Pending</span>&nbsp;&nbsp;<span class="g"># node already has one!</span>
+<span class="r">sep-ccc&nbsp;&nbsp;&nbsp;0/1&nbsp;&nbsp;Pending</span>&nbsp;&nbsp;<span class="g"># same hostname domain — no second one exists</span></div></div>
+<div class="grid2">
+<div class="tabwin"><div class="tabhead" style="background:#059669;">👀 WHY (events)</div><div class="tabbody"><span class="p">$</span> kubectl describe pod sep-bbb | <span class="c">tail</span> -2
+<span class="r">0/1 nodes are available:
+1 node(s) didn't match pod
+anti-affinity rules.</span></div></div>
+<div class="tabwin"><div class="tabhead" style="background:#4f46e5;">🔍 THE LESSON</div><div class="tabbody"><span class="g"># required anti-affinity:
+# replicas &gt; topology
+# domains = permanent
+# Pending. 3 replicas
+# × 1 node = 2 orphans.</span></div></div>
+</div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 2 · Soften it — everyone fits</div>
+<div class="term mini"><span class="p">$</span> kubectl patch deploy sep <span class="y">--type</span>=merge <span class="y">-p</span> <span class="m">'{"spec":{"template":{"spec":{
+  "affinity":{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":
+  [{"weight":100,"podAffinityTerm":{"topologyKey":"kubernetes.io/hostname",
+    "labelSelector":{"matchLabels":{"app":"sep"}}}}]}}}}}}'</span>
+<span class="p">$</span> kubectl get pods&nbsp;&nbsp;<span class="g"># 3/3 Running — co-located, but only because we must</span></div></div>
+<p class="small"><b>Proved:</b> topology domains are finite; <code>required</code> anti-affinity hard-caps your replica count per domain. <b>Teardown:</b> <code>kubectl delete deploy sep</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#lab1">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab3">next ▶</a></span><span>Page 15</span></div></div>
+
+<!-- ═══ LAB 3 ═══ -->
+<div class="page" id="lab3"><div class="pghead"><span class="chip">LAB 3</span><h2 class="t">🔬 Priority &amp; Preemption Live</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="callout co-tip" style="margin-top:0;"><span class="ico">💡</span><div><b>Setup note:</b> preemption needs <b>resource pressure</b>. We fill the node with low-priority Pods holding real memory requests, then ask for a big high-priority Pod. Adjust sizes to your cluster's free memory.</div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Two classes + a filled floor</div>
+<div class="term mini"><span class="p">$</span> kubectl create priorityclass low&nbsp;&nbsp;<span class="y">--value</span>=100
+<span class="p">$</span> kubectl create priorityclass high&nbsp;<span class="y">--value</span>=1000
+<span class="p">$</span> kubectl create deploy filler --image=polinux/stress --replicas=6 \
+&nbsp;&nbsp;-- stress --vm 1 --vm-bytes 10M --timeout 6000s
+<span class="p">$</span> kubectl set resources deploy/filler <span class="y">--requests</span>=memory=<span class="y">500Mi</span>
+<span class="p">$</span> kubectl patch deploy filler <span class="y">--type</span>=merge <span class="y">-p</span> \
+&nbsp;&nbsp;<span class="m">'{"spec":{"template":{"spec":{"priorityClassName":"low"}}}}'</span>
+<span class="p">$</span> kubectl get pods -l app=filler&nbsp;&nbsp;<span class="g"># 6 Running — floor is loaded</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#dc2626;">STEP 2 · The VIP arrives — preemption fires</div>
+<div class="term mini"><span class="p">$</span> kubectl run vip --image=polinux/stress --restart=Never \
+&nbsp;&nbsp;--overrides=<span class="m">'{"spec":{"priorityClassName":"high","containers":[{"name":"s",
+  "image":"polinux/stress","args":["--vm","1","--vm-bytes","50M"],
+  "resources":{"requests":{"memory":"1500Mi"}}}]}}'</span> -- stress --vm 1 --vm-bytes 50M
+<span class="p">$</span> kubectl get pods -w
+<span class="y">filler-xxx&nbsp;&nbsp;&nbsp;Terminating</span>&nbsp;&nbsp;<span class="g"># ← a low-prio VICTIM was chosen</span>
+<span class="p">vip&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Running</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="g"># ← took its place</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Read the verdict</div>
+<div class="term mini"><span class="p">$</span> kubectl get events | <span class="c">grep</span> -i preempt
+<span class="g">Preempted by pod default/vip … to make room</span>
+<span class="p">$</span> kubectl get events | <span class="c">grep</span> vip | <span class="c">head</span> -3
+<span class="y">Successfully assigned … node minikube</span></div></div>
+<p class="small"><b>Proved:</b> scarcity + priority = eviction of the weak, <i>minimum victims only</i>. The filler Deployment recreates its Pod (Book 01 · CH 06) — everyone survives, the VIP just ate first. <b>Teardown:</b> <code>kubectl delete pod vip &amp;&amp; kubectl delete deploy filler &amp;&amp; kubectl delete pc low high</code>.</p>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#lab2">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#lab4">next ▶</a></span><span>Page 16</span></div></div>
+
+<!-- ═══ LAB 4 ═══ -->
+<div class="page" id="lab4"><div class="pghead"><span class="chip">LAB 4</span><h2 class="t">🛠️ The Maintenance Cycle</h2><span class="dbadge">🟠 12 MIN · HANDS-ON</span></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 1 · Cordon — close the door</div>
+<div class="term mini"><span class="p">$</span> kubectl cordon minikube
+<span class="p">$</span> kubectl get nodes
+<span class="y">NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;STATUS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROLES</span>
+minikube&nbsp;<span class="r">Ready,SchedulingDisabled</span>&nbsp;&nbsp;control-plane,master
+<span class="p">$</span> kubectl describe node minikube | <span class="c">grep</span> Taints
+<span class="r">node.kubernetes.io/unschedulable:NoSchedule</span>&nbsp;&nbsp;<span class="g"># ← the cordon taint (CH 05!)</span>
+<span class="p">$</span> kubectl scale deploy web --replicas=3&nbsp;&nbsp;<span class="g"># (any deployment)</span>
+<span class="p">$</span> kubectl get pods -w&nbsp;&nbsp;<span class="g"># 3rd pod → Pending: nowhere to land</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#4f46e5;">STEP 2 · Drain — empty the room</div>
+<div class="term mini"><span class="p">$</span> kubectl drain minikube <span class="y">--ignore-daemonsets</span> <span class="y">--delete-emptydir-data</span>
+node/minikube cordoned
+<span class="r">evicting pod kube-system/coredns-…</span>
+evicting pod default/web-aaa
+<span class="g">pod/web-aaa evicted</span>
+<span class="p">$</span> kubectl get pods -A | <span class="c">grep</span> -v Running
+<span class="g"># (single-node cluster: evicted pods go Pending — they have
+#  nowhere else to go. on a 3-node cluster they'd REAPPEAR
+#  on the healthy nodes — Book 01 · CH 06 in action.)</span></div></div>
+<div class="labstep"><div style="font-weight:800;color:#059669;">STEP 3 · Uncordon — reopen</div>
+<div class="term mini"><span class="p">$</span> kubectl uncordon minikube
+<span class="p">$</span> kubectl get nodes&nbsp;&nbsp;<span class="g"># Ready — SchedulingDisabled gone</span>
+<span class="p">$</span> kubectl get pods -w&nbsp;&nbsp;<span class="g"># Pending pods schedule immediately 🎉</span></div></div>
+<p class="small"><b>Proved:</b> cordon = a NoSchedule taint you typed; drain = graceful, PDB-respecting evacuation; uncordon = instant refill. <b>Teardown:</b> scale your deployment back and delete leftovers.</p>
+<div class="callout co-key"><span class="ico">🔑</span><div><b>Muscle memory:</b> <code>drain node --ignore-daemonsets --delete-emptydir-data</code> — the two flags ride together on virtually every real maintenance run.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#lab3">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#quiz">quiz ▶</a></span><span>Page 17</span></div></div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="page" id="quiz"><div class="pghead"><span class="chip">QUIZ</span><h2 class="t">✅ Self-Check Quiz</h2><span class="dbadge">☑ 10 questions</span></div>
+<div class="qz"><span class="qn">Q1.</span>The Scheduler processes a Pod in which order?<br><b>A.</b> Score → Filter → Bind &nbsp; <b>B.</b> Filter → Score → Bind &nbsp; <b>C.</b> Bind → Filter → Score &nbsp; <b>D.</b> Filter → Bind → Score</div>
+<div class="qz"><span class="qn">Q2.</span>Which taint effect evicts already-running Pods that don't tolerate it?<br><b>A.</b> NoSchedule &nbsp; <b>B.</b> PreferNoSchedule &nbsp; <b>C.</b> NoExecute &nbsp; <b>D.</b> None — taints never evict</div>
+<div class="qz"><span class="qn">Q3.</span><code>tolerationSeconds</code> applies to which effect?<br><b>A.</b> NoExecute &nbsp; <b>B.</b> NoSchedule &nbsp; <b>C.</b> PreferNoSchedule &nbsp; <b>D.</b> All three equally</div>
+<div class="qz"><span class="qn">Q4.</span>A Pod with <b>required</b> node affinity for <code>disk=ssd</code> is running. The node's label is removed. The Pod…<br><b>A.</b> is evicted immediately &nbsp; <b>B.</b> reschedules to another node &nbsp; <b>C.</b> crashes &nbsp; <b>D.</b> keeps running — IgnoredDuringExecution</div>
+<div class="qz"><span class="qn">Q5.</span><b>required</b> pod anti-affinity on <code>kubernetes.io/hostname</code>, 3 replicas, a 1-node cluster:<br><b>A.</b> all 3 co-located &nbsp; <b>B.</b> 1 Running, 2 Pending &nbsp; <b>C.</b> the Deployment is rejected &nbsp; <b>D.</b> round-robin placement</div>
+<div class="qz"><span class="qn">Q6.</span><code>maxSkew</code> in a topologySpreadConstraint defines…<br><b>A.</b> minimum Pods per domain &nbsp; <b>B.</b> number of allowed domains &nbsp; <b>C.</b> max difference between the most- and least-loaded domains &nbsp; <b>D.</b> the eviction threshold</div>
+<div class="qz"><span class="qn">Q7.</span>A high-priority Pod is Pending for lack of memory. The Scheduler…<br><b>A.</b> may evict lower-priority Pods (minimum victims) to make room &nbsp; <b>B.</b> waits until a node frees naturally &nbsp; <b>C.</b> asks the kubelet to kill anything &nbsp; <b>D.</b> reboots the busiest node</div>
+<div class="qz"><span class="qn">Q8.</span><code>kubectl drain</code> refuses to run without <code>--ignore-daemonsets</code> because…<br><b>A.</b> DaemonSets restart too fast &nbsp; <b>B.</b> drain cannot evict privileged Pods &nbsp; <b>C.</b> kube-proxy blocks eviction &nbsp; <b>D.</b> DaemonSet Pods are node-bound by design and would just be recreated — drain skips them</div>
+<div class="qz"><span class="qn">Q9.</span>Static Pods are…<br><b>A.</b> Pods that never restart &nbsp; <b>B.</b> created directly by the kubelet from a manifest directory — deleting via kubectl just gets them recreated &nbsp; <b>C.</b> Pods without IP addresses &nbsp; <b>D.</b> Deployments with replicas=1</div>
+<div class="qz"><span class="qn">Q10.</span>After <code>kubectl cordon node1</code>, the Pods already running on node1…<br><b>A.</b> are evicted &nbsp; <b>B.</b> are terminated &nbsp; <b>C.</b> keep running; only NEW Pods avoid node1 &nbsp; <b>D.</b> migrate automatically</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#lab4">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#key">answers ▶</a></span><span>Page 18</span></div></div>
+
+<!-- ═══ KEY ═══ -->
+<div class="page" id="key"><div class="pghead"><span class="chip">KEY</span><h2 class="t">🗝️ Answer Key + Scoring</h2><span class="dbadge">grade yourself</span></div>
+<table class="tb">
+<tr><th style="width:8%;">Q</th><th style="width:10%;">Ans</th><th>Why — one line</th></tr>
+<tr><td>1</td><td><b>B</b></td><td>Filter (feasible) → Score (rank) → Bind — CH 01</td></tr>
+<tr><td>2</td><td><b>C</b></td><td>NoExecute evicts existing non-tolerating Pods now — CH 03</td></tr>
+<tr><td>3</td><td><b>A</b></td><td>The grace timer only makes sense for eviction — NoExecute — CH 04</td></tr>
+<tr><td>4</td><td><b>D</b></td><td>Affinity is scheduling-time only; label changes never evict — CH 06</td></tr>
+<tr><td>5</td><td><b>B</b></td><td>1 hostname domain &lt; 3 replicas → extras Pending forever — CH 07, Lab 2</td></tr>
+<tr><td>6</td><td><b>C</b></td><td>skew = max(domain count) − min(domain count), capped at maxSkew — CH 08</td></tr>
+<tr><td>7</td><td><b>A</b></td><td>Preemption = scheduler-driven, minimum-victim eviction — CH 09, Lab 3</td></tr>
+<tr><td>8</td><td><b>D</b></td><td>DaemonSet pods belong to their node; drain skips, flag acknowledges — CH 10</td></tr>
+<tr><td>9</td><td><b>B</b></td><td>kubelet + manifest dir = source of truth; API deletion is overridden — CH 11</td></tr>
+<tr><td>10</td><td><b>C</b></td><td>Cordon adds unschedulable taint — blocks placement, never evicts — CH 10, Lab 4</td></tr>
+</table>
+<div class="grid3">
+<div class="card center" style="border-top:3.5px solid #10b981;"><div style="font-size:22px;">🏆</div><p class="small"><b>9–10</b><br>Ready for Book 05</p></div>
+<div class="card center" style="border-top:3.5px solid #f59e0b;"><div style="font-size:22px;">📖</div><p class="small"><b>6–8</b><br>Re-read missed chapters' 🔑 boxes</p></div>
+<div class="card center" style="border-top:3.5px solid #ef4444;"><div style="font-size:22px;">🔁</div><p class="small"><b>&lt;6</b><br>Re-run Labs 1–4, then retake</p></div>
+</div>
+<div class="callout co-tip"><span class="ico">💡</span><div><b>Missed Q4 or Q10?</b> They're the same fact wearing two hats: scheduling-time constraints never touch running Pods — only NoExecute taints and controller reconciliation do. Missed Q5? The topology-domain count is a hard ceiling for <code>required</code> anti-affinity.</div></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#quiz">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#gloss">next ▶</a></span><span>Page 19</span></div></div>
+
+<!-- ═══ GLOSSARY ═══ -->
+<div class="page" id="gloss"><div class="pghead"><span class="chip">GLOSS</span><h2 class="t">📚 Glossary</h2><span class="dbadge">🔵 REFERENCE</span></div>
+<div class="gl"><b>Filter / Score / Bind</b> — the Scheduler's funnel: feasible → ranked → written to the Pod's nodeName.</div>
+<div class="gl"><b>Taint</b> — node-side repulsion, <code>key=value:effect</code>; effects NoSchedule / PreferNoSchedule / NoExecute.</div>
+<div class="gl"><b>Toleration</b> — Pod-side permission past a taint; operators Equal (exact) and Exists (wildcard, empty value).</div>
+<div class="gl"><b>tolerationSeconds</b> — grace period before a NoExecute eviction takes effect.</div>
+<div class="gl"><b>Well-known taints</b> — not-ready, unreachable, disk-pressure, memory-pressure, network-unavailable, unschedulable, control-plane — the cluster's automatic immune taints.</div>
+<div class="gl"><b>nodeSelector</b> — simple hard label match on nodes.</div>
+<div class="gl"><b>Node affinity</b> — required (filter) / preferred (score, weight 1–100) node matching with In/NotIn/Exists/DoesNotExist/Gt/Lt.</div>
+<div class="gl"><b>IgnoredDuringExecution</b> — affinity evaluated at scheduling time only; later label changes never evict.</div>
+<div class="gl"><b>Pod (anti-)affinity</b> — co-location / separation rules relative to other Pods, scoped by topologyKey.</div>
+<div class="gl"><b>topologyKey</b> — the domain label defining "together": kubernetes.io/hostname, topology.kubernetes.io/zone|region.</div>
+<div class="gl"><b>topologySpreadConstraints</b> — keep distribution even: maxSkew + topologyKey + whenUnsatisfiable (DoNotSchedule / ScheduleAnyway); empty domains attract.</div>
+<div class="gl"><b>PriorityClass</b> — named integer priority; system-node-critical (2000001000) &gt; system-cluster-critical (2000000000) &gt; default 0.</div>
+<div class="gl"><b>Preemption</b> — Scheduler evicts minimum lower-priority victims to place a higher-priority Pending Pod.</div>
+<div class="gl"><b>Cordon</b> — mark node unschedulable (adds unschedulable:NoSchedule taint); no evictions.</div>
+<div class="gl"><b>Drain</b> — cordon + graceful, PDB-respecting eviction of all recreatable Pods; --ignore-daemonsets / --delete-emptydir-data / --force.</div>
+<div class="gl"><b>PodDisruptionBudget (PDB)</b> — "keep ≥ N replicas during voluntary disruptions"; drain waits for it.</div>
+<div class="gl"><b>Static Pod</b> — kubelet-managed Pod from a node-local manifest directory (/etc/kubernetes/manifests); runs the control plane itself; undeletable via API.</div>
+<div class="gl"><b>Mirror Pod</b> — the API-side read-only reflection kubelet creates so static Pods appear in kubectl.</div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#key">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#cheat">next ▶</a></span><span>Page 20</span></div></div>
+
+<!-- ═══ CHEAT ═══ -->
+<div class="page" id="cheat"><div class="pghead"><span class="chip">CHEAT</span><h2 class="t">📄 One-Page Cheat Sheet</h2><span class="dbadge">🔵 print me</span></div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">🚧 Taints &amp; tolerations</div><div class="term mini"><span class="p">$</span> kubectl taint node N gpu=nvidia:NoSchedule
+<span class="p">$</span> kubectl taint node N gpu=nvidia:NoExecute
+<span class="p">$</span> kubectl taint node N gpu=nvidia:NoSchedule-<span class="g">&nbsp;# remove</span>
+<span class="c">tolerations</span>:
+- {key: gpu, operator: Equal, value: nvidia, effect: NoSchedule}
+- {key: gpu, operator: Exists, effect: NoExecute,
+&nbsp;&nbsp;tolerationSeconds: 300}
+<span class="g">effects: block-new / prefer-avoid / evict-now</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧲 Affinity &amp; spread</div><div class="term mini"><span class="g">node: required…/preferred…DuringScheduling
+IgnoredDuringExecution</span>
+<span class="g">ops: In NotIn Exists DoesNotExist Gt Lt</span>
+<span class="g">pod: podAffinity / podAntiAffinity + topologyKey
+&nbsp;&nbsp;(hostname | zone | region)</span>
+<span class="c">topologySpreadConstraints</span>:
+- {maxSkew: 1, topologyKey: zone,
+&nbsp;&nbsp;whenUnsatisfiable: DoNotSchedule,
+&nbsp;&nbsp;labelSelector: {matchLabels: {app: web}}}</div></div>
+</div>
+<div class="grid2">
+<div class="card"><div class="zlabel" style="text-align:left;">👑 Priority</div><div class="term mini"><span class="p">$</span> kubectl create priorityclass hi --value=1000
+<span class="c">spec</span>: {priorityClassName: hi}
+<span class="g">system-node-critical 2000001000
+system-cluster-critical 2000000000
+default pods: 0 · preemption = min victims
+also drives kubelet eviction order (with QoS)</span></div></div>
+<div class="card"><div class="zlabel" style="text-align:left;">🛠️ Maintenance</div><div class="term mini"><span class="p">$</span> kubectl cordon N
+<span class="p">$</span> kubectl drain N --ignore-daemonsets \
+&nbsp;&nbsp;&nbsp;&nbsp;--delete-emptydir-data [--force] [--timeout=…]
+<span class="g"># evicts gracefully, respects PDBs
+# DaemonSet pods skipped</span>
+<span class="p">$</span> kubectl uncordon N
+<span class="g">static pods: /etc/kubernetes/manifests
+→ kubelet-born, API-undeletable</span></div></div>
+</div>
+<div class="card"><div class="zlabel" style="text-align:left;">🧠 Facts worth a job offer</div>
+<ul class="tick" style="margin:0;">
+<li>Scheduling = Filter → Score → Bind; it happens ONCE — no re-evaluation of running Pods</li>
+<li>Taints repel (node-side), affinity attracts (pod-side) — they never do each other's job</li>
+<li>NoExecute = evict existing; tolerationSeconds = grace timer; Equal needs a value, Exists doesn't</li>
+<li>required anti-affinity caps replicas at topology-domain count; spread constraints scale better</li>
+<li>Preemption is minimum-victim arithmetic, not revenge; priority also orders kubelet evictions</li>
+<li>Drain = cordon + PDB-respecting eviction; DaemonSet pods are skipped, not evicted</li>
+<li>Static Pods bootstrap the control plane — the file on disk is the source of truth</li>
+</ul></div>
+<div class="center"><a class="backtop" href="#toc">↑ back to top</a></div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#gloss">◀ prev</a> · <a href="#toc">▤ TOC</a> · <a href="#finale">finale ▶</a></span><span>Page 21</span></div></div>
+
+<!-- ═══ FINALE ═══ -->
+<div class="page" id="finale"><div class="pghead"><span class="chip">FINALE</span><h2 class="t">🗺️ What You Can Do Now</h2><span class="dbadge">🎓 Book 04 complete</span></div>
+<p class="lead">Book 01 built the machine, 02 dressed it, 03 connected it — Book 04 taught you <b>where everything is allowed to live, and how to move it safely</b>.</p>
+<div class="mtree"><b>🎯 SCHEDULING — fully mapped:</b>
+├── <u>Funnel</u>        <span class="g">filter (can) → score (should) → bind (done)</span>
+├── <u>Taints</u>        <span class="g">NoSchedule · PreferNoSchedule · NoExecute</span>
+├── <u>Tolerations</u>   <span class="g">Equal/Exists · tolerationSeconds</span>
+├── <u>Affinity</u>      <span class="g">node + pod, required vs preferred, topologyKey</span>
+├── <u>Spread</u>        <span class="g">maxSkew across zones — empty domains attract</span>
+├── <u>Priority</u>      <span class="g">pecking order + preemption under scarcity</span>
+└── <u>Node ops</u>      <span class="g">cordon → drain (PDB-aware) → uncordon · static pods</span></div>
+<h3 class="sec">✅ You can now…</h3>
+<ul class="tick">
+<li>Explain any Pending Pod: read the event, name the failing stage, name the knob that fixes it</li>
+<li>Dedicate nodes with taints + tolerations and pin workloads with affinity — without confusing the two directions</li>
+<li>Design replica layouts for HA (spread/anti-affinity) and know exactly when <code>required</code> becomes a Pending trap</li>
+<li>Set a priority hierarchy and predict who preempts whom under memory scarcity</li>
+<li>Run the full maintenance dance on a production node and describe what each flag protects</li>
+<li>Explain how the control plane boots itself with static Pods — and why you can't kubectl-delete them</li>
+</ul>
+<div class="callout co-key"><span class="ico">🎓</span><div><b>Where to next — Book 05 · Storage:</b> your Pods are placed perfectly — but <code>emptyDir</code> dies with the Pod (drain just taught you that the hard way). Book 05 gives data a life of its own: Volumes, PV/PVC, StorageClasses &amp; dynamic provisioning, access modes, reclaim policies, StatefulSets with stable storage, and CSI. Your databases finally get a home that survives everything.</div></div>
+<div class="center" style="margin-top:14px;font-size:20px;">— End of Book 04 · 🎬 —</div>
+<div class="pgfoot"><span>📘 Book 04 · Scheduling &amp; Node Management</span><span><a href="#cheat">◀ prev</a> · <a href="#toc">▤ TOC</a></span><span>Page 22</span></div></div>
+
+<script>
+(function(){
+  var pages=document.querySelectorAll('.page');
+  pages.forEach(function(pg,i){
+    pg.dataset.pdfPage=i+1;
+    var f=pg.querySelector('.pgfoot span:last-child');
+    if(f) f.textContent='Page '+(i+1);
+  });
+  document.querySelectorAll('a.tocrow').forEach(function(a){
+    var t=document.querySelector(a.getAttribute('href'));
+    var tp=a.querySelector('.tp');
+    if(t&&tp) tp.textContent='p.'+t.dataset.pdfPage;
+  });
+})();
+</script>
+</body></html>

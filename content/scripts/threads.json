@@ -1,0 +1,56 @@
+[
+  {
+    "id": "artifact-digest",
+    "label": "Artifact Digest",
+    "desc": "Build once, promote the same digest everywhere.",
+    "terms": ["artifact", "digest", "immutable", "registry", "SBOM", "provenance", "promotion"]
+  },
+  {
+    "id": "approval-gates",
+    "label": "Approval Gates",
+    "desc": "Who decides a release ships, and on what signal.",
+    "terms": ["approval", "gate", "merge queue", "policy gate", "review", "sign-off"]
+  },
+  {
+    "id": "rollback-recovery",
+    "label": "Rollback & Recovery",
+    "desc": "When prod breaks: revert, fix forward, learn.",
+    "terms": ["rollback", "forward-fix", "postmortem", "MTTR", "game day", "blast radius", "revert"]
+  },
+  {
+    "id": "trunk-discipline",
+    "label": "Trunk Discipline",
+    "desc": "Small merges, daily integration, releasable main.",
+    "terms": ["trunk", "merge hell", "branch", "linear history", "releasable"]
+  },
+  {
+    "id": "hermetic-builds",
+    "label": "Hermetic Builds",
+    "desc": "Sealed, reproducible builds with pinned inputs.",
+    "terms": ["hermetic", "lockfile", "reproducible", "cache", "BuildKit", "Kaniko", "pinned"]
+  },
+  {
+    "id": "supply-chain",
+    "label": "Supply-Chain Security",
+    "desc": "Signed artifacts, scanned deps, trusted pipelines.",
+    "terms": ["signing", "cosign", "SLSA", "CVE", "pin", "provenance", "secret"]
+  },
+  {
+    "id": "signals-slos",
+    "label": "Signals & SLOs",
+    "desc": "Golden signals, budgets, burn-rate alerting.",
+    "terms": ["golden signals", "SLO", "error budget", "burn", "DORA", "latency", "saturation", "LogQL", "PromQL", "dashboard", "trace", "metric", "prometheus", "loki", "grafana"]
+  },
+  {
+    "id": "gitops-pull",
+    "label": "GitOps Pull Model",
+    "desc": "Declare state in git; agents converge clusters.",
+    "terms": ["GitOps", "ArgoCD", "pull", "sync wave", "ApplicationSet", "declarative"]
+  },
+  {
+    "id": "controller-agent",
+    "label": "Controllers & Agents",
+    "desc": "Schedulers, executors, pipelines as code.",
+    "terms": ["controller", "agent", "executor", "Jenkinsfile", "shared library", "pipeline as code", "runner", "workflow", "stage", "job"]
+  }
+]

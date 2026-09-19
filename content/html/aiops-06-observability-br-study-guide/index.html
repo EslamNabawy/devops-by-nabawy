@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>دليل مراجعة Observability — Loki · Prometheus · Grafana — By Nabawy — النسخة العربية</title>
+<style>
+:root{
+  --bg:#f2f5f8; --panel:#ffffff; --panel2:#eaf0f4; --ink:#16222e; --dim:#5c6b7a;
+  --line:#dde4ea; --line2:#cbd6de;
+  --teal:#0e7490; --teal-d:#0b5c73; --teal-t:#e3f2f7;
+  --indigo:#4f46e5; --indigo-t:#eef0fd;
+  --ok:#15803d; --ok-t:#e7f5ec;
+  --warn:#b45309; --warn-t:#fdf3e0;
+  --fail:#b91c1c; --fail-t:#fdeaea;
+  --code-bg:#0f1e2b;
+  --shadow:3px 3px 0 rgba(22,34,46,.10);
+}
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#e2e8ee; font-family:'Segoe UI',Tahoma,system-ui,Arial,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.sheet{width:210mm; height:297mm; background:var(--bg); margin:9mm auto; padding:13mm 13mm 20mm; position:relative; border:1px solid var(--line2); page-break-after:always; overflow:hidden;}
+.sheet::before{content:''; position:absolute; top:0; left:0; right:0; height:7px; background:linear-gradient(90deg,var(--teal) 0 55%,var(--indigo) 55% 100%);}
+@media print{ body{background:#fff;} .sheet{margin:0; border:none; box-shadow:none;} }
+.mono{font-family:'Consolas','SF Mono',monospace;}
+.pghead{margin:0 0 10px; border-bottom:2px solid var(--ink); padding-bottom:7px;}
+.hrow{display:flex; align-items:flex-start; gap:10px;}
+.kick{font:800 10px 'Consolas',monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); margin-bottom:3px;}
+h1.t{font:800 20px/1.35 'Segoe UI',Tahoma,sans-serif; margin:0; border-left:5px solid var(--teal); padding-left:11px;}
+.hmeta{margin-left:auto; font:800 9.5px 'Consolas',monospace; border:2px solid var(--teal); color:#fff; background:var(--teal); border-radius:4px; padding:2px 9px; white-space:nowrap;}
+.folio{position:absolute; bottom:6mm; left:13mm; right:13mm; display:flex; align-items:center; gap:8px; font:9.5px 'Consolas',monospace; color:var(--dim);}
+.folio::before,.folio::after{content:''; flex:1; border-top:1px solid var(--line2);}
+.folio .fnum{color:var(--ink); font-weight:700;}
+.folio .by{color:var(--teal); font-weight:800;}
+a.tlink{color:var(--teal-d); font-weight:700; text-decoration:none; border-bottom:2px dotted var(--teal);}
+a.backtoc{color:var(--dim); text-decoration:none; border:1.5px solid var(--line2); border-radius:4px; padding:0 6px; font:800 9px 'Consolas',monospace; background:var(--panel);}
+a.backtoc:hover{color:var(--teal); border-color:var(--teal);}
+.taskhead{display:flex; align-items:baseline; gap:9px; font:700 13px 'Segoe UI',Tahoma,sans-serif; margin:11px 0 5px;}
+.taskhead::before{content:'▪'; color:var(--teal);}
+.taskhead::after{content:''; flex:1; border-bottom:2px dotted var(--line2); transform:translateY(-3px);}
+.taskhead .hst{font:400 9.5px 'Consolas',monospace; color:var(--dim);}
+.mark{border-radius:8px; border-right:4px solid; border-left:none; padding:7px 11px; margin:8px 0; font-size:12.5px; line-height:1.75; background:var(--panel); direction:rtl; text-align:right;}
+.mark .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.08em; margin-left:6px; color:var(--dim);}
+.m-key{border-right-color:var(--indigo); background:var(--indigo-t);} .m-key .tag{color:var(--indigo);}
+.m-ok{border-right-color:var(--ok); background:var(--ok-t);} .m-ok .tag{color:var(--ok);}
+.m-tip{border-right-color:var(--teal); background:var(--teal-t);} .m-tip .tag{color:var(--teal);}
+.m-warn{border-right-color:var(--warn); background:var(--warn-t);} .m-warn .tag{color:var(--warn);}
+.m-fail{border-right-color:var(--fail); background:var(--fail-t);} .m-fail .tag{color:var(--fail);}
+.m-exam{border:2px solid var(--line2); border-right:5px solid var(--teal); background:var(--panel); border-radius:8px; box-shadow:var(--shadow); padding:6px 11px; margin:8px 0; font-size:12.5px; line-height:1.75; direction:rtl; text-align:right;}
+.m-exam .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.08em; color:var(--teal); margin-left:6px;}
+.panel{background:var(--panel); border:2px solid var(--line2); border-radius:8px; box-shadow:var(--shadow); padding:9px 12px;}
+.ptitle{font:700 13.5px 'Segoe UI',Tahoma,sans-serif; margin:0 0 5px; color:var(--teal-d); direction:rtl; text-align:right;}
+.blk{display:inline-block; border:2px solid var(--line2); border-radius:6px; padding:7px 11px; font-weight:700; font-size:11.5px; text-align:center; background:var(--panel);}
+.blk small{display:block; font-weight:500; font-size:9.5px; margin-top:2px; color:var(--dim);}
+.chipr{display:inline-flex; align-items:center; background:var(--panel); border:2px solid var(--line2); border-radius:6px; padding:3px 10px; font:700 10.5px Tahoma,'Consolas',monospace; box-shadow:var(--shadow); direction:rtl;}
+.chipr small{color:var(--dim);}
+.pill{display:inline-block; border:2px solid var(--teal); color:var(--teal-d); background:var(--teal-t); border-radius:6px; padding:2px 10px; font:700 11px 'Consolas',monospace;}
+.darr{text-align:center; color:var(--teal); font-size:12px; margin:1px 0;}
+.harrow{color:var(--teal); font-size:12px; align-self:center;}
+.frow{display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap;}
+.dnote{text-align:center; font-size:11.5px; color:var(--dim); margin-top:4px; direction:rtl;}
+.zone{border:2px solid var(--line2); border-radius:10px; padding:9px 11px; background:var(--panel); box-shadow:var(--shadow);}
+.code{background:var(--code-bg); color:#dbe9f2; border:2px solid var(--line2); border-radius:8px; box-shadow:var(--shadow); padding:9px 12px; font:11px/1.6 'Consolas','SF Mono',monospace; white-space:pre; overflow-x:auto; direction:ltr; text-align:left; max-width:100%; margin:6px 0;}
+.code .p{color:#67e8f9;} .code .g{color:#64748b;} .code .s{color:#86efac;} .code .y{color:#fcd34d;} .code .c{color:#93c5fd;}
+.code.mini{font-size:10px; padding:7px 10px; line-height:1.55; margin:4px 0;}
+.tree{background:var(--code-bg); color:#c9d8e4; border:2px solid var(--line2); border-radius:8px; box-shadow:var(--shadow); padding:10px 14px; font:11px/1.7 'Consolas',monospace; white-space:pre; overflow-x:auto; direction:ltr; text-align:left;}
+.tree b{color:#67e8f9;} .tree u{color:#86efac; text-decoration:none;} .tree em{color:#f9a8d4; font-style:normal;} .tree i{color:#93c5fd; font-style:normal;} .tree .g{color:#64748b;}
+.tblwrap{overflow-x:auto;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border:2px solid var(--line2); border-radius:8px; overflow:hidden; font-size:11.5px; box-shadow:var(--shadow); background:var(--panel);}
+.tb th{background:var(--ink); color:#fff; border-bottom:3px solid var(--teal); padding:6px 10px; text-align:right; font:800 10.5px 'Segoe UI',Tahoma,sans-serif; direction:rtl;}
+.tb td{padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6; direction:rtl; text-align:right;}
+.tb tr:nth-child(even) td{background:var(--panel2);}
+.tb tr:last-child td{border-bottom:none;}
+.tb.tight{font-size:10.8px;}
+.tb.tight td{padding:4px 9px;}
+.tb.tight th{padding:4px 9px;}
+.tb.rowh td:first-child{font-weight:800; color:var(--teal-d); background:var(--panel2);}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.grid2>*{min-width:0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px;}
+.grid3>*{min-width:0;}
+h3.sec{font:700 14px 'Segoe UI',Tahoma,sans-serif; margin:11px 0 5px; direction:rtl; text-align:right;}
+h3.sec .n{color:var(--teal); margin-left:5px; font-family:'Consolas',monospace;}
+p.lead{font-size:13px; line-height:1.85; margin:0 0 8px; color:#3d4a56; direction:rtl; text-align:right;}
+p.small,li{font-size:12.2px; line-height:1.8;}
+.pillar{border:2px solid var(--line2); border-radius:10px; background:var(--panel); box-shadow:var(--shadow); padding:10px 12px; text-align:center;}
+.pillar .ico{font-size:22px; line-height:1;}
+.pillar b{display:block; font-size:13.5px; margin:4px 0 2px; color:var(--teal-d);}
+.pillar .q{font-size:10.5px; color:var(--dim); font-style:italic; line-height:1.4;}
+.pillar p{font-size:11.2px; line-height:1.65; margin:5px 0 0; direction:rtl; text-align:right;}
+.stbad{display:inline-block; border:2px solid; border-radius:5px; padding:0 8px; font:800 9.5px 'Consolas',monospace;}
+.st-ok{border-color:var(--ok); color:var(--ok); background:var(--ok-t);}
+.st-chg{border-color:var(--warn); color:var(--warn); background:var(--warn-t);}
+.st-fail{border-color:var(--fail); color:var(--fail); background:var(--fail-t);}
+.tocrow{display:flex; align-items:baseline; padding:8px 2px; font-size:13px;}
+.tocrow .tnum{font:700 11.5px 'Consolas',monospace; color:var(--teal); width:40px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted var(--line2); margin:0 8px 4px;}
+.tocrow .tp{font-weight:800;}
+a.tocrow{color:inherit; text-decoration:none;}
+a.tocrow:hover .tp{color:var(--teal);}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:0 20px;}
+.lgd{display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; direction:rtl;}
+.lgd div{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600;}
+.dot8{width:10px; height:10px; border:2px solid var(--line2); border-radius:3px; display:inline-block; flex:none;}
+.cover{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:18mm;}
+.cover .band{width:100%; display:flex; justify-content:center; gap:4px; margin-bottom:26px;}
+.cover .bar{width:9px; border-radius:3px 3px 0 0; background:var(--teal); opacity:.85;}
+.cover .ckick{font:800 12px 'Consolas',monospace; letter-spacing:.3em; text-transform:uppercase; color:var(--teal);}
+.cover h1{font:800 42px/1.25 'Segoe UI',sans-serif; margin:12px 0 4px;}
+.cover .sub{font-size:14.5px; color:var(--dim); max-width:150mm; line-height:1.95; direction:rtl;}
+.cover .byline{margin-top:18px; font:800 16px 'Consolas',monospace; color:var(--teal-d); letter-spacing:.08em;}
+.cover .byline small{display:block; font:600 10.5px Tahoma,'Consolas',monospace; color:var(--dim); margin-top:3px; letter-spacing:.12em;}
+.cover .vols{display:flex; gap:12px; margin-top:22px; flex-wrap:wrap; justify-content:center;}
+.volcard{border:2px solid var(--line2); border-radius:8px; background:var(--panel); box-shadow:var(--shadow); padding:9px 16px; font:800 12.5px 'Segoe UI',Tahoma,sans-serif;}
+.volcard small{display:block; font-weight:600; color:var(--dim); font-size:10px; margin-top:2px;}
+.volcard.on{border-color:var(--teal); background:var(--teal); color:#fff;} .volcard.on small{color:#d3f0f7;}
+.cover .cver{position:absolute; bottom:10mm; left:0; right:0; text-align:center; font:10px 'Consolas',monospace; letter-spacing:.25em; color:var(--dim);}
+.qa{border:2px solid var(--line2); border-radius:6px; background:var(--panel); padding:7px 10px; font-size:11.2px; line-height:1.7; direction:rtl; text-align:right;}
+.qa .qn{font:800 10px 'Consolas',monospace; color:var(--teal);}
+.qa .ans{color:#3d4a56;}
+.qa.star{border:2px solid var(--teal); background:var(--teal-t);}
+code{font-family:'Consolas',monospace; background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:0 5px; font-size:.9em; direction:ltr; unicode-bidi:embed; display:inline-block;}
+/* ── fill-enhancer (نفس نطاقات النسخة الإنجليزية) ── */
+#toc .tocrow{padding:9px 2px; font-size:13.6px;}
+#ch-01 .pillar{padding:16px 14px;} #ch-01 .pillar .ico{font-size:32px;} #ch-01 .pillar b{font-size:16px;}
+#ch-05 .lead{font-size:14.4px;} #ch-05 p.small{font-size:13.6px; line-height:1.95;} #ch-05 h3.sec{font-size:16.5px; margin:22px 0 10px;} #ch-05 .mark{font-size:13.8px; padding:13px 15px;}
+#ch-03c .lead{font-size:14px;} #ch-03c .ptitle{font-size:15px;}
+#ch-04b .tb td{padding:9px 11px; font-size:12.4px;}
+#ch-09 .code{font-size:11.6px; line-height:1.9;} #ch-09b .code{font-size:11.6px; line-height:1.95;}
+#ch-11b .code{font-size:11.5px; line-height:2.0;} #ch-11b h3.sec{font-size:15.5px;}
+#ch-14b .tb td{padding:9px 11px; font-size:12px;} #ch-14b .code{line-height:2.0;}
+#ch-14c .qa{font-size:12.6px; padding:12px 13px;} #ch-14c .zone ol li{font-size:12.5px; line-height:2.0;}
+</style>
+</head>
+<body>
+
+<!-- ═══ 01 · COVER ═══ -->
+<div class="sheet cover">
+  <div class="band">
+    <div class="bar" style="height:14px"></div><div class="bar" style="height:30px"></div><div class="bar" style="height:52px"></div><div class="bar" style="height:38px"></div><div class="bar" style="height:64px; background:var(--indigo)"></div><div class="bar" style="height:46px"></div><div class="bar" style="height:70px"></div><div class="bar" style="height:28px"></div><div class="bar" style="height:56px"></div><div class="bar" style="height:18px"></div>
+  </div>
+  <div class="ckick">SIGNAL SERIES · OBSERVABILITY ON KUBERNETES</div>
+  <h1>Observability<br>Study Guide</h1>
+  <div class="sub">النسخة العربية المدمجة الكاملة — بناء منظومة Observability متكاملة على Kubernetes: <b>Loki + Promtail</b> للسجلات، <b>Prometheus + Exporters</b> للمقاييس، و<b>Grafana</b> للعرض — منشورة على <b>Minikube عبر Helm</b>. الأساسيات ← المعمارية ← النشر ← LogQL/PromQL ← ربط التطبيقات ← حل المشكلات ← النموذج الذهني ← المصطلحات ← الاستعداد للمقابلات.</div>
+  <div class="byline">By Nabawy<small>إعداد وتنسيق · AUTHOR &amp; COMPILER</small></div>
+  <div class="vols">
+    <div class="volcard on">النسخة العربية<small>Arabic · Merged · A4</small></div>
+    <div class="volcard">Loki<small>+ Promtail 📜</small></div>
+    <div class="volcard">Prometheus<small>+ Exporters 📈</small></div>
+    <div class="volcard">Grafana<small>Dashboards 📊</small></div>
+    <div class="volcard">Minikube<small>+ Helm ⎈</small></div>
+  </div>
+  <div class="cver">LOGS · METRICS · TRACES · VISUALIZATION — BY NABAWY</div>
+</div>
+
+<!-- ═══ 02 · TOC ═══ -->
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Contents · فهرس الكتاب</div><h1 class="t">📖 المحتويات</h1></div><span class="hmeta">14 جزءًا · 26 صفحة</span></div></div>
+  <div class="tocgrid">
+    <div>
+      <a class="tocrow" href="#summary"><span class="tnum">🗺️</span><span>الخريطة — الملخص التنفيذي</span><span class="dots"></span><span class="tp">3</span></a>
+      <a class="tocrow" href="#ch-01"><span class="tnum">01</span><span>ما هي Observability؟ — الركائز الأربع</span><span class="dots"></span><span class="tp">4</span></a>
+      <a class="tocrow" href="#ch-02"><span class="tnum">02</span><span>Logs vs Metrics vs Traces — جدول المقارنة</span><span class="dots"></span><span class="tp">5</span></a>
+      <a class="tocrow" href="#ch-02b"><span class="tnum">02·b</span><span>The Core Stack — نظرة شاملة</span><span class="dots"></span><span class="tp">6</span></a>
+      <a class="tocrow" href="#ch-03"><span class="tnum">03</span><span>Logs 1/3 — لماذا Loki؟</span><span class="dots"></span><span class="tp">7</span></a>
+      <a class="tocrow" href="#ch-03b"><span class="tnum">03·b</span><span>Logs 2/3 — معمارية Loki</span><span class="dots"></span><span class="tp">8</span></a>
+      <a class="tocrow" href="#ch-03c"><span class="tnum">03·c</span><span>Logs 3/3 — سير عمل Promtail</span><span class="dots"></span><span class="tp">9</span></a>
+      <a class="tocrow" href="#ch-04"><span class="tnum">04</span><span>Metrics 1/2 — أساسيات Prometheus</span><span class="dots"></span><span class="tp">10</span></a>
+      <a class="tocrow" href="#ch-04b"><span class="tnum">04·b</span><span>Metrics 2/2 — مصادر المقاييس</span><span class="dots"></span><span class="tp">11</span></a>
+      <a class="tocrow" href="#ch-05"><span class="tnum">05</span><span>Traces — رحلة الـ Request</span><span class="dots"></span><span class="tp">12</span></a>
+      <a class="tocrow" href="#ch-06"><span class="tnum">06</span><span>Grafana — الواجهة الموحدة</span><span class="dots"></span><span class="tp">13</span></a>
+      <a class="tocrow" href="#ch-07"><span class="tnum">07</span><span>كيف تتجمع القطع في Kubernetes</span><span class="dots"></span><span class="tp">14</span></a>
+    </div>
+    <div>
+      <a class="tocrow" href="#ch-08"><span class="tnum">08</span><span>النشر 1/2 — Helm + kube-prometheus-stack</span><span class="dots"></span><span class="tp">15</span></a>
+      <a class="tocrow" href="#ch-08b"><span class="tnum">08·b</span><span>النشر 2/2 — loki-stack + الفخ الشهير</span><span class="dots"></span><span class="tp">16</span></a>
+      <a class="tocrow" href="#ch-09"><span class="tnum">09</span><span>الاستعلام 1/2 — LogQL</span><span class="dots"></span><span class="tp">17</span></a>
+      <a class="tocrow" href="#ch-09b"><span class="tnum">09·b</span><span>الاستعلام 2/2 — PromQL</span><span class="dots"></span><span class="tp">18</span></a>
+      <a class="tocrow" href="#ch-10"><span class="tnum">10</span><span>ربط التطبيقات — App Integration</span><span class="dots"></span><span class="tp">19</span></a>
+      <a class="tocrow" href="#ch-11"><span class="tnum">11</span><span>دفتر حل المشكلات 1/2</span><span class="dots"></span><span class="tp">20</span></a>
+      <a class="tocrow" href="#ch-11b"><span class="tnum">11·b</span><span>حل المشكلات 2/2 + التنظيف</span><span class="dots"></span><span class="tp">21</span></a>
+      <a class="tocrow" href="#ch-13"><span class="tnum">13</span><span>النموذج الذهني — المعمارية</span><span class="dots"></span><span class="tp">22</span></a>
+      <a class="tocrow" href="#ch-13b"><span class="tnum">13·b</span><span>مراجعة سريعة — جدول المصطلحات</span><span class="dots"></span><span class="tp">23</span></a>
+      <a class="tocrow" href="#ch-14"><span class="tnum">14</span><span>الاستعداد للمقابلات — 14 سؤالًا</span><span class="dots"></span><span class="tp">24</span></a>
+      <a class="tocrow" href="#ch-14b"><span class="tnum">14·b</span><span>ورقة الأوامر — Cheat Sheet</span><span class="dots"></span><span class="tp">25</span></a>
+      <a class="tocrow" href="#ch-14c"><span class="tnum">14·c</span><span>اختبار الذات + الإجابات</span><span class="dots"></span><span class="tp">26</span></a>
+    </div>
+  </div>
+  <div class="taskhead">TASK [دليل ألوان الحالة]<span class="hst">status legend</span></div>
+  <div class="lgd">
+    <div><span class="dot8" style="background:var(--teal)"></span> TEAL — العناوين وهيكل السلسلة</div>
+    <div><span class="dot8" style="background:var(--indigo)"></span> INDIGO — المفاهيم الجوهرية KEY IDEA</div>
+    <div><span class="dot8" style="background:var(--ok)"></span> GREEN — التأكيدات والإثباتات</div>
+    <div><span class="dot8" style="background:var(--warn)"></span> AMBER — التحذيرات والملاحظات</div>
+    <div><span class="dot8" style="background:var(--fail)"></span> RED — الأعراض والأعطال</div>
+  </div>
+  <div class="mark m-tip" style="margin-top:11px;"><span class="tag">NOTE</span><b>كيف تستخدم الكتاب:</b> 14 جزءًا مترابطًا تدمج دليل المراجعة ودليل النشر في رحلة واحدة — من تعريف الـ Observability، عبر أنواع الإشارات الثلاثة ومعماريات Loki وPrometheus، وصولًا إلى نشر Minikube + Helm الكامل، استعلامات LogQL/PromQL، ربط التطبيقات، دفتر حل المشكلات، جدول المصطلحات، والاستعداد للمقابلات. كل المصطلحات التقنية بالإنجليزية كما تُستخدم في بيئة العمل فعليًا، والشرح بالعربية.</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span><b>الـ Lab الذي يوثّقه هذا الكتاب:</b> Cluster واحد على Minikube · Namespace مخصص باسم <code>observability</code> · Chartان من Helm (<code>kube-prometheus-stack</code> + <code>loki-stack</code>) · ونموذج Labels واحد يلحم المنظومة كلها.</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 2 —</span><span><a class="tlink" href="#summary">ابدأ ▶</a></span></div>
+</div>
+
+<!-- ═══ 03 · SUMMARY ═══ -->
+<div class="sheet" id="summary">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Executive Summary · الخريطة</div><h1 class="t">🗺️ الملخص التنفيذي — الطريق كاملًا</h1></div><span class="hmeta">ابدأ من هنا</span></div></div>
+  <p class="lead">قبل الغوص في أي أداة، هذه القصة كاملة — كل جملة رابط يأخذك إلى جزئها.</p>
+  <p class="lead">نبدأ في <a class="tlink" href="#ch-01">الجزء 1 — ما هي Observability؟</a>: القدرة على فهم ما يحدث داخل النظام من البيانات التي ينتجها — <b>بدون نشر Code جديد لطرح سؤال جديد</b> — عبر أربع ركائز: <b>Logs</b> و<b>Metrics</b> و<b>Traces</b> و<b>Visualization</b>. ثم يضع <a class="tlink" href="#ch-02">الجزء 2</a> أنواع الإشارات الثلاثة جنبًا إلى جنب — أهم جدول في الكتاب كله للامتحانات — ويعرّف <a class="tlink" href="#ch-02b">الجزء 2·b</a> بالـ Stack المنشور مكوّنًا مكوّنًا.</p>
+  <p class="lead">السجلات أولًا: <a class="tlink" href="#ch-03">الجزء 3 — لماذا Loki؟</a> (أرخص 10–20× — يفهرس الـ Labels لا النص)، <a class="tlink" href="#ch-03b">الجزء 3·b</a> مسار الكتابة/القراءة (Distributor ← Ingester ← Store ← Querier)، و<a class="tlink" href="#ch-03c">الجزء 3·c</a> سير عمل Promtail كـ DaemonSet: Discover ← Tail ← Label ← Ship.</p>
+  <p class="lead">المقاييس: <a class="tlink" href="#ch-04">الجزء 4 — Prometheus</a> (نموذج السحب، الـ Time Series، PromQL، اكتشاف الـ Targets) و<a class="tlink" href="#ch-04b">الجزء 4·b</a> المصادر الأربعة: node-exporter وkube-state-metrics وcAdvisor والـ ServiceMonitor/PodMonitor CRDs. ثم <a class="tlink" href="#ch-05">الجزء 5 — Traces</a> (الخطوة الطبيعية التالية) و<a class="tlink" href="#ch-06">الجزء 6 — Grafana</a> الواجهة الموحدة عديمة الذاكرة.</p>
+  <p class="lead">كل ما هو عملي: <a class="tlink" href="#ch-07">الجزء 7</a> تدفق البيانات الكامل · <a class="tlink" href="#ch-08">الجزء 8</a> النشر بالـ Helm · <a class="tlink" href="#ch-08b">الجزء 8·b</a> فخ تعارض الـ Datasource + الـ Port-Forward · <a class="tlink" href="#ch-09">الجزء 9</a> LogQL و<a class="tlink" href="#ch-09b">PromQL</a> · <a class="tlink" href="#ch-10">الجزء 10</a> ربط التطبيقات · <a class="tlink" href="#ch-11">الجزء 11</a> دفتر حل المشكلات · <a class="tlink" href="#ch-11b">التنظيف</a> · <a class="tlink" href="#ch-13">الجزء 13</a> النموذج الذهني · <a class="tlink" href="#ch-13b">جدول المصطلحات</a> · <a class="tlink" href="#ch-14">الجزء 14</a> المقابلات و<a class="tlink" href="#ch-14b">ورقة الأوامر</a> و<a class="tlink" href="#ch-14c">الاختبار</a>. الطريق واضح. ▶</p>
+  <div class="taskhead">TASK [تدفق التصحيح الكلاسيكي]<span class="hst">كيف تتعاون الإشارات</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">📈 تنبيه Metric يُطلق<small>&nbsp;"معدل الأخطاء قفز"</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">🔗 الـ Trace يكشف الـ Hop البطيء</span>
+      <span class="harrow">──►</span>
+      <span class="chipr">📜 سطر Log يكشف الـ Exception بالضبط</span>
+    </div>
+    <p class="dnote"><b>Grafana</b> هو لوح الزجاج الذي يجمع كل هذا — ولأن Loki يستخدم <b>نفس الـ Label Model الخاص بـ Prometheus وKubernetes تمامًا</b>، يمكنك القفز من Metric على Pod إلى Logs ذلك الـ Pod مباشرة.</p>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · الفكرة الجامعة</span>كل مكوّن يقوم بعمل واحد بالضبط — Promtail <b>يدفع</b> الـ Logs، وPrometheus <b>يسحب</b> الـ Metrics، وGrafana <b>يستعلم الاثنين ويعرضهما</b>. نموذجا نقل مختلفان، ونموذج Labels مشترك واحد (namespace/pod/container/node). لا قواعد بيانات مشتركة، ولا تعقيد زائد.</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 3 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ▶ <a class="tlink" href="#ch-01">التالي</a></span></div>
+</div>
+
+<!-- ═══ 04 · CH1 ═══ -->
+<div class="sheet" id="ch-01">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 01</div><h1 class="t">👁️ What is Observability? — الركائز الأربع</h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead"><b>Observability</b> هي القدرة على فهم ما يحدث داخل النظام من خلال فحص البيانات التي يُنتجها — <b>دون الحاجة إلى نشر Code جديد لطرح سؤال جديد</b>. تعتمد على أربع ركائز أساسية:</p>
+  <div class="taskhead">TASK [الركائز الأربع]<span class="hst">والسؤال الذي تجيبه كل ركن</span></div>
+  <div class="grid2">
+    <div class="pillar"><div class="ico">📜</div><b>Logs</b><div class="q">"What happened, and what did it say?"</div><p>سجلات منفصلة مختومة بالـ Timestamp لكل حدث — الخطأ، التحذير، رسالة التشغيل.</p></div>
+    <div class="pillar"><div class="ico">📈</div><b>Metrics</b><div class="q">"How much, how fast, how often?"</div><p>قياسات رقمية عبر الزمن — CPU، الـ Requests في الثانية، زمن الاستجابة.</p></div>
+    <div class="pillar"><div class="ico">🔗</div><b>Traces</b><div class="q">"Where did the time go?"</div><p>المسار الكامل لـ Request واحد وهو ينتقل عبر الخدمات المختلفة.</p></div>
+    <div class="pillar"><div class="ico">📊</div><b>Visualization</b><div class="q">"Can a human act on this?"</div><p>يحوّل الإشارات الخام إلى Dashboards يمكن للإنسان قراءتها والتصرف بناءً عليها.</p></div>
+  </div>
+  <p class="dnote">الركائز الثلاث الأولى تنتج وتخزّن الإشارات — والرابعة تجعلها قابلة للفهم والفعل.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>الركائز لا تكرر بعضها — كل واحدة تجيب <b>نوعًا مختلفًا من الأسئلة</b>: الـ <b>Log</b> يخبرك <i>ماذا حدث بالتفصيل</i>، والـ <b>Metric</b> يخبرك <i>بكم وبأي سرعة</i>، والـ <b>Trace</b> يخبرك <i>أين ذهب الوقت</i>. التحقيق الكامل يستخدم الثلاثة معًا.</div>
+  <div class="mark m-tip"><span class="tag">NOTE · لماذا التعريف مهم؟</span>لاحظ العبارة المفتاحية: «بدون نشر Code جديد لطرح سؤال جديد». تجهّز النظام <b>مرة واحدة</b>؛ وبعدها أي سؤال جديد («لماذا كان الـ Latency عاليًا الساعة 2 فجرًا؟»، «أي Pod رمى الخطأ؟») يُجاب بالاستعلام عن بيانات <b>موجودة أصلًا</b> — لا بإعادة نشر مع print statements إضافية. نظام المراقبة الجيد يجيب على أسئلة لم تتوقعها وقت البناء — عكس الـ Monitoring التقليدي الذي يجيب فقط على أسئلة مكتوبة مسبقًا.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>سؤال الافتتاح في أي Interview: «ما الـ Observability وركائزها؟» ← <b>فهم حالة النظام من بياناته دون نشر Code جديد</b> · الركائز: <b>Logs · Metrics · Traces · Visualization</b> — مع السؤال الذي تجيبه كل ركن.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ كيف تتحول الركائز إلى مكوّنات فعلية؟ ← <a class="tlink" href="#ch-02">الجزء 2: Logs vs Metrics vs Traces</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 4 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#summary">السابق</a> · <a class="tlink" href="#ch-02">التالي</a></span></div>
+</div>
+
+<!-- ═══ 05 · CH2 ═══ -->
+<div class="sheet" id="ch-02">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 02</div><h1 class="t">⚖️ Logs vs Metrics vs Traces</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">أنواع الإشارات الثلاثة <b>متكاملة لا مكررة</b>. هذا الجدول هو أهم قطعة في هذا الدليل للامتحانات والمقابلات:</p>
+  <div class="tblwrap"><table class="tb tight">
+    <tr><th style="width:19%;"></th><th>📜 Logs</th><th>📈 Metrics</th><th>🔗 Traces</th></tr>
+    <tr><td><b>السؤال</b></td><td>ماذا حدث، وماذا قال؟</td><td>كم؟ بأي سرعة؟ كم مرة؟</td><td>أين ذهب الوقت؟</td></tr>
+    <tr><td><b>الطبيعة</b></td><td>سجلات أحداث منفصلة مختومة بالوقت</td><td>قياسات رقمية عبر الزمن</td><td>رحلة Request واحد عبر الخدمات</td></tr>
+    <tr><td><b>الشكل</b></td><td>أسطر نصية حرة</td><td>Time Series (اسم + Labels + قيم)</td><td>مسار الـ Request عبر الـ Hops</td></tr>
+    <tr><td><b>مخزّن عندنا في</b></td><td><b>Loki</b></td><td><b>Prometheus</b></td><td><i>غير منشور في هذا الـ Lab</i> (كان سيُنشر Tempo / Jaeger / Zipkin)</td></tr>
+    <tr><td><b>لغة الاستعلام</b></td><td><b>LogQL</b></td><td><b>PromQL</b></td><td>(واجهة الـ Trace)</td></tr>
+    <tr><td><b>الأفضل في</b></td><td>قراءة <i>المحتوى الحرفي</i> للحدث («أرِني الـ Stack Trace»)</td><td>الاتجاهات، المعدلات، التجميع، التنبيه، الـ Dashboards</td><td>تفصيل الـ Latency عبر Request متعدد الخدمات</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [كيف تعمل معًا؟]<span class="hst">تدفق التصحيح الكلاسيكي</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">🚨 تنبيه <b>Metric</b> يُطلق<small>&nbsp;"معدل الأخطاء قفز"</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">🔗 <b>Trace</b> يكشف الـ Hop البطيء</span>
+      <span class="harrow">──►</span>
+      <span class="chipr">📜 سطر <b>Log</b> يكشف الـ Exception</span>
+    </div>
+    <p class="dnote"><b>Grafana</b> هو لوح الزجاج الذي يجمع كل هذا معًا.</p>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>لأن Loki يستخدم <b>نفس الـ Label Model الخاص بـ Prometheus وKubernetes تمامًا</b>، تستطيع القفز من Metric على Pod إلى Logs ذلك الـ Pod مباشرة. ترى قفزة CPU على <code>pod X, namespace Y</code> في Panel من Prometheus ← تستعلم <code>{namespace="Y", pod="X"}</code> في Loki ← تقرأ الـ Logs من نفس النافذة الزمنية بالضبط. <b>صفر إعدادات إضافية ينتج هذا.</b></div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Logs = <b>ماذا حدث</b> (Loki/LogQL) · Metrics = <b>كم/بأي سرعة</b> (Prometheus/PromQL) · Traces = <b>أين ذهب الوقت</b> (ليس في هذا الـ Lab) · تدفق التصحيح: <b>تنبيه ← Trace ← Log</b>، وكلها ظاهرة في Grafana.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الآن تعرّف على المكوّنات التي تخزّن هذه الإشارات ← <a class="tlink" href="#ch-02b">الجزء 2·b: The Core Stack</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 5 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-01">السابق</a> · <a class="tlink" href="#ch-02b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 06 · CH2b ═══ -->
+<div class="sheet" id="ch-02b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 02·b</div><h1 class="t">🧱 The Core Stack — نظرة شاملة</h1></div><span class="hmeta">🟡 5 MIN</span></div></div>
+  <div class="taskhead">TASK [سبعة مكوّنات، سبعة أدوار]<span class="hst">من يفعل ماذا</span></div>
+  <div class="tblwrap"><table class="tb">
+    <tr><th>المكوّن</th><th>الدور</th><th>يُنشأ بواسطة</th><th>يعمل كـ</th></tr>
+    <tr><td><b>📜 Loki</b></td><td>يخزّن ويفهرس الـ Logs</td><td><code>loki-stack</code></td><td>خلفية الـ Logs</td></tr>
+    <tr><td><b>📜 Promtail</b></td><td>يقرأ Container Logs على كل Node ويشحنها إلى Loki</td><td><code>loki-stack</code></td><td><b>DaemonSet</b></td></tr>
+    <tr><td><b>📈 Prometheus</b></td><td>يسحب ويخزّن الـ Metrics كـ Time Series</td><td><code>kube-prometheus-stack</code></td><td>خلفية الـ Metrics</td></tr>
+    <tr><td><b>🖥️ node-exporter</b></td><td>يعرض مقاييس الـ Host</td><td><code>kube-prometheus-stack</code></td><td><b>DaemonSet</b></td></tr>
+    <tr><td><b>📦 kube-state-metrics</b></td><td>يعرض مقاييس حالة الـ K8s Objects</td><td><code>kube-prometheus-stack</code></td><td>Deployment</td></tr>
+    <tr><td><b>🚨 Alertmanager</b></td><td>يوجّه شروط PromQL إلى Slack/Email/PagerDuty</td><td><code>kube-prometheus-stack</code></td><td><span class="stbad st-chg">معطّل في هذا الـ LAB</span></td></tr>
+    <tr><td><b>📊 Grafana</b></td><td>يستعلم الخلفيتين ويعرض Dashboards</td><td><code>kube-prometheus-stack</code></td><td>Deployment</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [ناقلان، نموذج Labels واحد]<span class="hst">اللاتماثل</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">📜 Promtail</span>
+      <span class="harrow">── PUSH (دفعات HTTP) ──►</span>
+      <span class="chipr">🗄️ Loki</span>
+    </div>
+    <div class="frow" style="margin-top:6px;">
+      <span class="chipr">📈 Prometheus</span>
+      <span class="harrow">◄── PULL (فاصل scrape) ──</span>
+      <span class="chipr">🎯 Targets /metrics</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span><b>اللاتماثل المفتاحي الذي يجب تذكّره:</b> Promtail <b>يدفع</b> الـ Logs إلى Loki؛ وPrometheus <b>يسحب</b> الـ Metrics من الـ Targets. نموذجا نقل مختلفان — <b>ونموذج Labels مشترك واحد</b> (namespace / pod / container / node) يجعل الـ Stack يبدو كنظام واحد.</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · قابلية التبديل</span>هذه <b>ثلاث مجموعات مستقلة تمامًا</b> — يمكنك <b>استبدال أي واحدة ببديل</b> (ELK بدل Loki مثلًا) لأنها لا تتحدث مع بعضها مباشرة، بل تتقابل عند Grafana فقط. <b>هذا الفصل هو سر مرونة الـ Stack.</b></div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>Grafana <b>لا يخزّن شيئًا</b> — عرض فقط. أي Dashboard بلا Data Sources حية = صفحة فارغة؛ البيانات تعيش دائمًا في Loki أو Prometheus. ولاحظ أن Grafana نفسه منشور <b>بواسطة <code>kube-prometheus-stack</code></b> لا مستقلًا — وهذه الحقيقة بالذات هي سبب فخ تعارض الـ Datasource في <a class="tlink" href="#ch-08b">الجزء 8·b</a>.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الـ Stack: <b>Loki + Promtail (Logs) · Prometheus + Exporters (Metrics) · Grafana (Visualization)</b> · Push = Logs، Pull = Metrics · Promtail وnode-exporter يعملان <b>DaemonSets</b> · Alertmanager معطّل في الـ Lab · المكوّنات قابلة للتبديل — تتقابل عند Grafana فقط.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ نبدأ بالركن الأول: لماذا Loki تحديدًا؟ ← <a class="tlink" href="#ch-03">الجزء 3</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 6 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-02">السابق</a> · <a class="tlink" href="#ch-03">التالي</a></span></div>
+</div>
+
+<!-- ═══ 07 · CH3 ═══ -->
+<div class="sheet" id="ch-03">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 03 · Logs 1/3</div><h1 class="t">📜 Why Loki? — الفلسفة والفروق</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead"><b>Loki</b> هو نظام تجميع Logs أفقي التوسّع (Horizontally-Scalable) يدعم Multi-Tenancy، مبني من <b>Grafana Labs</b>. يتميّز عن أنظمة النص الكامل مثل ELK لأربعة أسباب جوهرية:</p>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">💰 Cost-Effective — الأرخص</p><p class="small" style="margin:0;"><b>أرخص 10–20× في التخزين</b>، لأنه يفهرس <b>الـ Metadata فقط (Labels)</b> — لا النص الكامل لكل سطر Log. فهرسة خفيفة = فاتورة تخزين خفيفة.</p></div>
+    <div class="panel" style="border-top:3px solid var(--teal);"><p class="ptitle">🗄️ Storage — تخزين رخيص</p><p class="small" style="margin:0;">الـ Logs تُضغط إلى <b>Chunks</b> وتُخزَّن في <b>Object Storage رخيص</b> (أو Filesystem محلي في الـ Labs) — بلا Search Nodes ضخمة.</p></div>
+    <div class="panel" style="border-top:3px solid var(--indigo);"><p class="ptitle">🔍 Querying — LogQL</p><p class="small" style="margin:0;">تستعلم Loki بـ <b>LogQL</b> — لغة مصممة <b>عمدًا</b> لتكون شبيهة بـ PromQL. تعلّم واحدة والثانية تبدو مألوفة.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">🔗 Integration — تكامل أصلي</p><p class="small" style="margin:0;">تكامل <b>أصلي مع Grafana</b> (بلا واجهة منفصلة)، ويستخدم <b>نفس الـ Label Model الخاص بـ Kubernetes وPrometheus بالضبط</b>.</p></div>
+  </div>
+  <div class="taskhead">TASK [Loki vs ELK — الفرق في سطر واحد]<span class="hst">المقايضة</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">ELK: يفهرس النص الكامل ← بحث نصي قوي 💪</span>
+      <span class="harrow">⇄</span>
+      <span class="chipr" style="border-color:var(--ok); color:var(--ok);">Loki: يفهرس الـ Labels فقط ← أرخص 10–20× 💰</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · النموذج الذهني + الفلسفة</span>فكّر في Loki كـ <b>«Prometheus للـ Logs»</b>. والفلسفة في سطر: <b>«لا تفهرس ما لا تستعلم عنه»</b>. فهرسة الـ Metadata (أي Namespace؟ أي Pod؟ أي Container؟) تكفي لتصفية ملايين الأسطر، وترك النص خامًا يُقرأ عند الاستعلام فقط — هذا هو الجذر المشترك لرخصته وسلوك استعلاماته: <b>محددات الـ Labels سريعة، وفلترة الأسطر تُدار لحظة الاستعلام</b>.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>المقايضة حقيقية: لأن Loki لا يفهرس نص الـ Log نفسه، البحث النصي الحر أضعف من ELK. أنت تستعلم <b>بالـ Labels أولًا</b> ثم تضيّق بالـ LogQL. في بيئات Kubernetes ذات الـ Labels الجيدة — وهذه حالتنا بالضبط — المقايضة مجدية جدًا.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الأسباب الأربعة: <b>Cost (أرخص 10–20× — فهرسة Labels فقط) · Storage (Chunks في Object Storage رخيص) · LogQL (شبيه بـ PromQL) · تكامل Grafana أصلي + نفس الـ Label Model</b>. النموذج الذهني: <b>«Prometheus للـ Logs»</b> · الفلسفة: <b>«لا تفهرس ما لا تستعلم عنه»</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ كيف يعمل Loki داخليًا؟ مسارا الكتابة والقراءة: ← <a class="tlink" href="#ch-03b">الجزء 3·b</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 7 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-02b">السابق</a> · <a class="tlink" href="#ch-03b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 08 · CH3b ═══ -->
+<div class="sheet" id="ch-03b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 03·b · Logs 2/3</div><h1 class="t">🏗️ Loki Architecture — مسار الكتابة والقراءة</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <h3 class="sec"><span class="n">3-A</span>الـ Pipeline بمراحله الخمس</h3>
+  <p class="small">الـ Logs تعبر معمارية Loki عبر مسار محدد — الكتابة تنزل عبر الـ Pipeline، والقراءة تعود من الـ Store:</p>
+  <div class="zone">
+    <div class="frow">
+      <div class="blk" style="min-width:140px;">1️⃣ Promtail<small>يشحن من الـ Nodes</small></div>
+      <span class="harrow">──►</span>
+      <div class="blk" style="min-width:145px;">2️⃣ Distributor<small>يحقّق وي عمل Hash للـ Streams</small></div>
+      <span class="harrow">──►</span>
+      <div class="blk" style="min-width:145px;">3️⃣ Ingester<small>يدفعها دفعات Chunks ويكتبها</small></div>
+    </div>
+    <div class="darr">▼</div>
+    <div class="frow">
+      <div class="blk" style="min-width:170px;">4️⃣ Store<small>Chunks + Index (Object Storage / Disk)</small></div>
+      <span class="harrow">◄──</span>
+      <div class="blk" style="min-width:170px;">5️⃣ Querier<small>ينفّذ LogQL القادم من Grafana</small></div>
+    </div>
+    <p class="dnote">الكتابة: ملفات Container Logs ← Promtail ← Distributor ← Ingester ← Store &nbsp;·&nbsp; القراءة: Grafana —LogQL→ Querier ← يقرأ Chunks + Index من Store/Ingester</p>
+  </div>
+  <div class="tblwrap" style="margin-top:8px;"><table class="tb tight">
+    <tr><th style="width:24%;">المكوّن</th><th>مهمته</th></tr>
+    <tr><td><b>1. Promtail</b></td><td>يشحن الـ Logs من الـ Nodes</td></tr>
+    <tr><td><b>2. Distributor</b></td><td><b>يحقّق</b> ويعمل <b>Hash</b> لتدفقات الـ Logs الواردة</td></tr>
+    <tr><td><b>3. Ingester</b></td><td>يدفع الـ Streams دفعات <b>Chunks</b> ويكتبها</td></tr>
+    <tr><td><b>4. Store</b></td><td>يحفظ الـ Chunks <b>والـ Index</b> (Object Storage أو Disk محلي)</td></tr>
+    <tr><td><b>5. Querier</b></td><td>ينفّذ استعلامات LogQL القادمة من Grafana</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span><b>الـ Log Stream</b> = <b>مزيج Labels فريد</b>. كل مجموعة Labels مختلفة هي Stream مستقلة بذاتها — ولهذا بالضبط تهم كثيرًا الـ Labels التي يلحقها Promtail (<a class="tlink" href="#ch-03c">الجزء 3·c</a>).</div>
+  <div class="mark m-tip"><span class="tag">NOTE · القراءة مقابل الكتابة</span>الكتابة تتدفق يسارًا→يمينًا عبر الـ Pipeline (1←4). القراءة لا تلمس مقدمة مسار الكتابة: الـ <b>Querier</b> (5) يسحب الـ Chunks + Index المخزنة من الـ Store (ومن الـ Ingester للبيانات الحديثة غير المفرغة بعد).</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الـ Pipeline: <b>Promtail ← Distributor (يحقّق ويعمل Hash) ← Ingester (Chunks) ← Store (Chunks + Index) ← Querier (LogQL)</b>. الـ Log Stream = <b>مزيج Labels فريد</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ المكوّن الذي يغذي المرحلة 1 — ولماذا هو DaemonSet: ← <a class="tlink" href="#ch-03c">الجزء 3·c: Promtail</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 8 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-03">السابق</a> · <a class="tlink" href="#ch-03c">التالي</a></span></div>
+</div>
+
+<!-- ═══ 09 · CH3c ═══ -->
+<div class="sheet" id="ch-03c">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 03·c · Logs 3/3</div><h1 class="t">🚚 Promtail Workflow — لماذا DaemonSet + الخطوات الأربع</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">يعمل Promtail كـ <b>DaemonSet</b> — <b>Pod واحد لكل Node في الكلستر</b>. لماذا؟ لأن Container Logs هي <b>ملفات على الـ Filesystem المحلي لكل Node</b>. وPod Promtail على Node A يستحيل جسديًا أن يقرأ <code>/var/log/pods</code> الخاصة بالـ Node B. <b>بيانات محلية للـ Node ⇐ جامع محلي للـ Node.</b></p>
+  <div class="taskhead">TASK [الخطوات الأربع]<span class="hst">discover ← tail ← label ← ship</span></div>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">1️⃣ Discover — اكتشف</p><p class="small" style="margin:0;">يستخدم <b>Service Discovery</b> الخاص بـ Kubernetes لاكتشاف كل Pod يعمل <b>على الـ Node الخاصة به</b>.</p></div>
+    <div class="panel"><p class="ptitle">2️⃣ Tail — اقرأ</p><p class="small" style="margin:0;">يقرأ ملفات الـ Container Logs مباشرة من <code>/var/log/pods</code> — مثل أمر <code>tail -f</code>.</p></div>
+    <div class="panel"><p class="ptitle">3️⃣ Label — علّم</p><p class="small" style="margin:0;">يلحق الـ Kubernetes Metadata كـ Labels: <b>namespace, pod, container, node</b>.</p></div>
+    <div class="panel"><p class="ptitle">4️⃣ Ship — اشحن</p><p class="small" style="margin:0;">يدفع دفعات الأسطر <b>إلى Distributor الخاص بـ Loki عبر HTTP</b>.</p></div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · الـ Labels هي الترس في الماكينة</span>الخطوة 3 أهم مما تبدو: لأن Labels الـ Promtail <b>مطابقة تمامًا لـ Labels الـ Prometheus</b>، يصبح التنقّل بين الـ Logs والـ Metrics في Grafana سلسًا — <b>نفس الـ Namespace، نفس الـ Pod، نفس اللغة</b> — والـ Logs والـ Metrics <b>قابلة للربط المتبادل افتراضيًا</b>. ترى قفزة CPU على <code>pod X, namespace Y</code> في Panel من Prometheus ← تستعلم <code>{namespace="Y", pod="X"}</code> في Loki ← تقرأ الـ Logs من نفس النافذة. <b>صفر إعدادات إضافية ينتج هذا.</b></div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT · Cardinality الـ Labels</span>الـ Labels مفهرسة إذًا مكلفة نسبيًا في Loki — لا تلصق قيمًا متغيرة بلا حدود (مثل <code>user_id</code>) كـ Labels. التزم بالثوابت المنظمة: <b>namespace, app, pod, container, node</b>.</div>
+  <div class="mark m-tip"><span class="tag">NOTE</span>الخطوة 4 تكمل نموذج الدفع: Promtail <b>يدفع</b> دفعات عبر HTTP — عكس Prometheus الذي <b>يسحب</b> من الـ Targets. نفس الـ Labels، واتجاه نقل معاكس.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Promtail = <b>DaemonSet</b> (Pod لكل Node — الـ Logs ملفات محلية في <code>/var/log/pods</code>) · الخطوات: <b>Discover ← Tail ← Label (نفس Labels الـ K8s كما في Prometheus) ← Ship (دفع HTTP)</b> · الـ Labels المشتركة = ربط Logs↔Metrics مجاني.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ من الـ Logs إلى الـ Metrics: ← <a class="tlink" href="#ch-04">الجزء 4: Prometheus</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 9 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-03b">السابق</a> · <a class="tlink" href="#ch-04">التالي</a></span></div>
+</div>
+
+<!-- ═══ 10 · CH4 ═══ -->
+<div class="sheet" id="ch-04">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 04 · Metrics 1/2</div><h1 class="t">📈 Prometheus — الأساسيات</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead"><b>Prometheus</b> هو نظام مراقبة مفتوح المصدر يستخدم <b>نموذج السحب (Pull Model)</b>: <b>يسحب (Scrape)</b> الـ Metrics من الـ Targets على فاصل زمني منتظم، بدلًا من انتظار التطبيقات لدفع البيانات إليه.</p>
+  <div class="taskhead">TASK [المفاهيم الثلاثة الجوهرية]<span class="hst">تخزين · استعلام · تنبيه</span></div>
+  <div class="grid3">
+    <div class="panel" style="border-top:3px solid var(--teal);"><p class="ptitle">🗄️ Storage</p><p class="small" style="margin:0;">كل قياس هو <b>Time Series</b>: <b>اسم Metric</b> + <b>Labels مفتاح/قيمة</b> + <b>سلسلة قيم مختومة بالوقت</b>. مثال: <code>container_cpu_usage_seconds_total{namespace="app", pod="api-7d9f"}</code> — الـ Labels هي الأبعاد التي تجمع عليها.</p></div>
+    <div class="panel" style="border-top:3px solid var(--indigo);"><p class="ptitle">🔍 Querying — PromQL</p><p class="small" style="margin:0;">لغة استعلام قوية <b>للتجميع (Aggregation)</b> و<b>الفلترة</b> وحساب <b>المعدلات (Rates)</b> فوق بيانات الـ Time Series.</p></div>
+    <div class="panel" style="border-top:3px solid var(--warn);"><p class="ptitle">🚨 Alerting — Alertmanager</p><p class="small" style="margin:0;">يتزامن مع <b>Alertmanager</b> لتحويل شروط PromQL إلى <b>تنبيهات موجَّهة</b> — Slack وEmail وPagerDuty. <i>(معطّل في هذا الـ Lab — لكن المفهوم قائم.)</i></p></div>
+  </div>
+  <div class="taskhead">TASK [لماذا يهم السحب؟]<span class="hst">نتائج عملية</span></div>
+  <div class="grid2">
+    <div class="mark m-tip" style="margin:0;"><span class="tag">سيطرة مركزية</span>الـ Scraper هو من يقرر الإيقاع وقائمة الـ Targets — التطبيقات لا تحتاج لمعرفة مكان Prometheus أصلًا. فقط اكشف نقطة <code>/metrics</code>، ولا شيء أكثر.</div>
+    <div class="mark m-ok" style="margin:0;"><span class="tag">الفشل مرئي</span>الـ Target الميت لا يترك فجوة في البيانات فقط — مقياس الـ <code>up</code> عنده يصبح <code>0</code>. تستطيع حرفيًا <b>الاستعلام عمّا إذا كانت المراقبة نفسها تعمل</b>.</div>
+  </div>
+  <div class="taskhead">TASK [اكتشاف الـ Targets]<span class="hst">بلا قوائم IPs يدوية</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">في Kubernetes يجد Prometheus الـ Targets <b>تلقائيًا</b></span>
+      <span class="harrow">via</span>
+      <span class="chipr">Service Discovery + Custom Resources (CRDs)</span>
+    </div>
+    <p class="dnote">لا أحد يصون قائمة عناوين Pods — الـ Pods زائلة أصلًا؛ القائمة ستكون قديمة خلال دقائق.</p>
+  </div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>كل مزيج Labels فريد يُنشئ <b>Series جديدة</b> — نفس مسألة انفجار الـ Labels في Loki: كثرة الـ Labels المتغيرة = انفجار في عدد الـ Series.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Prometheus: <b>Pull Model</b> · الـ Time Series = <b>اسم + Labels + قيم مختومة بالوقت</b> · الاستعلام: <b>PromQL</b> · التنبيه: <b>Alertmanager</b> (معطّل هنا) · اكتشاف الـ Targets: <b>تلقائي عبر Service Discovery + CRDs</b> · الـ Target الميت = <code>up == 0</code>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ من أين تأتي الـ Metrics فعلًا؟ ← <a class="tlink" href="#ch-04b">الجزء 4·b: مصادر المقاييس</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 10 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-03c">السابق</a> · <a class="tlink" href="#ch-04b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 11 · CH4b ═══ -->
+<div class="sheet" id="ch-04b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 04·b · Metrics 2/2</div><h1 class="t">🛰️ Metric Sources — من يعرض ماذا</h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <div class="tblwrap"><table class="tb tight">
+    <tr><th style="width:22%;">المكوّن</th><th>أين يعمل</th><th>ماذا يعرض</th><th>السؤال الذي يجيبه</th></tr>
+    <tr><td>🖥️ node-exporter</td><td><b>DaemonSet</b> (Pod لكل Node)</td><td>مقاييس <b>مستوى الـ Host</b>: CPU وMemory وDisk وNetwork</td><td>"هل الـ <b>Machine</b> نفسها سليمة؟"</td></tr>
+    <tr><td>📦 kube-state-metrics</td><td>يراقب <b>Kubernetes API</b></td><td><b>حالة الـ Objects</b>: حالة الـ Pods وReplicas وRestarts</td><td>"هل يظن Kubernetes أن كل شيء سليم؟"</td></tr>
+    <tr><td>⚙️ cAdvisor</td><td><b>مدمج في الـ kubelet</b></td><td>استهلاك <b>كل Container</b> على حدة (الـ CPU/Memory الفعلي)</td><td>"أي <b>Container</b> يلتهم الموارد؟"</td></tr>
+    <tr><td>🎯 ServiceMonitor / PodMonitor</td><td>CRDs — ليست Pods أصلًا</td><td>قواعد تصريحية <b>لأي Services/Pods يسحب Prometheus</b></td><td>"كيف يجد Prometheus <i>تطبيقي</i>؟"</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · احفظ هذا التمييز</span>node-exporter = الـ <b>Machine</b> · kube-state-metrics = <b>Objects الـ Kubernetes</b> · cAdvisor = الـ <b>Containers</b>. ثلاث طبقات من «هل هو سليم» — وثلاثة مكوّنات مختلفة. والـ ServiceMonitor CRD هو ما يوصل تطبيقك بـ Prometheus بلا أي Config يدوي.</div>
+  <div class="taskhead">TASK [من يراقب ماذا؟]<span class="hst">الطبقات</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">🖥️ node-exporter<small>&nbsp;← الـ Node نفسها</small></span>
+      <span class="chipr">⚙️ cAdvisor<small>&nbsp;← الـ Containers</small></span>
+    </div>
+    <div class="frow" style="margin-top:5px;">
+      <span class="chipr">📦 kube-state-metrics<small>&nbsp;← حالة الـ K8s Objects</small></span>
+      <span class="chipr">🎯 ServiceMonitor<small>&nbsp;← أي Targets تُسحب</small></span>
+    </div>
+  </div>
+  <div class="mark m-tip"><span class="tag">NOTE · لماذا الـ CRDs مهمة؟</span>بدل أن تسأل «ما الـ IPs التي أسحبها؟» — تنشئ ServiceMonitor يذكر الـ Service بالـ Label، وHelm Chart الذي ينشر التطبيق يُرفق ServiceMonitor معه. النتيجة: <b>نشر التطبيق = مراقبته تلقائيًا</b>. نشر الـ CRD <i>هو</i> الإعداد. (مثال كامل في <a class="tlink" href="#ch-10">الجزء 10</a>.)</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span><b>node-exporter</b> (DaemonSet — مقاييس الـ Host) · <b>kube-state-metrics</b> (API Server — حالة الـ Objects) · <b>cAdvisor</b> (في الـ kubelet — لكل Container) · <b>ServiceMonitor/PodMonitor CRDs</b> (تحديد السحب تصريحيًا، مربوطة تلقائيًا بالـ Helm).</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الركن الثالث: رحلة الـ Request الواحد ← <a class="tlink" href="#ch-05">الجزء 5: Traces</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 11 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-04">السابق</a> · <a class="tlink" href="#ch-05">التالي</a></span></div>
+</div>
+
+<!-- ═══ 12 · CH5 ═══ -->
+<div class="sheet" id="ch-05">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 05</div><h1 class="t">🔗 Traces — رحلة الـ Request</h1></div><span class="hmeta">🟢 4 MIN</span></div></div>
+  <p class="lead">الـ <b>Trace</b> يسجّل الرحلة الكاملة لـ <b>Request واحد</b> وهو ينتقل عبر عدة Services:</p>
+  <div class="taskhead">TASK [رحلة Request واحدة]<span class="hst">مثال محلول</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">🌐 API Gateway<small>&nbsp;2ms</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">🔐 Auth Service<small>&nbsp;15ms</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">📦 Order Service<small>&nbsp;40ms</small></span>
+      <span class="harrow">──►</span>
+      <span class="chipr">🗄️ DB Query<small>&nbsp;120ms ⚠</small></span>
+    </div>
+    <p class="dnote">الـ Trace يكشف فورًا: <b>أغلب الوقت ذهب إلى الـ DB Query</b> — لا تخمين، ولا فحص يدوي لكل Service.</p>
+  </div>
+  <h3 class="sec"><span class="n">5.1</span>الغرض</h3>
+  <p class="small">الـ Traces تُظهر <b>بالضبط أين صُرف الوقت</b> أثناء الـ Request. الـ Metrics تخبرك <i>أن</i> الـ Requests بطيئة؛ والـ Traces تخبرك <i>أي Hop</i> جعلها بطيئة — أي Service تباطأت، أي استدعاء تكرر، وأين الاختناق الحقيقي.</p>
+  <h3 class="sec"><span class="n">5.2</span>الأدوات</h3>
+  <p class="small">الـ Tracing يستخدم عادةً <b>Grafana Tempo</b> أو <b>Jaeger</b> أو <b>Zipkin</b>، مع تجهيز التطبيقات عبر <b>OpenTelemetry</b>.</p>
+  <div class="mark m-tip"><span class="tag">NOTE · في هذا الـ Lab</span><b>الـ Traces غير منشورة في هذا الـ Lab تحديدًا</b> — لكنها تمثل <b>الخطوة الطبيعية التالية</b> بعد وجود الـ Logs (Loki) والـ Metrics (Prometheus). اثنتان من الإشارات الثلاث تعملان الآن.</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>عندما يقول لك أحدهم «الـ API بطيء» — الـ Logs تخبرك <i>ماذا حدث</i>، والـ Metrics تخبرك <i>بكم هو بطيء</i>، لكن <b>الـ Trace وحده</b> يخبرك <b>أين بالضبط</b> ذهب الوقت داخل رحلة الـ Request.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الـ Trace = <b>رحلة Request واحد عبر Services متعددة</b> · الغرض: <b>أين صُرف الوقت</b> · الأدوات: <b>Grafana Tempo / Jaeger / Zipkin</b> عبر <b>OpenTelemetry</b> · <b>غير منشور في هذا الـ Lab</b> — إنه الخطوة التالية.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الركن الرابع: النافذة على كل شيء ← <a class="tlink" href="#ch-06">الجزء 6: Grafana</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 12 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-04b">السابق</a> · <a class="tlink" href="#ch-06">التالي</a></span></div>
+</div>
+
+<!-- ═══ 13 · CH6 ═══ -->
+<div class="sheet" id="ch-06">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 06</div><h1 class="t">📊 Grafana — الواجهة الموحدة</h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead"><b>Grafana</b> هو الواجهة الموحدة لمنظومة الـ Observability — لوح الزجاج الذي يلتقي عنده الـ Logs والـ Metrics.</p>
+  <div class="taskhead">TASK [أربعة مفاهيم]<span class="hst">البيانات · الإعداد · الـ Dashboards · Explore</span></div>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid var(--teal);"><p class="ptitle">🔌 التعامل مع البيانات</p><p class="small" style="margin:0;">Grafana <b>لا يخزّن البيانات بنفسه</b> — يتصل بـ <b>Data Sources</b> (Prometheus وLoki) ويستعلمها <b>مباشرة</b> عند كل تحديث للـ Panels. امسح الخلفيتين وليس لدى Grafana ما يعرض — <b>إنه عدسة لا قاعدة بيانات</b>.</p></div>
+    <div class="panel" style="border-top:3px solid var(--indigo);"><p class="ptitle">⚙️ Configuration</p><p class="small" style="margin:0;">كل Data Source يحتاج: <b>URL</b> + <b>Authentication</b> + <b>لغة الاستعلام</b> التي سيتحدثها (<b>PromQL</b> أو <b>LogQL</b>).</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">📊 Dashboards &amp; Panels</p><p class="small" style="margin:0;">الـ <b>Dashboard مجموعة من الـ Panels</b>. كل Panel يشغّل استعلامًا ويعرضه كـ <b>Graph أو Table أو Log Stream أو Gauge</b>. والـ Dashboards تُكتب <b>JSON</b> — قابلة للـ Version-Control أو الاستيراد من <code>grafana.com/dashboards</code> برقم ID.</p></div>
+    <div class="panel" style="border-top:3px solid var(--warn);"><p class="ptitle">🔍 Explore Mode</p><p class="small" style="margin:0;">تشغيل استعلامات <b>Ad-hoc من PromQL أو LogQL</b> دون بناء Dashboard — الأداة المفضلة للتصحيح («أرني أخطاء ذلك الـ Namespace <i>الآن</i>»).</p></div>
+  </div>
+  <div class="taskhead">TASK [التسلسل الهرمي داخل Grafana]<span class="hst">التسلسل</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">📊 Dashboard</span>
+      <span class="harrow">◂ تحتوي</span>
+      <span class="chipr">🧩 Panels</span>
+      <span class="harrow">◄ تستعلم من</span>
+      <span class="chipr">🔌 Data Source</span>
+      <span class="harrow">◄ وهو</span>
+      <span class="chipr">🗄️ Loki / 📈 Prometheus</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>Grafana عديم الذاكرة عمدًا: <b>كل Panel = استعلام حي</b> في لحظة المشاهدة. لا يسأل أحد «هل الـ Dashboard محدَّث؟» — إنه محدَّث بحكم التعريف، لأنه يستعلم المصدر مباشرة عند كل تحميل.</div>
+  <div class="mark m-ok"><span class="tag">✅ استغل هذه الميزة · Dashboards كـ Code</span>الـ Dashboards ملفات JSON — <b>ضعها في Git</b>. Dashboard مفقود = <b>استرجاعه من Git</b>؛ وتغيير مقصود = <b>Pull Request</b> يُراجع مثل أي Code آخر. إدارة إصدارات الـ Dashboards ميزة تُستغل، لا مصادفة.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT · تفصيلة نشر</span>في هذا الـ Stack، Grafana منشور <b>بواسطة <code>kube-prometheus-stack</code></b> لا مستقلًا. هذه الحقيقة هي <b>بالضبط سبب فخ تعارض الـ Datasource</b> في <a class="tlink" href="#ch-08b">الجزء 8·b</a> — أفضل قصة «عطل صلّحته» في هذا الدليل.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Grafana: <b>لا يخزّن — Data Sources حية</b> · الـ Data Source = <b>URL + Auth + لغة استعلام</b> · Dashboard = مجموعة Panels (graph/table/logs/gauge) · Dashboards = <b>JSON ← Git: استرجاع + مراجعة PR</b> · Explore = <b>تصحيح Ad-hoc</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ كل القطع جاهزة — كيف تتجمع في Kubernetes؟ ← <a class="tlink" href="#ch-07">الجزء 7</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 13 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-05">السابق</a> · <a class="tlink" href="#ch-07">التالي</a></span></div>
+</div>
+
+<!-- ═══ 14 · CH7 ═══ -->
+<div class="sheet" id="ch-07">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 07</div><h1 class="t">🧩 How It All Fits Together — في Kubernetes</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <div class="taskhead">TASK [تدفق البيانات الكامل]<span class="hst">ست خطوات من طرف لطرف</span></div>
+  <div class="zone">
+    <ol class="small" style="margin:4px 0 2px; padding-right:20px; padding-left:0; line-height:1.95; direction:rtl; text-align:right;">
+      <li><b>Pods التطبيقات</b> تكتب Logs وتكشف (اختياريًا) نقطة <code>/metrics</code>.</li>
+      <li>على كل Node، <b>Promtail</b> (DaemonSet) يقرأ <code>/var/log/pods</code>، يلحق كل سطر بـ Metadata الـ Kubernetes، و<b>يدفع</b> دفعات إلى Distributor الخاص بـ Loki.</li>
+      <li>على كل Node، <b>node-exporter</b> (DaemonSet) يعرض مقاييس الـ Host؛ و<b>cAdvisor</b> (داخل الـ kubelet) يعرض مقاييس كل Container؛ و<b>kube-state-metrics</b> يعرض حالة الـ Objects.</li>
+      <li><b>Prometheus يسحب</b> كل تلك المقاييس على فاصل scrape، مكتشفًا الـ Targets عبر Service Discovery والـ CRDs (ServiceMonitor/PodMonitor).</li>
+      <li><b>Grafana</b> يحمل الاثنين كـ Data Sources ويستعلم <b>Prometheus (PromQL)</b> و<b>Loki (LogQL)</b> مباشرة.</li>
+      <li>تفتح Grafana في المتصفح عبر <b>نفق port-forward</b> وترى كل شيء.</li>
+    </ol>
+  </div>
+  <div class="taskhead">TASK [ناقلان، نموذج Labels واحد]<span class="hst">اللاصق</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">📜 Promtail</span>
+      <span class="harrow">── <b>يدفع</b> الـ Logs (HTTP) ──►</span>
+      <span class="chipr">🗄️ Loki</span>
+    </div>
+    <div class="frow" style="margin-top:6px;">
+      <span class="chipr">📈 Prometheus</span>
+      <span class="harrow">◄── <b>يسحب</b> الـ Metrics (scrape) ──</span>
+      <span class="chipr">🖥️ node-exporter · cAdvisor · kube-state-metrics · التطبيقات</span>
+    </div>
+    <p class="dnote">لكلهما يحمل <b>نفس الـ Labels</b> — namespace / pod / container / node — وهذا ما يجعل الـ Stack يبدو كنظام واحد.</p>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>الـ Logs <b>تُدفع</b>؛ والـ Metrics <b>تُسحب</b>. اتجاهات النقل تختلف، لكن <b>مفردات الـ Labels متطابقة</b> — وهذا النموذج المشترك هو اللاصق. لهذا تكفيك قفزة Labels واحدة في Grafana لتنقلك من Graph للـ CPU إلى أسطر الـ Logs التي تشرحه.</div>
+  <div class="mark m-tip"><span class="tag">NOTE · نمط الوصول</span>Grafana Service من نوع <code>ClusterIP</code> — يُوصل من <i>داخل</i> الكلستر فقط. من حاسبك تصل إليه عبر <code>kubectl port-forward</code> (الأمر الكامل وتشريحه في <a class="tlink" href="#ch-08b">الجزء 8·b</a>).</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>التدفق: <b>Apps/Nodes تولّد ← Promtail يدفع Logs ← Loki · Prometheus يسحب Metrics ← TSDB · Grafana يستعلم الاثنين حيًّا ← المتصفح عبر port-forward</b>. Push ≠ Pull، لكن الـ Labels مشتركة.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ حان وقت النشر الفعلي — بأمرين من Helm: ← <a class="tlink" href="#ch-08">الجزء 8: النشر</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 14 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-06">السابق</a> · <a class="tlink" href="#ch-08">التالي</a></span></div>
+</div>
+
+<!-- ═══ 15 · CH8 ═══ -->
+<div class="sheet" id="ch-08">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 08 · النشر 1/2</div><h1 class="t">🚀 Helm + kube-prometheus-stack</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <p class="lead"><b>Helm</b> هو <b>مدير حزم لـ Kubernetes</b>. يجمع كل الـ Manifests اللازمة — Deployments وServices وConfigMaps وCRDs — في <b>«Charts»</b>. تثبيت Chart يُنشئ <b>Release</b>. والـ Charts تعيش في <b>Repositories</b> تضيفها إلى جهازك. بدل عشرات ملفات YAML المكتوبة يدويًا، <b>أمران من Helm</b> ينشران المنظومة كاملة — بما فيها الـ Dashboards الافتراضية وربط الـ Data Sources. <b>Helm حوّل مشروعًا من أسبوع إلى أمرين.</b></p>
+  <div class="taskhead">TASK [الإعداد — Repos + Namespace]<span class="hst">أفضل ممارسة: Namespace مخصص</span></div>
+  <div class="code mini"><span class="g"># أضف المستودعين، حدّث الفهارس، أنشئ الـ Namespace</span>
+helm repo add prometheus-community <span class="s">https://prometheus-community.github.io/helm-charts</span>
+helm repo add grafana <span class="s">https://grafana.github.io/helm-charts</span>
+helm repo update
+kubectl create namespace <span class="p">observability</span>   <span class="g"># يُبقي المراقبة منفصلة عن أعباء التطبيقات</span></div>
+  <div class="taskhead">TASK [الـ Chart الأول: kube-prometheus-stack]<span class="hst">Chart واحد، مكوّنات كثيرة</span></div>
+  <div class="mark m-tip" style="margin:4px 0;"><span class="tag">يثبّت</span><b>Prometheus · Alertmanager · Grafana · node-exporter · kube-state-metrics · الـ ServiceMonitor/PodMonitor CRDs · Dashboards افتراضية للـ Kubernetes</b> — دفعة واحدة.</div>
+  <div class="mark m-warn"><span class="tag">⚠ إدارة الموارد</span>افتراضيًا يطلب هذا الـ Chart <b>CPU وRAM أكثر مما يستطيع Cluster Minikube صغير تحمّله</b> — ثبّته خامًا وستعلق الـ Pods في <code>Pending</code> لأن الـ Scheduler لا يجد مكانًا يتسع لطلبات الموارد. يجب <b>تقليم Resource Requests/Limits لكل مكوّن بشراسة</b> عبر أعلام <code>--set</code>:</div>
+  <div class="code mini">helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  -n observability \
+  --set alertmanager.enabled=<span class="y">false</span> \
+  --set prometheus.prometheusSpec.retention=<span class="s">6h</span> \
+  --set grafana.adminPassword=<span class="s">admin123</span> \
+  --set prometheus.prometheusSpec.resources.requests.cpu=<span class="s">100m</span> \
+  --set prometheus.prometheusSpec.resources.requests.memory=<span class="s">256Mi</span> \
+  --set grafana.resources.requests.cpu=<span class="s">50m</span> \
+  --set grafana.resources.requests.memory=<span class="s">128Mi</span>
+<span class="g"># ...وما شابه من التقليم لـ kube-state-metrics وnode-exporter.</span>
+<span class="g"># مفاتيح القيم الدقيقة: helm show values prometheus-community/kube-prometheus-stack</span></div>
+  <div class="tblwrap"><table class="tb tight">
+    <tr><th style="width:38%;">التعديل</th><th>لماذا</th></tr>
+    <tr><td>تقليم الموارد (لكل مكوّن)</td><td>قيم الـ Chart الافتراضية تفترض Nodes ضخمة؛ وإلا تعلقت الـ Pods في <code>Pending</code> على Minikube</td></tr>
+    <tr><td><code>retention=6h</code></td><td>تخزين الـ TSDB يكبر مع مدة الاحتفاظ؛ الـ Lab لا يحتاج تاريخًا — 6 ساعات تكفي للتصحيح</td></tr>
+    <tr><td><code>alertmanager.enabled=false</code></td><td>لا حاجة لتوجيه تنبيهات في Lab ← Pods أقل وRAM أقل</td></tr>
+    <tr><td><code>adminPassword=admin123</code></td><td>بيانات دخول Grafana في هذا الـ Lab (<code>admin</code> / <code>admin123</code>)</td></tr>
+  </table></div>
+  <div class="mark m-key"><span class="tag">🔑 قاعدة الـ IDEMPOTENCY</span><b>استخدم دائمًا <code>helm upgrade --install</code> وليس <code>helm install</code> المجرد.</b> أمر <code>helm upgrade --install</code> <b>آمن لإعادة التشغيل</b>: إن كان الـ Release موجودًا يرقّيه في مكانه؛ وإن لم يكن يثبّته. أما <code>helm install</code> المجرد <b>يفشل</b> في التشغيلة الثانية.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Helm = <b>مدير حزم K8s</b> (Charts ← Releases من Repos) · Chart واحد يثبّت <b>منظومة الـ Metrics كاملة</b> · Minikube يحتاج <b>تقليم الـ Requests</b> وإلا <code>Pending</code> · <b>retention 6h</b> يوفر القرص · <b>helm upgrade --install</b> = Idempotent.</div>
+  <p class="lead" style="margin-top:6px;">⏭️ الـ Chart الثاني — وأشهر فخ غير بديهي: ← <a class="tlink" href="#ch-08b">الجزء 8·b</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 15 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-07">السابق</a> · <a class="tlink" href="#ch-08b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 16 · CH8b ═══ -->
+<div class="sheet" id="ch-08b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 08·b · النشر 2/2</div><h1 class="t">⚠️ loki-stack + الفخ الشهير + Port-Forward</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <div class="code mini">helm upgrade --install loki-stack grafana/loki-stack \
+  -n observability \
+  --set grafana.sidecar.datasources.defaultDatasourceEnabled=<span class="y">false</span>   <span class="g"># ← العلم الحاسم</span></div>
+  <div class="taskhead">TASK [⚠ تعارض تزويد الـ Datasource]<span class="hst">الفخ الوحيد غير البديهي</span></div>
+  <div class="zone" style="border-right:5px solid var(--fail); border-left:2px solid var(--line2);">
+    <ol class="small" style="margin:2px 0; padding-right:20px; padding-left:0; line-height:1.8; direction:rtl; text-align:right;">
+      <li><code>loki-stack</code> يُرفق <b>ConfigMap خاصًا به للـ Grafana Data-Source</b> الخاص بـ Loki.</li>
+      <li>الـ <b>Grafana Sidecar</b> (العامل داخل Grafana المنشور من <code>kube-prometheus-stack</code>) <b>يكتشف تلقائيًا</b> ConfigMaps الـ Datasources ويحمّلها — فيظهر Loki في Grafana بلا أي إعداد يدوي. لطيف.</li>
+      <li><b>التعارض:</b> <code>kube-prometheus-stack</code> يعيّن <b>Prometheus</b> كـ Datasource <b>الافتراضي (Default)</b>. و<code>loki-stack</code> <b>يحاول أيضًا تعيين Loki كافتراضي</b>.</li>
+      <li>Grafana يسمح <b>بافتراضي واحد بالضبط</b>. اثنان افتراضيان = <b>«Datasource provisioning error»</b> ← Grafana <b>يهدم ← يعيد التشغيل ← يهدم ← <code>CrashLoopBackOff</code></b>.</li>
+    </ol>
+  </div>
+  <div class="grid2">
+    <div class="mark m-ok" style="margin:6px 0;"><span class="tag">✅ الحل</span>ثبّت Loki مع <code>--set grafana.sidecar.datasources.defaultDatasourceEnabled=false</code> — يبقى Loki Datasource، لكن <b>ليس الافتراضي</b> (ويبقى Prometheus هو الافتراضي).</div>
+    <div class="mark m-warn" style="margin:6px 0;"><span class="tag">🩹 إصلاح طارئ</span>انكسر فعلًا؟ <code>kubectl get configmap -n observability</code> ← اعثر على الـ ConfigMap الزائد ← <b>احذف السطر <code>isDefault: true</code></b> ← أعد تشغيل Pod الـ Grafana.</div>
+  </div>
+  <div class="taskhead">TASK [الوصول إلى Grafana — Port-Forward]<span class="hst">ClusterIP = داخل الكلستر فقط</span></div>
+  <div class="code mini">kubectl port-forward --address 0.0.0.0 -n observability \
+  svc/kube-prometheus-stack-grafana 3000:80
+<span class="g"># ثم افتح http://localhost:3000 ← دخول admin / admin123</span></div>
+  <div class="tblwrap"><table class="tb tight">
+    <tr><th style="width:38%;">الجزء</th><th>المعنى</th></tr>
+    <tr><td><code>svc/kube-prometheus-stack-grafana</code></td><td>الـ Service الذي سنحفر النفق إليه</td></tr>
+    <tr><td><code>-n observability</code></td><td>الـ Namespace الذي يعيش فيه الـ Service</td></tr>
+    <tr><td><code>3000:80</code></td><td><b>البورت المحلي 3000 ← بورت الـ Service 80</b></td></tr>
+    <tr><td><code>--address 0.0.0.0</code></td><td>استمع على <b>كل واجهات الجهاز</b> لا الـ loopback فقط — <b>إلزامي على Windows/WSL</b>، وإلا تحصل على <i>connection refused</i> من جهة الـ Windows</td></tr>
+  </table></div>
+  <div class="mark m-tip"><span class="tag">DASHBOARDS</span><b>مثبّتة مسبقًا</b> (من kube-prometheus-stack): موارد الكلستر الحاسوبية، الـ Namespaces، الـ Nodes، والـ Kubelet — كلها Prometheus-backed. <b>غير مشمولة:</b> Dashboards الـ Loki — استوردها من الواجهة (<b>Dashboards ← Import ← ID ← Load</b>): <b>13639</b> (Kubernetes Logs) · <b>12611</b> (Log volume) — أو تجاوز الـ Dashboards واستخدم <b>Explore</b>.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Chartان يزوّدان Datasource <b>افتراضيًا</b> ← Grafana يهدم دوريًا (يسمح بواحد بالضبط) ← الحل: <code>defaultDatasourceEnabled=false</code> · Grafana <b>ClusterIP</b> ← <code>port-forward</code> مع <code>--address 0.0.0.0</code> على WSL ← <code>admin/admin123</code> · استيراد Dashboards <b>13639 / 12611</b>.</div>
+  <p class="lead" style="margin-top:6px;">⏭️ الـ Stack واقف — الآن استعلم عنه: ← <a class="tlink" href="#ch-09">الجزء 9: LogQL</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 16 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-08">السابق</a> · <a class="tlink" href="#ch-09">التالي</a></span></div>
+</div>
+
+<!-- ═══ 17 · CH9 ═══ -->
+<div class="sheet" id="ch-09">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 09 · الاستعلام 1/2</div><h1 class="t">🔍 LogQL — الاستعلام عن Loki</h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead"><b>التأطير:</b> خلفيتان، لغتا استعلام، واجهة واحدة. LogQL صُمم <i>عمدًا ليكون شبيهًا بـ PromQL</i>، وكلاهما يختار بنفس <i>الـ Labels</i> — تعلّم واحدة والثانية تصبح مألوفة.</p>
+  <div class="taskhead">TASK [ابدأ من وضع Explore]<span class="hst">بلا Dashboard</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">Grafana ← Explore ← اختر Data Source ← شغّل استعلامات Ad-hoc</span>
+    </div>
+    <div class="frow" style="margin-top:6px;">
+      <span class="chipr">🗄️ Loki: {namespace="observability"}<small>&nbsp;← Streams حية</small></span>
+      <span class="chipr">📈 Prometheus: up<small>&nbsp;← 1 سليم، 0 ساقط</small></span>
+    </div>
+  </div>
+  <div class="taskhead">TASK [LogQL — لكل استعلام حتى ثلاث مراحل]<span class="hst">محدد ← فلترة ← غلاف رقمي</span></div>
+  <div class="grid3">
+    <div class="panel"><p class="ptitle">1️⃣ محدد الـ Stream</p><p class="small" style="margin:0;">الـ Labels — <b>مفهرسة وسريعة</b>. يختار أي Log Streams ستُقرأ.</p></div>
+    <div class="panel"><p class="ptitle">2️⃣ Pipeline الفلترة</p><p class="small" style="margin:0;">فلترة الأسطر — تُقيَّم <b>لحظة الاستعلام</b> على الـ Streams المطابقة.</p></div>
+    <div class="panel"><p class="ptitle">3️⃣ غلاف الـ Metric</p><p class="small" style="margin:0;">يحوّل عدّ الأسطر إلى <b>أرقام</b> — الـ Logs تصبح Metric.</p></div>
+  </div>
+  <div class="code mini"><span class="g"># 1) محدد الـ Stream: كل Logs الـ Namespace</span>
+<span class="p">{namespace="observability"}</span>
+<span class="g"># تضييق بالـ Pod / Container (الـ Labels التي لحقها Promtail)</span>
+<span class="p">{namespace="default", pod="my-app-7d9f8b6c-", container="app"}</span>
+
+<span class="g"># 2) فلترة الأسطر: احتفظ / احذف حسب المحتوى (Loki يبحث النص هنا)</span>
+<span class="p">{namespace="observability"}</span> |= <span class="s">"error"</span>
+<span class="p">{namespace="observability"}</span> |= <span class="s">"error"</span> != <span class="s">"timeout"</span>
+
+<span class="g"># 3) استعلام Metric: عدّ الأسطر المطابقة لكل Pod في نافذة 5m</span>
+<span class="c">sum by (pod)</span> (<span class="c">count_over_time</span>(<span class="p">{namespace="default"}</span> |= <span class="s">"error"</span> [<span class="y">5m</span>]))</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA · لماذا يهم هذا الترتيب؟</span>محدد الـ Labels يُشغَّل على <b>الـ Index</b>؛ والبحث النصي يُشغَّل على الـ Streams المطابقة <b>لحظة الاستعلام</b>. هذا هو العائد المباشر من تصميم Loki «فهرس الـ Labels فقط» — التخزين الرخيص لا يعني استعلامات بطيئة <i>إذا اخترت Labels جيدة</i>.</div>
+  <div class="mark m-tip"><span class="tag">NOTE · الجسر</span>المرحلة 3 تحوّل <b>الـ Logs إلى Metric</b> (<code>count_over_time</code> فوق نطاق <code>[5m]</code>) — شقيق بنيوي لـ <code>rate()</code> في PromQL، والجسر بين نوعي الإشارات.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>LogQL = <b>محدد Stream (مفهرس) ← فلترة أسطر (لحظة الاستعلام) ← غلاف Metric اختياري</b> · <code>|=</code> احتفظ، <code>!=</code> احذف · <code>count_over_time(...[5m])</code> يحوّل أسطر الأخطاء إلى معدل لكل Pod.</div>
+  <p class="lead" style="margin-top:6px;">⏭️ النصف الآخر من الثنائي: ← <a class="tlink" href="#ch-09b">الجزء 9·b: PromQL</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 17 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-08b">السابق</a> · <a class="tlink" href="#ch-09b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 18 · CH9b ═══ -->
+<div class="sheet" id="ch-09b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 09·b · الاستعلام 2/2</div><h1 class="t">📈 PromQL — الاستعلام عن Prometheus</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <div class="taskhead">TASK [أمثلة جوهرية — موسومة بالمكوّن المصدر]<span class="hst">اعرف من يعرض كل Metric</span></div>
+  <div class="code mini"><span class="g"># صحة كل Target في السحب (1 = حي، 0 = ساقط)</span>
+<span class="p">up</span>
+<span class="g"># منظومة الـ observability نفسها فقط</span>
+<span class="p">up{namespace="observability"}</span>
+<span class="g"># معدل CPU لكل Container عبر 5m — Metric من cAdvisor (عبر kubelet)</span>
+<span class="c">sum by (pod)</span> (<span class="c">rate</span>(<span class="p">container_cpu_usage_seconds_total</span>[<span class="y">5m</span>]))
+<span class="g"># Memory الـ Container الآن — cAdvisor</span>
+<span class="c">sum by (pod)</span> (<span class="p">container_memory_usage_bytes</span>)
+<span class="g"># Memory المتاحة في الـ Node ككسر — Metric من node-exporter</span>
+<span class="p">node_memory_MemAvailable_bytes</span> / <span class="p">node_memory_MemTotal_bytes</span></div>
+  <div class="taskhead">TASK [آليتان تستحقان الاستيعاب]<span class="hst">Range Vectors والتجميع</span></div>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid var(--indigo);"><p class="ptitle">⏱ [5m] = Range Vector</p><p class="small" style="margin:0;">يختار <b>نقاطًا كثيرة خلال 5 دقائق</b> — دوال مثل <code>rate()</code> <b>تتطلب</b> نطاقًا. قيمة لحظية واحدة لا تُنتج معدلًا.</p></div>
+    <div class="panel" style="border-top:3px solid var(--teal);"><p class="ptitle">🧮 sum by (pod) = تجميع</p><p class="small" style="margin:0;">يجمع عبر الـ Labels <b>مع إبقاء <code>pod</code></b> ك بعد التجميع — نفس الـ Labels التي يستخدمها Loki، فتصطف النتائج عبر الخلفيتين.</p></div>
+  </div>
+  <div class="taskhead">TASK [تصحيح لحظي أم اتجاهي؟]<span class="hst">اختر السؤال الصحيح</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr" style="border-color:var(--fail); color:var(--fail);">«هل هو معطّل الآن؟» ← up · Stream خام {namespace="..."}</span>
+    </div>
+    <div class="frow" style="margin-top:6px;">
+      <span class="chipr" style="border-color:var(--warn); color:var(--warn);">«هل يتجه للتعطّل؟» ← rate() على [5m] · عدد الأخطاء/Pod · Graph كسر الـ Memory</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>لأن لغتي الاستعلام تختاران <b>نفس الـ Labels</b>، يعمل نفس التجميع <code>sum by (pod)</code> على الجانبين — معدل الأخطاء لكل Pod من Loki يتطابق تمامًا مع معدل الـ CPU لكل Pod من Prometheus في Panels متجاورة داخل Grafana.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span><code>up</code> = صحة السحب · <code>rate(counter[5m])</code> يحتاج <b>Range Vector</b> · <code>sum by (pod)</code> يُبقي label التجميع · cAdvisor ← مقاييس الـ Containers · node-exporter ← مقاييس <code>node_*</code>.</div>
+  <p class="lead" style="margin-top:6px;">⏭️ إدخال <i>تطبيقك أنت</i> إلى الصورة: ← <a class="tlink" href="#ch-10">الجزء 10: ربط التطبيقات</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 18 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-09">السابق</a> · <a class="tlink" href="#ch-10">التالي</a></span></div>
+</div>
+
+<!-- ═══ 19 · CH10 ═══ -->
+<div class="sheet" id="ch-10">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 10</div><h1 class="t">🔌 Application Integration — ربط التطبيقات</h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <div class="taskhead">TASK [الـ Logs — صفر إعدادات]<span class="hst">تعمل فورًا</span></div>
+  <div class="mark m-ok"><span class="tag">✅ LOGS</span><b>Promtail يجمع Logs كل Pod في الكلستر تلقائيًا</b> — بلا Annotations ولا CRDs ولا شيء. الـ DaemonSet + Service Discovery يلتقطان الـ Pods الجديدة فور ظهورها. انشر تطبيقًا، وLogs الخاصة به (موءوسة أصلًا بـ namespace/pod/container) تصبح في Loki.</div>
+  <div class="taskhead">TASK [الـ Metrics — شرطان]<span class="hst">اختيارية بطبيعتهما</span></div>
+  <div class="zone">
+    <ol class="small" style="margin:2px 0; padding-right:20px; padding-left:0; line-height:1.85; direction:rtl; text-align:right;">
+      <li>على التطبيق أن <b>يكشف نقطة <code>/metrics</code> على بورت <code>http</code> مسمّى</b> (توجد Client Libraries لكل لغة رئيسية تنشر Counters/Gauges/Histograms بصيغة Prometheus).</li>
+      <li>أنشئ <b><code>ServiceMonitor</code> Custom Resource</b> يطابق الـ Label Selector تطبيقك — فيكتشفه Prometheus عبر الـ CRD (وHelm/Operator يوصل الباقي تلقائيًا).</li>
+    </ol>
+  </div>
+  <div class="code mini"><span class="p">apiVersion</span>: <span class="s">monitoring.coreos.com/v1</span>
+<span class="p">kind</span>: <span class="s">ServiceMonitor</span>
+<span class="p">metadata</span>:
+  <span class="p">name</span>: <span class="s">my-app</span>
+  <span class="p">namespace</span>: <span class="s">observability</span>
+  <span class="p">labels</span>:
+    <span class="p">release</span>: <span class="s">kube-prometheus-stack</span>   <span class="g"># يجب أن يطابق ما يختاره الـ Prometheus Operator</span>
+<span class="p">spec</span>:
+  <span class="p">selector</span>:
+    <span class="p">matchLabels</span>:
+      <span class="p">app</span>: <span class="s">my-app</span>                    <span class="g"># يختار Service تطبيقك أنت عبر Labels</span>
+  <span class="p">namespaceSelector</span>:
+    <span class="p">matchNames</span>:
+      - <span class="s">default</span>                      <span class="g"># حيث يعيش Service التطبيق</span>
+  <span class="p">endpoints</span>:
+    - <span class="p">port</span>: <span class="s">http</span>                     <span class="g"># اسم (NAME) بورت الـ Service الذي يخدم /metrics</span>
+      <span class="p">path</span>: <span class="s">/metrics</span>
+      <span class="p">interval</span>: <span class="s">30s</span></div>
+  <div class="grid3">
+    <div class="panel"><p class="ptitle">selector.matchLabels</p><p class="small" style="margin:0;">يجد <b>Service</b> التطبيق.</p></div>
+    <div class="panel"><p class="ptitle">endpoints.port</p><p class="small" style="margin:0;">يشير إلى <b>اسم</b> بورت الـ Service — لهذا قلنا «على بورت <code>http</code>».</p></div>
+    <div class="panel"><p class="ptitle">Label الـ release</p><p class="small" style="margin:0;">ما تطابقه قواعد اكتشاف الـ Operator — هذا هو «الـ Auto-wiring» الذي يقدمه Helm.</p></div>
+  </div>
+  <div class="mark m-ok"><span class="tag">✅ تحقق من النجاح</span>استعلم <code>up{namespace="default"}</code> في Explore — تطبيقك يجب أن يظهر بقيمة <code>1</code> خلال فاصل scrape أو اثنين.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>Logs = <b>صفر إعدادات</b> (Promtail يجمع تلقائيًا) · Metrics = <b>نقطة /metrics + ServiceMonitor CRD</b> · Label الـ <code>release:</code> يربط الـ CRD بالـ Operator · التحقق: <code>up{namespace="default"} == 1</code>.</div>
+  <p class="lead" style="margin-top:6px;">⏭️ حين تسوء الأمور — الدفتر: ← <a class="tlink" href="#ch-11">الجزء 11: حل المشكلات</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 19 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-09b">السابق</a> · <a class="tlink" href="#ch-11">التالي</a></span></div>
+</div>
+
+<!-- ═══ 20 · CH11 ═══ -->
+<div class="sheet" id="ch-11">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 11 · الدفتر 1/2</div><h1 class="t">🛠️ Troubleshooting — السيناريوهات 1–3</h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <p class="lead">فكّر بمنطق: <b>عرض ← تشخيص ← سبب جذري ← إصلاح</b>. تسلسل أوامر التشخيص أهم من حفظ الإصلاحات.</p>
+  <div class="zone" style="border-right:5px solid var(--fail); border-left:2px solid var(--line2); margin:7px 0;">
+    <p class="ptitle">🔴 السيناريو 1 — Pods عالقة في Pending</p>
+    <table class="tb tight">
+      <tr><td style="width:17%;">العرض</td><td><code>kubectl get pods -n observability</code> ← Pods جاثمة في <span class="stbad st-fail">Pending</span> لا تبدأ</td></tr>
+      <tr><td>التشخيص</td><td><code>kubectl describe pod &lt;pod&gt; -n observability</code> ← الأحداث تُظهر <b><code>FailedScheduling: Insufficient cpu / memory</code></b></td></tr>
+      <tr><td>السبب الجذري</td><td>الكلستر يفتقر CPU/Memory حرّة — <i>طلبات</i> الموارد الافتراضية للـ Chart لا تتسع على Node الـ Minikube، والـ Scheduler لن يضع Podًا لا تتسع طلباته</td></tr>
+      <tr><td>الإصلاح</td><td><span class="stbad st-ok">قلّل الطلبات</span> (أعلام <code>--set</code> من الجزء 8) أو <span class="stbad st-ok">كبّر Minikube</span> (<code>--cpus=... --memory=...</code>)</td></tr>
+      <tr><td>الدرس</td><td><code>Pending</code> = <b>مشكلة جدولة</b> = انظر إلى <i>الطلبات مقابل المتاح</i> قبل أي شيء آخر</td></tr>
+    </table>
+  </div>
+  <div class="zone" style="border-right:5px solid var(--fail); border-left:2px solid var(--line2); margin:7px 0;">
+    <p class="ptitle">🔴 السيناريو 2 — Grafana بحالة OOMKilled</p>
+    <table class="tb tight">
+      <tr><td style="width:17%;">العرض</td><td>Grafana يعيد التشغيل باستمرار؛ <code>kubectl describe pod</code> يُظهر <span class="stbad st-fail">OOMKilled</span> (Exit Code 137)</td></tr>
+      <tr><td>السبب الجذري</td><td>الـ Container <b>نفدت ذاكرته</b> — تجاوز <i>حدّ</i> الـ Memory الخاص به</td></tr>
+      <tr><td>شخّص أولًا</td><td><b>افحص ذاكرة الـ Node الحرة أولًا</b> (<code>kubectl top nodes</code>) — <b>لا ترفع حدّ Grafana بدم بارد</b></td></tr>
+      <tr><td>الإصلاح</td><td>الـ Node فيها مجال ← <span class="stbad st-ok">ارفع الحدّ</span> عبر <code>--set</code>؛ الـ Node مكتظة ← <span class="stbad st-ok">حرّر الموارد</span> (عطّل مكوّنات، قلّم Pods، كبّر Minikube)</td></tr>
+      <tr><td>الدرس</td><td><code>OOMKilled</code> = مشكلة <b>حدّ</b>؛ إنهاك الـ Node = مشكلة <b>سعة</b>. شخّص أي الاثنين أمامك.</td></tr>
+    </table>
+  </div>
+  <div class="zone" style="border-right:5px solid var(--fail); border-left:2px solid var(--line2); margin:7px 0;">
+    <p class="ptitle">🔴 السيناريو 3 — Grafana في CrashLoopBackOff مع خطأ Provisioning</p>
+    <table class="tb tight">
+      <tr><td style="width:17%;">العرض</td><td>Grafana يدور في <span class="stbad st-fail">CrashLoopBackOff</span>؛ Logs تُظهر <b>«Datasource provisioning error»</b></td></tr>
+      <tr><td>التشخيص</td><td><code>kubectl logs &lt;grafana-pod&gt; -n observability</code> · <code>kubectl get configmap -n observability</code> ← ستجد <b>ConfigMapَي Datasource، كلاهما Default</b></td></tr>
+      <tr><td>السبب الجذري</td><td><b>Datasourceان معلَّمان Default</b> — Grafana يسمح <b>بواحد</b> بالضبط؛ التزويد يفشل عند كل إقلاع ← حلقة هدم. <i>ليست</i> مشكلة موارد — فشل تحقق Config قد يُسقط Podًا مضبوط الحجم تمامًا.</td></tr>
+      <tr><td>الإصلاح</td><td><b>وقاية:</b> ثبّت loki-stack مع <code>defaultDatasourceEnabled=false</code> · <b>علاج:</b> احذف <code>isDefault: true</code> من الـ ConfigMap الزائد ثم <code>kubectl delete pod</code> (الـ Deployment يعيد إنشاءه نظيفًا)</td></tr>
+      <tr><td>الدرس</td><td><b>اقرأ Logs الانهيار</b> — رسالة الخطأ تسمّي النظام الفرعي (Provisioning)، وهذا يشير مباشرة إلى الـ ConfigMaps. <b>هذه قصة المقابلة النجمية.</b></td></tr>
+    </table>
+  </div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 20 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-10">السابق</a> · <a class="tlink" href="#ch-11b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 21 · CH11b ═══ -->
+<div class="sheet" id="ch-11b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 11·b · الدفتر 2/2</div><h1 class="t">🛠️ السيناريوهان 4–5 + التنظيف</h1></div><span class="hmeta">🟠 6 MIN</span></div></div>
+  <div class="zone" style="border-right:5px solid var(--fail); border-left:2px solid var(--line2); margin:7px 0;">
+    <p class="ptitle">🔴 السيناريو 4 — «Connection refused» من Windows / WSL</p>
+    <table class="tb tight">
+      <tr><td style="width:17%;">العرض</td><td>متصفح Windows لا يصل إلى <code>localhost:3000</code> رغم أن الـ port-forward يعمل</td></tr>
+      <tr><td>السبب الجذري</td><td>النفق ارتُبط على الـ loopback <b>داخل الـ WSL VM فقط</b> — كان علم <code>--address 0.0.0.0</code> مفقودًا</td></tr>
+      <tr><td>الإصلاح</td><td><span class="stbad st-ok">أعد الأمر كاملًا</span> <code>kubectl port-forward --address 0.0.0.0 -n observability svc/kube-prometheus-stack-grafana 3000:80</code></td></tr>
+      <tr><td>الدرس</td><td>على WSL، متصفحك والكلستر تسكنهما <b>حدود شبكية مختلفة</b> — اربط كل الواجهات ليعمل الترحيل</td></tr>
+    </table>
+  </div>
+  <div class="zone" style="border-right:5px solid var(--warn); border-left:2px solid var(--line2); margin:7px 0;">
+    <p class="ptitle">🟠 السيناريو 5 — «Grafana لا يُظهر بيانات» (تسلسل الاستدلال العام)</p>
+    <p class="small" style="margin:2px 0;">اعمل على السلسلة <b>بالترتيب</b> — الأسباب المملة هي الأكثر شيوعًا:</p>
+    <ol class="small" style="margin:2px 0; padding-right:20px; padding-left:0; line-height:1.95; direction:rtl; text-align:right;">
+      <li><b>هل Pod الخلفية يعمل؟</b> ← <code>kubectl get pods -n observability</code> (Loki أو Prometheus منهار = لا استعلام سينجح).</li>
+      <li><b>هل الـ Datasource حي؟</b> ← Explore ← شغّل <code>up</code> (Prometheus) أو <code>{namespace="observability"}</code> (Loki). إن عمل <i>Explore</i> ولم يعمل Dashboard، فالمشكلة في استعلام/نطاق زمن الـ Dashboard — لا في الـ Stack.</li>
+      <li><b>Metrics التطبيق مفقودة تحديدًا؟</b> ← لا نقطة <code>/metrics</code>، أو الـ ServiceMonitor Selector لا يطابق — افحص <code>up</code> للـ Target.</li>
+      <li><b>الـ Namespace الصحيح؟ النطاق الزمني الصحيح؟</b> ← الأسباب البسيطة تستحق نظرة أولًا.</li>
+    </ol>
+  </div>
+  <h3 class="sec"><span class="n">12</span>التنظيف — إزالة الـ Stack بالكامل</h3>
+  <div class="code mini">helm uninstall kube-prometheus-stack -n observability
+helm uninstall loki-stack            -n observability
+kubectl delete namespace observability</div>
+  <div class="mark m-warn"><span class="tag">⚠ ملاحظة عملية</span>حذف الـ Namespace يزيل ما تركه الـ Chartان <i>بداخله</i> — لكن <b>الـ CRDs التي ثبّتها <code>kube-prometheus-stack</code> هي Cluster-Scoped</b> وقد تبقى بعد الـ Uninstall. احذفها يدويًا إن أردت Cluster نظيفًا تمامًا.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>port-forward على WSL يحتاج <code>--address 0.0.0.0</code> · سلسلة «لا بيانات»: <b>Pod الخلفية ← الـ Datasource (Explore) ← Target التطبيق ← الـ Namespace/النطاق الزمني</b> · التنظيف: <b>helm uninstall مرتين + حذف الـ Namespace</b> (+ الـ CRDs Cluster-Scoped يدويًا).</div>
+  <p class="lead" style="margin-top:6px;">⏭️ الآن اقرأ النظام كله من بعيد: ← <a class="tlink" href="#ch-13">الجزء 13: النموذج الذهني</a></p>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 21 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-11">السابق</a> · <a class="tlink" href="#ch-13">التالي</a></span></div>
+</div>
+
+<!-- ═══ 22 · CH13 ═══ -->
+<div class="sheet" id="ch-13">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 13</div><h1 class="t">🗺️ The Mental Model — المعمارية في صفحة</h1></div><span class="hmeta">🟡 5 MIN</span></div></div>
+<div class="tree" style="font-size:9.5px; line-height:1.55;">                      <b>YOUR HOST</b>  (Windows / WSL)
+ ┌──────────────────────────────────────────────────────────────┐
+ │  Browser ──► http://localhost:3000        (admin/admin123)   │
+ │      ▲                                                       │
+ │      └── kubectl port-forward --address 0.0.0.0              │
+ │            -n observability \                                │
+ │            svc/kube-prometheus-stack-grafana 3000:80         │
+ └──────────────────────────┬───────────────────────────────────┘
+                            │  tunnel into the cluster
+━━━━━━━━━━━━━━━━━━━ <b>MINIKUBE CLUSTER</b> ━━━━━━━━━━━━━━━━━━━━━━━━
+      namespace: <u>observability</u>
+ ┌────────────────────────────────────────────────────────────┐
+ │                 <b>GRAFANA</b>  (Deployment)                    │
+ │       الواجهة الوحيدة — لا تخزّن أي بيانات أصلًا             │
+ │     ▲ PromQL queries             ▲ LogQL queries           │
+ └─────┼────────────────────────────┼──────────────────────────┘
+       │                            │
+ ┌─────┴──────────────┐   ┌─────────┴────────────┐
+ │    <b>PROMETHEUS</b>    │   │        <b>LOKI</b>         │
+ │  pull model · TSDB │   │ label index + chunks │
+ │ time series store  │   │ store (disk/object)  │
+ └────────▲───────────┘   └──────────▲───────────┘
+          │ PULL /metrics            │ PUSH (HTTP, batched)
+          │                inside Loki:
+          │     <i>Promtail → Distributor → Ingester → Store</i>
+          │           (<i>Querier</i> serves Grafana's LogQL)
+ ┌────────┴──────────────────────────────────────────────────┐
+ │              <b>EVERY NODE</b>   (DaemonSets)                 │
+ │  ┌───────────────┐        ┌────────────────────────┐      │
+ │  │<b>node-exporter</b>│        │       <b>Promtail</b>       │      │
+ │  │ host metrics: │        │ tails /var/log/pods,   │      │
+ │  │ cpu/mem/disk/ │        │ attaches labels        │      │
+ │  │ net           │        │ (ns/pod/ctr/node),     │      │
+ │  └───────────────┘        │ ships to Distributor   │      │
+ │                           └────────────────────────┘      │
+ └───────────────────────────────────────────────────────────┘
+ ALSO FEEDING PROMETHEUS:
+  • <i>kube-state-metrics</i> ── watches K8s API ──► pod status/replicas/restarts
+  • <i>cAdvisor</i> (inside kubelet) ────────► per-container cpu/mem usage
+  • <i>your apps</i> ── /metrics ─(ServiceMonitor CRD)─► auto-discovered</div>
+  <div class="m-exam" style="margin-top:9px;"><span class="tag">🧠 النموذج الذهني في فقرة</span>الـ Nodes تنتج إشارات خام. <b>Promtail يدفع الـ Logs</b> إلى Loki الذي يفهرس <i>الـ Labels فقط</i> ويضغط الـ Chunks في التخزين. <b>Prometheus يسحب الـ Metrics</b> من node-exporter وcAdvisor وkube-state-metrics وأي تطبيق يكشف <code>/metrics</code> + ServiceMonitor. كلا النظامين يتحدثان <b>نفس لغة الـ Labels</b> (namespace/pod/container/node). <b>Grafana لا يخزّن شيئًا</b> — يستعلم الخلفيتين حيًّا (PromQL/LogQL) ويعرضهما للبشر. وتصل إلى Grafana من حاسبك عبر <b>port-forward</b> لأن الـ ClusterIP الخاص به غير قابل للوصول خارجيًا.</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 22 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-11b">السابق</a> · <a class="tlink" href="#ch-13b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 23 · CH13b GLOSSARY ═══ -->
+<div class="sheet" id="ch-13b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 13·b</div><h1 class="t">📇 Quick Revision — جدول المصطلحات</h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead">كل مصطلح في هذا الكتاب، سطر واحد لكل مصطلح. إن استطعت تعريفها كلها دون نظر — فأنت جاهز.</p>
+  <div class="grid2">
+    <div>
+      <div class="taskhead" style="margin-top:0;">TASK [الإشارات + الـ Logs]</div>
+      <table class="tb tight">
+        <tr><th style="width:31%;">المصطلح</th><th>التعريف في سطر</th></tr>
+        <tr><td><b>Observability</b></td><td>فهم حالة النظام من بياناته هو — <b>بدون نشر Code جديد</b> لسؤال جديد</td></tr>
+        <tr><td><b>Log</b></td><td>سجل حدث منفصل مختوم بالوقت — «ماذا حدث وماذا قال»</td></tr>
+        <tr><td><b>Metric</b></td><td>قياس رقمي عبر الزمن — «كم، بأي سرعة، كم مرة»</td></tr>
+        <tr><td><b>Trace</b></td><td>رحلة Request واحد عبر الخدمات — «أين ذهب الوقت»</td></tr>
+        <tr><td><b>Visualization</b></td><td>Dashboards تحوّل الإشارات الخام إلى ما يمكن للإنسان الفعل بناءً عليه</td></tr>
+        <tr><td><b>Loki</b></td><td>خلفية تجميع Logs؛ يفهرس <b>الـ Labels فقط</b> ويخزّن Chunks مضغوطة</td></tr>
+        <tr><td><b>Promtail</b></td><td>DaemonSet يقرأ <code>/var/log/pods</code> على كل Node؛ يدفع إلى Loki</td></tr>
+        <tr><td><b>Distributor</b></td><td>يحقّق ويعمل Hash لتدفقات الـ Logs الواردة</td></tr>
+        <tr><td><b>Ingester</b></td><td>يدفع الـ Streams دفعات Chunks ويكتبها</td></tr>
+        <tr><td><b>Store</b></td><td>يحفظ الـ Chunks + الـ Index (Object Storage أو Disk)</td></tr>
+        <tr><td><b>Querier</b></td><td>ينفّذ استعلامات LogQL القادمة من Grafana</td></tr>
+        <tr><td><b>Log Stream</b></td><td>مزيج Labels فريد — كل مجموعة Labels مختلفة = Stream مستقلة</td></tr>
+        <tr><td><b>LogQL</b></td><td>لغة استعلام Loki: محدد Stream ← فلترة أسطر ← غلاف Metric</td></tr>
+        <tr><td><b>Chunk</b></td><td>دفعة أسطر Logs مضغوطة في Object Storage / Disk</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="taskhead" style="margin-top:0;">TASK [Metrics · العرض · النشر]</div>
+      <table class="tb tight">
+        <tr><th style="width:31%;">المصطلح</th><th>التعريف في سطر</th></tr>
+        <tr><td><b>Prometheus</b></td><td>خلفية Metrics قائمة على السحب تخزّن Time Series</td></tr>
+        <tr><td><b>Pull Model</b></td><td>Prometheus يسحب الـ Targets على فاصل؛ الـ Target الميت = <code>up 0</code></td></tr>
+        <tr><td><b>Time Series</b></td><td>اسم Metric + Labels مفتاح/قيمة + قيم مختومة بالوقت</td></tr>
+        <tr><td><b>PromQL</b></td><td>لغة استعلام Prometheus — تجميع، فلترة، معدلات</td></tr>
+        <tr><td><b>Alertmanager</b></td><td>يوجّه شروط PromQL إلى Slack/Email/PagerDuty <i>(معطّل هنا)</i></td></tr>
+        <tr><td><b>node-exporter</b></td><td>DaemonSet يعرض مقاييس الـ Host — طبقة الـ <b>Machine</b></td></tr>
+        <tr><td><b>kube-state-metrics</b></td><td>يراقب الـ K8s API — حالة الـ Objects: Replicas وRestarts</td></tr>
+        <tr><td><b>cAdvisor</b></td><td>مدمج في الـ kubelet — CPU/Memory لكل Container</td></tr>
+        <tr><td><b>ServiceMonitor</b></td><td>CRD يصرّح بأي Services/Pods يسحب Prometheus</td></tr>
+        <tr><td><b>Grafana</b></td><td>الواجهة الموحدة؛ لا يخزّن شيئًا — يستعلم الـ Data Sources حيًّا</td></tr>
+        <tr><td><b>Data Source</b></td><td>URL + Auth + لغة استعلام (PromQL أو LogQL) داخل Grafana</td></tr>
+        <tr><td><b>Dashboard / Panel</b></td><td>الـ Dashboard مجموعة Panels؛ كل Panel يعرض استعلامًا واحدًا</td></tr>
+        <tr><td><b>Helm</b></td><td>مدير حزم K8s: Charts ← Releases من Repositories</td></tr>
+        <tr><td><b>DaemonSet</b></td><td>Pod واحد لكل Node — للـ Collectors المحلية للـ Node</td></tr>
+        <tr><td><b>port-forward</b></td><td>نفق من ClusterIP Service إلى <code>localhost</code> (<code>--address 0.0.0.0</code> على WSL)</td></tr>
+        <tr><td><b>Pending · OOMKilled · CrashLoopBackOff</b></td><td>حالات الفشل الثلاث: جدولة / حدّ الذاكرة / انهيار الإقلاع</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">طريقة المراجعة</span>غطِّ العمود الأيمن بيدك، اقرأ كل مصطلح، وقُل التعريف بصوت مسموع. أي مصطلح تتعثر فيه ← اقفز إلى جزئه: المصطلحات تطابق الـ <a class="tlink" href="#toc">فهرس المحتويات</a> واحدًا لواحد.</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 23 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-13">السابق</a> · <a class="tlink" href="#ch-14">التالي</a></span></div>
+</div>
+
+<!-- ═══ 24 · CH14 ═══ -->
+<div class="sheet" id="ch-14">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 14 · المقابلات</div><h1 class="t">🎤 أسئلة المفاهيم — بإجابات مركّزة</h1></div><span class="hmeta">🟠 10 MIN</span></div></div>
+  <div class="grid2">
+    <div class="qa"><span class="qn">Q1</span> <b>ما هي الـ Observability؟</b><br><span class="ans">فهم ما يحدث داخل النظام من البيانات التي ينتجها — <b>بدون نشر Code جديد لسؤال جديد</b>. الركائز: Logs وMetrics وTraces وVisualization.</span></div>
+    <div class="qa"><span class="qn">Q2</span> <b>Logs vs Metrics vs Traces — متى تستخدم كلًا؟</b><br><span class="ans">Logs = <i>ماذا حدث</i> (أحداث حرفية). Metrics = <i>كم وبأي سرعة</i> (اتجاهات وتنبيه). Traces = <i>أين ذهب الوقت</i> (لكل Hop). تدفق التصحيح: تنبيه ← Trace ← Log.</span></div>
+    <div class="qa"><span class="qn">Q3</span> <b>لماذا Loki أرخص 10–20× من أنظمة النص الكامل؟</b><br><span class="ans">يفهرس <b>الـ Metadata (Labels) فقط</b> لا نص الـ Logs؛ النص يُبحث لحظة الاستعلام. والـ Chunks تُضغط في <b>Object Storage رخيص</b>.</span></div>
+    <div class="qa"><span class="qn">Q4</span> <b>Pull vs Push — نموذج Prometheus مقابل Promtail؟</b><br><span class="ans">Prometheus <b>يسحب</b> (scrape على فاصل — سيطرة مركزية على الإيقاع؛ والـ Target الميت مرئي عبر <code>up=0</code>). وPromtail <b>يدفع</b> دفعات HTTP إلى Distributor الخاص بـ Loki.</span></div>
+    <div class="qa"><span class="qn">Q5</span> <b>لماذا Promtail وnode-exporter يعملان DaemonSets؟</b><br><span class="ans">بياناتهما <b>محلية للـ Node</b>: الـ Container Logs في <code>/var/log/pods</code> لكل Node؛ ومقاييس الـ Host لكل Machine. Pod لكل Node = تغطية كاملة.</span></div>
+    <div class="qa"><span class="qn">Q6</span> <b>ممّ يتكوّن الـ Time Series في Prometheus؟</b><br><span class="ans"><b>اسم Metric + Labels مفتاح/قيمة + سلسلة قيم مختومة بالوقت.</b></span></div>
+    <div class="qa"><span class="qn">Q7</span> <b>node-exporter vs kube-state-metrics vs cAdvisor؟</b><br><span class="ans">مقاييس الـ Machine (DaemonSet) مقابل <i>حالة الـ Objects</i> من API Server (حالة Pods وReplicas وRestarts) مقابل استهلاك كل Container المدمج في kubelet.</span></div>
+    <div class="qa"><span class="qn">Q8</span> <b>ما الـ ServiceMonitor/PodMonitor ولماذا وُجدتا؟</b><br><span class="ans">CRDs تخبر Prometheus <b>تصريحيًا</b> أي Services/Pods يسحب — بلا قوائم IPs يدوية؛ نشر الـ CRD <i>هو</i> الإعداد (Helm يوصله تلقائيًا).</span></div>
+    <div class="qa"><span class="qn">Q10</span> <b>لماذا <code>helm upgrade --install</code> لا <code>helm install</code>؟</b><br><span class="ans"><b>الـ Idempotency</b> — إعادة التشغيل <b>ترقّي Release موجودًا في مكانه</b> بدل الفشل.</span></div>
+    <div class="qa"><span class="qn">Q11</span> <b>لماذا port-forward لا NodePort/LoadBalancer؟</b><br><span class="ans">Grafana منشور <b>ClusterIP</b> (داخلي فقط). الـ port-forward = وصول Lab بلا إعدادات؛ وNodePort/LB/Ingress هو ما تكشف به الخدمة رسميًا. على Windows/WSL <b>يجب</b> تمرير <code>--address 0.0.0.0</code>.</span></div>
+    <div class="qa"><span class="qn">Q12</span> <b>لماذا نُنزل retention الـ Prometheus إلى 6h في Lab؟</b><br><span class="ans">تخزين الـ TSDB يكبر مع الـ retention؛ الـ Lab لا يحتاج تاريخًا — 6h توفر قرصًا معتبرًا.</span></div>
+    <div class="qa"><span class="qn">Q13</span> <b>كيف ترتبط الـ Logs بالـ Metrics في هذا الـ Stack؟</b><br><span class="ans"><b>نفس الـ Label Model</b> — Promtail يلحق الـ Labels نفسها التي يستخدمها Prometheus (namespace/pod/container/node)، فتترجم شذوذة Metric مباشرة إلى Stream الـ Logs لذلك الـ Pod.</span></div>
+    <div class="qa"><span class="qn">Q14</span> <b>ما الخطوة الطبيعية التالية لهذا الـ Stack؟</b><br><span class="ans"><b>الـ Traces</b> — انشر Grafana Tempo (أو Jaeger/Zipkin) وجهّز التطبيقات بـ OpenTelemetry — لتكتمل الإشارات الثلاث.</span></div>
+    <div class="qa star"><span class="qn">Q9 ⭐</span> <b>احكِ لي عن Bug صلّحته في هذا الـ Stack.</b><br><span class="ans">Grafana في <code>CrashLoopBackOff</code> مع خطأ Datasource provisioning: <b>كلا الـ Chartين</b> زوّد Datasource معلَّمًا <b>Default</b>؛ وGrafana يسمح بواحد بالضبط. شخّصته عبر Logs الـ Pod + <code>kubectl get configmap</code>؛ وأصلحته بـ <code>grafana.sidecar.datasources.defaultDatasourceEnabled=false</code> (أو حذف <code>isDefault: true</code>).</span></div>
+  </div>
+  <div class="m-exam"><span class="tag">🎓 نصيحة المقابلة</span>السؤال Q9 هو <b>القصة النجمية</b> — يُظهر تصحيحًا حقيقيًا: اقرأ Log الانهيار، كوّن فرضية من النظام الفرعي المسمّى في الخطأ (Provisioning)، تحقّق بالـ ConfigMaps، طبّق الإصلاح الموجّه، واذكر الدرس (فشل تحقق Config قد يُسقط Podًا مضبوط الحجم تمامًا).</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 24 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-13b">السابق</a> · <a class="tlink" href="#ch-14b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 25 · CH14b ═══ -->
+<div class="sheet" id="ch-14b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 14·b</div><h1 class="t">📌 Command Cheat Sheet — ورقة الأوامر</h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <div class="tblwrap"><table class="tb tight">
+    <tr><th style="width:60%;">الأمر</th><th>ماذا يفعل / يخبرك</th></tr>
+    <tr><td><code>helm repo add prometheus-community https://prometheus-community.github.io/helm-charts</code></td><td>إضافة مستودع Charts</td></tr>
+    <tr><td><code>helm repo add grafana https://grafana.github.io/helm-charts</code></td><td>إضافة مستودع Charts</td></tr>
+    <tr><td><code>helm repo update</code></td><td>تحديث فهارس المستودعات</td></tr>
+    <tr><td><code>kubectl create namespace observability</code></td><td>Namespace مخصص للمنظومة</td></tr>
+    <tr><td><code>helm upgrade --install &lt;release&gt; &lt;chart&gt; -n observability --set ...</code></td><td>تثبيت/ترقية <b>Idempotent</b></td></tr>
+    <tr><td><code>helm list -n observability</code></td><td>الـ Releases المثبتة</td></tr>
+    <tr><td><code>helm uninstall &lt;release&gt; -n observability</code></td><td>إزالة Release</td></tr>
+    <tr><td><code>kubectl get pods -n observability</code></td><td>أول فحص صحة: Running / Pending / CrashLoopBackOff</td></tr>
+    <tr><td><code>kubectl describe pod &lt;pod&gt; -n observability</code></td><td>الأحداث: FailedScheduling وOOMKilled وسبب الـ Restart</td></tr>
+    <tr><td><code>kubectl logs &lt;pod&gt; -n observability</code></td><td>أخطاء التطبيق (خطأ الـ Provisioning يسكن هنا)</td></tr>
+    <tr><td><code>kubectl get configmap -n observability</code></td><td>إيجاد ConfigMaps تزويد الـ Datasources</td></tr>
+    <tr><td><code>kubectl top nodes</code> / <code>kubectl top pods -n observability</code></td><td>الـ CPU/Memory الفعلي مقابل الـ Requests</td></tr>
+    <tr><td><code>kubectl delete pod &lt;pod&gt; -n observability</code></td><td>فرض إعادة تشغيل نظيفة (بعد إصلاح ConfigMap مثلًا)</td></tr>
+    <tr><td><code>kubectl port-forward --address 0.0.0.0 -n observability svc/kube-prometheus-stack-grafana 3000:80</code></td><td>الوصول إلى Grafana على <code>localhost:3000</code></td></tr>
+  </table></div>
+  <div class="taskhead">TASK [استعلامات السطر الواحد]<span class="hst">احفظ هذه الأربعة</span></div>
+  <div class="code mini"><span class="p">{namespace="observability"}</span>                                          <span class="g"># Loki — Streams حية من الـ Namespace</span>
+<span class="p">up</span>                                                                    <span class="g"># Prometheus — 1 سحب ناجح، 0 ساقط</span>
+<span class="c">sum by (pod)</span> (<span class="c">rate</span>(<span class="p">container_cpu_usage_seconds_total</span>[<span class="y">5m</span>]))            <span class="g"># CPU لكل Pod (cAdvisor)</span>
+<span class="c">sum by (pod)</span> (<span class="c">count_over_time</span>(<span class="p">{namespace="default"}</span> |= <span class="s">"error"</span> [<span class="y">5m</span>])) <span class="g"># الأخطاء لكل Pod (LogQL)</span></div>
+  <div class="mark m-tip"><span class="tag">تذكّر</span>ترتيب التشخيص الذي لا يخفق أبدًا: <code>get pods</code> ← <code>describe pod</code> ← <code>logs</code> ← <code>get configmap</code> ← <code>top nodes/pods</code>. كل سيناريو في الجزء 11 يستخدم مجموعة جزئية من هذه الخمسة بالضبط.</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 25 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-14">السابق</a> · <a class="tlink" href="#ch-14c">التالي</a></span></div>
+</div>
+
+<!-- ═══ 26 · CH14c ═══ -->
+<div class="sheet" id="ch-14c">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Part 14·c</div><h1 class="t">🧪 اختبار الذات + مفتاح الإجابات</h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <div class="grid2">
+    <div class="qa"><span class="qn">1</span> أي مكوّن في Loki يحقّق ويعمل Hash للـ Streams الواردة؟</div>
+    <div class="qa"><span class="qn">2</span> من أي مسار يقرأ Promtail الـ Container Logs، وبأي نوع Workload؟</div>
+    <div class="qa"><span class="qn">3</span> ما الأشياء الثلاثة التي تتكوّن منها الـ Time Series؟</div>
+    <div class="qa"><span class="qn">4</span> أي مكوّن يعرض CPU/Memory لكل Container، وأين يعمل؟</div>
+    <div class="qa"><span class="qn">5</span> لماذا يهدم Grafana دوريًا عند وجود Datasourceين افتراضيين، وما علم <code>--set</code> الدقيق للإصلاح؟</div>
+    <div class="qa"><span class="qn">6</span> ماذا يعني <code>up == 0</code>؟</div>
+    <div class="qa"><span class="qn">7</span> لماذا لا يخزّن Grafana أي بيانات بنفسه؟</div>
+    <div class="qa"><span class="qn">8</span> ما الأوامر الثلاثة للتنظيف الكامل؟</div>
+    <div class="qa"><span class="qn">9</span> ما IDَي الـ Dashboard المجتمعية التي تغطيان Logs الـ Kubernetes وحجم الـ Logs؟</div>
+    <div class="qa"><span class="qn">10</span> لماذا يجب أن يستخدم الـ port-forward علم <code>--address 0.0.0.0</code> على Windows/WSL؟</div>
+  </div>
+  <div class="taskhead">TASK [مفتاح الإجابات]<span class="hst">قِس نفسك بصدق</span></div>
+  <div class="zone">
+    <ol class="small" style="margin:2px 0; padding-right:20px; padding-left:0; line-height:2.0; direction:rtl; text-align:right; font-size:12.3px;">
+      <li><b>الـ Distributor</b> (ثم الـ Ingester يدفع الـ Streams دفعات Chunks، والـ Store يحفظ Chunks + Index).</li>
+      <li><b><code>/var/log/pods</code></b> على الـ Node الخاصة به؛ وPromtail يعمل <b>DaemonSet</b> — Pod لكل Node، لأن الـ Logs ملفات محلية للـ Node.</li>
+      <li><b>اسم Metric + Labels مفتاح/قيمة + سلسلة قيم مختومة بالوقت.</b></li>
+      <li><b>cAdvisor</b>، المدمج في <b>الـ kubelet</b>.</li>
+      <li>Grafana يسمح <b>بافتراضي واحد بالضبط</b>؛ والتزويد يفشل عند كل إقلاع. الحل: <code>--set grafana.sidecar.datasources.defaultDatasourceEnabled=false</code> عند تثبيت loki-stack.</li>
+      <li>الـ Target ساقط — لم يستطع Prometheus سحبه (الفشل المرئي مكسب من نموذج السحب).</li>
+      <li>إنه <b>طبقة عرض</b>: يتصل بـ Data Sources (Prometheus وLoki) ويستعلمها <b>حيًّا</b>.</li>
+      <li><code>helm uninstall kube-prometheus-stack -n observability</code> ← <code>helm uninstall loki-stack -n observability</code> ← <code>kubectl delete namespace observability</code>.</li>
+      <li><b>13639</b> (Kubernetes Logs) و<b>12611</b> (Log volume)، تُستورد من واجهة Grafana.</li>
+      <li>بدونه يرتبط النفق بالـ loopback داخل WSL فقط، فيحصل متصفح Windows على <b>connection refused</b>؛ و<code>0.0.0.0</code> يربط كل واجهات الجهاز.</li>
+    </ol>
+  </div>
+  <div class="mark m-key" style="margin-top:10px;"><span class="tag">الفحص النهائي</span>إن استطعت رسم معمارية الجزء 13 من الذاكرة، وتعريف كل مصطلح في الجزء 13·b دون نظر، والإجابة على أسئلة المقابلات الـ 14 بصوت مسموع، وتنفيذ النشر من ورقة الأوامر — <b>فأنت تملك هذا الـ Stack.</b> انتهى الطريق هنا. ▶</div>
+  <div class="folio"><span>📘 Observability Study Guide · <span class="by">By Nabawy</span></span><span class="fnum">— 26 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-14b">السابق</a> · <a class="tlink" href="#toc">▲ الأعلى</a></span></div>
+</div>
+
+</body>
+</html>

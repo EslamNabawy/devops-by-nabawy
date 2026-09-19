@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["cicd-178-pdf-27-rollback-recovery"]={"html":"\r\n\r\n\r\n\r\n\r\nCI/CD Engineering — PDF 27: Rollback &amp; Recovery\r\n","toc":[],"words":299,"assets":[]};

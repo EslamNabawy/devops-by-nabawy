@@ -1,0 +1,47 @@
+/* tokens.css — ALL hex colors and font families live here. Nothing else
+   may contain a hex literal or font-family. */
+:root {
+  --t-paper: #ffffff;
+  --t-ink: #1c1a15;
+  --t-muted: #6b6455;
+  --t-line: #e3ddcf;
+  --t-accent: #1f6feb;
+  --t-focus: #1f6feb;
+  --t-danger: #a03f3c;
+  --t-radius: 10px;
+  --t-font: "InterVariable", "Segoe UI", "Noto Naskh Arabic", system-ui,
+    sans-serif;
+  --t-mono: "JetBrains Mono", Consolas, monospace;
+}
+:root[data-theme="dark"] {
+  --t-paper: #14120e;
+  --t-ink: #ece6d8;
+  --t-muted: #a89e8a;
+  --t-line: #35301f;
+  --t-accent: #7aa7f5;
+  --t-focus: #7aa7f5;
+  --t-danger: #f4928a;
+}
+/* Track hues: mark + tint, light then dark. Hue = identity only. */
+:root {
+  --tr-linux-mark: #796006; --tr-linux-tint: #F4EBD1;
+  --tr-aws-mark: #974C00; --tr-aws-tint: #FFE6D6;
+  --tr-docker-mark: #006E8C; --tr-docker-tint: #D3F1FD;
+  --tr-kubernetes-mark: #3860AC; --tr-kubernetes-tint: #E2ECFD;
+  --tr-terraform-mark: #6F4FA1; --tr-terraform-tint: #EEE7FD;
+  --tr-ansible-mark: #A03F3C; --tr-ansible-tint: #FFE4E1;
+  --tr-jenkins-mark: #973F6E; --tr-jenkins-tint: #FFE2EE;
+  --tr-cicd-mark: #137738; --tr-cicd-tint: #DCF2DF;
+  --tr-aiops-mark: #06726E; --tr-aiops-tint: #D2F3F0;
+}
+:root[data-theme="dark"] {
+  --tr-linux-mark: #CFAD4E; --tr-linux-tint: #302504;
+  --tr-aws-mark: #EC9C63; --tr-aws-tint: #391F0C;
+  --tr-docker-mark: #49C1EA; --tr-docker-tint: #012B39;
+  --tr-kubernetes-mark: #87B1FD; --tr-kubernetes-tint: #19263F;
+  --tr-terraform-mark: #BD9FF2; --tr-terraform-tint: #2A203B;
+  --tr-ansible-mark: #F4928A; --tr-ansible-tint: #3B1C1A;
+  --tr-jenkins-mark: #EA91BC; --tr-jenkins-tint: #381C2A;
+  --tr-cicd-mark: #76C788; --tr-cicd-tint: #122D19;
+  --tr-aiops-mark: #35C9C2; --tr-aiops-tint: #022D2B;
+}

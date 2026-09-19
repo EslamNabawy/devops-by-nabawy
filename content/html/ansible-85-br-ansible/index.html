@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>▶ الدليل الشامل لتعلم Ansible — By Nabawy — REDLINE Daylight</title>
+<style>
+:root{
+  --bg:#f7f6f3; --panel:#fffefb; --panel2:#f1efea; --ink:#2d2a26; --dim:#7d766c;
+  --line:#e4e0d8; --line2:#d4cfc4;
+  --red:#c0392b; --red-deep:#a93226; --red-t:#c0392b; --red-fill:#fdf0ee;
+  --ok:#1e8e5a; --t-ok:#e9f6ef; --chg:#b07d10; --t-chg:#faf3e2; --fail-t:#c0392b; --t-fail:#fdf0ee;
+  --skip:#8b857a; --cyan:#0e7490; --t-cyan:#e8f4f8;
+  --shadow:2px 2px 0 rgba(45,42,38,.14);
+}
+*{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+body{margin:0; background:#eceae5; font-family:'Segoe UI',system-ui,Tahoma,sans-serif; color:var(--ink);}
+@page{size:A4; margin:0;}
+.sheet{width:210mm; height:297mm; background:var(--bg); margin:9mm auto; padding:13mm 13mm 20mm; position:relative; border:1px solid var(--line2); page-break-after:always; overflow:hidden;}
+.sheet::before{content:''; position:absolute; top:0; left:0; right:0; height:7px; background:linear-gradient(to bottom,var(--red) 0 5px,var(--ink) 5px 7px);}
+@media print{ body{background:#fff;} .sheet{margin:0; border:none; box-shadow:none;} }
+.mono{font-family:'Consolas',monospace;}
+.ten{direction:ltr; unicode-bidi:isolate; font-weight:700;}
+.pghead{margin:0 0 9px; border-bottom:2px solid var(--ink); padding-bottom:6px;}
+.hrow{display:flex; align-items:flex-start; gap:10px;}
+.kick{font:800 10px 'Consolas',monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--red-t); margin-bottom:2px;}
+h1.t{font:800 20px/1.35 'Segoe UI',Tahoma,sans-serif; margin:0; border-right:5px solid var(--red); padding-right:11px;}
+.hmeta{margin-left:auto; font:800 9.5px 'Consolas',monospace; border:2px solid var(--red); color:#fff; background:var(--red); border-radius:4px; padding:2px 8px; white-space:nowrap;}
+.folio{position:absolute; bottom:6mm; left:13mm; right:13mm; display:flex; align-items:center; gap:8px; font:9.5px 'Consolas',monospace; color:var(--dim);}
+.folio::before,.folio::after{content:''; flex:1; border-top:1px solid var(--line2);}
+.folio .fnum{color:var(--ink); font-weight:700;}
+.folio .by{color:var(--red-t); font-weight:800;}
+a.tlink{color:var(--red-t); font-weight:700; text-decoration:none; border-bottom:2px dotted var(--red);}
+a.backtoc{color:var(--dim); text-decoration:none; border:1.5px solid var(--line2); border-radius:4px; padding:0 6px; font:800 9px 'Consolas',monospace; background:var(--panel);}
+a.backtoc:hover{color:var(--red-t); border-color:var(--red);}
+.taskhead{display:flex; align-items:baseline; gap:9px; font:700 13px 'Segoe UI',sans-serif; margin:11px 0 5px;}
+.taskhead::before{content:'◂'; color:var(--red); font-family:'Consolas',monospace;}
+.taskhead::after{content:''; flex:1; border-bottom:2px dotted var(--line2); transform:translateY(-3px);}
+.taskhead .hst{font:400 9.5px 'Consolas',monospace; color:var(--dim);}
+.mark{border-radius:10px 6px 6px 10px; border-right:4px solid; padding:6px 10px; margin:7px 0; font-size:12px; line-height:1.6; background:var(--panel);}
+.mark .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; margin-left:6px; color:var(--dim);}
+.mark .tag::before{content:'[ ';} .mark .tag::after{content:' ]';}
+.m-key{border-color:var(--red); background:var(--red-fill);} .m-key .tag{color:var(--red-t);}
+.m-ok{border-color:var(--ok); background:var(--t-ok);} .m-ok .tag{color:var(--ok);}
+.m-tip{border-color:var(--cyan); background:var(--t-cyan);} .m-tip .tag{color:var(--cyan);}
+.m-warn{border-color:var(--chg); background:var(--t-chg);} .m-warn .tag{color:var(--chg);}
+.m-fail{border-color:var(--fail-t); background:var(--t-fail);} .m-fail .tag{color:var(--fail-t);}
+.m-fun{border-color:var(--skip); background:var(--panel2);}
+.m-exam{border:2px solid var(--line2); border-right:5px solid var(--red); background:var(--panel); border-radius:10px 6px 6px 10px; box-shadow:var(--shadow); padding:6px 10px; margin:7px 0; font-size:12px; line-height:1.6;}
+.m-exam .tag{display:inline-block; font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; color:var(--red-t); margin-left:6px;}
+.panel{background:var(--panel); border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:8px 11px;}
+.ptitle{font:700 13.5px 'Segoe UI',sans-serif; margin:0 0 4px;}
+.blk{display:inline-block; border:2px solid var(--line2); border-radius:6px; padding:6px 10px; font-weight:700; font-size:11.5px; text-align:center; box-shadow:2px 2px 0 rgba(45,42,38,.16); background:var(--panel);}
+.blk small{display:block; font-weight:500; font-size:9.5px; margin-top:1px; color:var(--dim);}
+.b-red{background:var(--red); border-color:var(--red-deep); color:#fff;} .b-red small{color:#ffe3e0;}
+.b-ok{border-color:var(--ok); background:var(--t-ok);} .b-ok small{color:var(--ok);}
+.chipr{display:inline-flex; align-items:center; background:var(--panel); border:2px solid var(--line2); border-radius:4px; padding:3px 9px; font:700 10.5px 'Consolas',monospace; box-shadow:2px 2px 0 rgba(45,42,38,.14);}
+.fstem{width:2.5px; height:12px; background:var(--line2); margin:0 auto;}
+.fbar{border-top:2.5px solid var(--line2); height:0;}
+.fbarwrap{display:flex; justify-content:center;}
+.fbar2{width:50%}.fbar3{width:66.7%}
+.fcols{display:flex;}
+.fcol{flex:1; padding:0 5px; display:flex; flex-direction:column; align-items:center;}
+.fcol .fstub{width:2.5px; height:12px; background:var(--line2);}
+.darr{text-align:center; color:var(--red-t); font-size:12px; margin:1px 0;}
+.harrow{color:var(--red-t); font-size:12px; align-self:center;}
+.frow{display:flex; align-items:center; justify-content:center; gap:7px; flex-wrap:wrap;}
+.dnote{text-align:center; font-size:11px; color:var(--dim); margin-top:3px;}
+.zone{border:2px solid var(--line2); border-radius:8px; padding:8px 10px; background:var(--panel); box-shadow:var(--shadow);}
+.zlabel{font:800 9.5px 'Consolas',monospace; letter-spacing:.1em; color:var(--red-t); text-align:center; margin-bottom:6px;}
+.zlabel::before{content:'[ ';} .zlabel::after{content:' ]';}
+.code{background:#33383f; color:#eceef1; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:8px 11px; font:11px/1.55 'Consolas','SF Mono',monospace; white-space:pre; overflow-x:auto; direction:ltr; text-align:left; max-width:100%; margin:5px 0;}
+.code .p{color:#f5c96b;} .code .c{color:#9cc3ea;} .code .y{color:#f5d78e;} .code .r{color:#f19999;} .code .m{color:#f0b6cd;} .code .g{color:#a8adb5;} .code .s{color:#a3dfb8;}
+.code .ok{color:#6fd3a1; font-weight:700;} .code .chg{color:#f0b429; font-weight:700;} .code .fl{color:#f19999; font-weight:700;}
+.code.mini{font-size:10px; padding:6px 9px; line-height:1.5; margin:4px 0;}
+.tree{background:#33383f; color:#dfe2e6; border:2px solid var(--line2); border-radius:6px; box-shadow:var(--shadow); padding:9px 13px; font:11px/1.65 'Consolas',monospace; white-space:pre; overflow-x:auto; direction:ltr; text-align:left;}
+.tree b{color:#f5c96b;} .tree u{color:#a3dfb8; text-decoration:none;} .tree em{color:#f0b6cd; font-style:normal;} .tree i{color:#9cc3ea; font-style:normal;} .tree .g{color:#a8adb5;}
+.tblwrap{overflow-x:auto;}
+table.tb{width:100%; border-collapse:separate; border-spacing:0; border:2px solid var(--line2); border-radius:6px; overflow:hidden; font-size:11.5px; box-shadow:var(--shadow); background:var(--panel);}
+.tb th{background:var(--ink); color:#fff; border-bottom:3px solid var(--red); padding:5.5px 9px; text-align:right; font:800 10.5px 'Segoe UI',sans-serif;}
+.tb td{padding:5.5px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55;}
+.tb tr:nth-child(even) td{background:var(--panel2);}
+.tb tr:last-child td{border-bottom:none;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.grid2>*{min-width:0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+.grid3>*{min-width:0;}
+h3.sec{font:700 13.5px 'Segoe UI',sans-serif; margin:10px 0 5px;}
+h3.sec .n{color:var(--red-t); margin-left:5px; font-family:'Consolas',monospace;}
+p.lead{font-size:12.6px; line-height:1.75; margin:0 0 7px; color:#4a453e;}
+p.small,li{font-size:11.8px; line-height:1.65;}
+ul.tick{list-style:none; padding:0; margin:4px 0;}
+ul.tick li{padding:2.5px 2px;}
+.stbad{display:inline-block; border:2px solid; border-radius:4px; padding:0 7px; font:800 9.5px 'Consolas',monospace;}
+.st-ok{border-color:var(--ok); color:var(--ok); background:var(--t-ok);}
+.st-chg{border-color:var(--chg); color:var(--chg); background:var(--t-chg);}
+.st-fail{border-color:var(--fail-t); color:var(--fail-t); background:var(--t-fail);}
+.pill{display:inline-block; border:2px solid var(--red); color:var(--red-t); background:var(--red-fill); border-radius:4px; padding:2px 10px; font:700 11px 'Consolas',monospace;}
+.glos{border-right:4px solid var(--red); background:var(--panel); border-radius:6px 0 0 6px; padding:6px 10px; font-size:11px; line-height:1.6;}
+.glos b{font-family:'Consolas',monospace; color:var(--red-t);}
+.tocrow{display:flex; align-items:baseline; padding:4.5px 2px; font-size:12px;}
+.tocrow .tnum{font:700 11.5px 'Consolas',monospace; color:var(--red-t); width:36px; flex:none;}
+.tocrow .dots{flex:1; border-bottom:2px dotted var(--line2); margin:0 8px 4px;}
+.tocrow .tp{font-weight:800;}
+a.tocrow{color:inherit; text-decoration:none;}
+a.tocrow:hover .tp{color:var(--red-t);}
+.tocgrid{display:grid; grid-template-columns:1fr 1fr; gap:0 18px;}
+.lgd{display:flex; flex-wrap:wrap; gap:5px 11px; margin-top:6px;}
+.lgd div{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600;}
+.dot8{width:10px; height:10px; border:2px solid var(--line2); border-radius:3px; display:inline-block; flex:none;}
+.cover{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20mm;}
+.cover .stamp{background:var(--red); color:#fff; font:900 40px 'Consolas',monospace; padding:14px 24px; border-radius:8px; box-shadow:4px 4px 0 rgba(45,42,38,.28); transform:rotate(-2deg); margin-bottom:22px;}
+.cover .ckick{font:800 12px 'Consolas',monospace; letter-spacing:.28em; text-transform:uppercase; color:var(--red-t);}
+.cover h1{font:800 42px/1.3 'Segoe UI',Tahoma,sans-serif; margin:12px 0 4px;}
+.cover .ambrule{width:90px; border:none; border-top:6px solid var(--red); margin:14px auto;}
+.cover .sub{font-size:14px; color:var(--dim); max-width:148mm; line-height:1.8;}
+.cover .byline{margin-top:18px; font:800 16px 'Consolas',monospace; color:var(--red-t); letter-spacing:.08em;}
+.cover .byline small{display:block; font:600 10.5px 'Consolas',monospace; color:var(--dim); margin-top:3px; letter-spacing:.15em;}
+.cover .vols{display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center;}
+.volcard{border:2px solid var(--line2); border-radius:6px; background:var(--panel); box-shadow:var(--shadow); padding:9px 15px; font:800 12.5px 'Segoe UI',sans-serif;}
+.volcard small{display:block; font-weight:600; color:var(--dim); font-size:10px; margin-top:2px;}
+.volcard.on{border-color:var(--red); background:var(--red); color:#fff;} .volcard.on small{color:#ffe3e0;}
+.cover .cver{position:absolute; bottom:10mm; left:0; right:0; text-align:center; font:10px 'Consolas',monospace; letter-spacing:.22em; color:var(--dim);}
+code{font-family:'Consolas',monospace; background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:0 5px; font-size:.9em; direction:ltr; unicode-bidi:embed;}
+</style>
+</head>
+<body>
+
+<!-- ═══ 01 · COVER ═══ -->
+<div class="sheet cover">
+  <div class="stamp">▶_</div>
+  <div class="ckick">REDLINE DAYLIGHT · AUTOMATION HANDBOOK</div>
+  <h1>الدليل الشامل<br>لتعلُّم Ansible</h1>
+  <div class="ambrule"></div>
+  <div class="sub">شرح عملي ومنظم لـ <b>Ansible</b> مع الحفاظ على الـ <b>English Technical Terms</b> كما تُستخدم فعليًا في بيئة الـ DevOps — من الـ Architecture والـ SSH Keys، إلى الـ Modules والـ Inventory والـ Ad-hoc Commands والـ Playbooks، وصولًا إلى الـ Roles والـ Templates والـ Handlers و<b>Ansible Galaxy</b> — مع الصورة الكاملة والـ Mental Model للحفظ.</div>
+  <div class="byline">By Nabawy<small>AUTHOR &amp; COMPILER · إعداد وتنسيق</small></div>
+  <div class="vols">
+    <div class="volcard on">REDLINE EDITION<small>Daylight · A4-Fixed</small></div>
+    <div class="volcard">SSH<small>اتصال آمن</small></div>
+    <div class="volcard">Playbooks<small>YAML</small></div>
+    <div class="volcard">Roles<small>+ Galaxy 🌌</small></div>
+  </div>
+  <div class="cver">AGENTLESS · DECLARATIVE · IDEMPOTENT — V2 · BY NABAWY</div>
+</div>
+
+<!-- ═══ 02 · TOC ═══ -->
+<div class="sheet" id="toc">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Contents · فهرس الكتاب</div><h1 class="t">📖 المحتويات</h1></div><span class="hmeta">18 فصلًا + الخاتمة</span></div></div>
+  <div class="tocgrid">
+    <div>
+      <a class="tocrow" href="#summary"><span class="tnum">🗺️</span><span>الخريطة — ملخص تنفيذي</span><span class="dots"></span><span class="tp">3</span></a>
+      <a class="tocrow" href="#ch-01"><span class="tnum">01</span><span>Intro — مقدمة والفكرة الأساسية</span><span class="dots"></span><span class="tp">4</span></a>
+      <a class="tocrow" href="#ch-02"><span class="tnum">02</span><span>Features 1/2 — Agentless</span><span class="dots"></span><span class="tp">5</span></a>
+      <a class="tocrow" href="#ch-03"><span class="tnum">03</span><span>Features 2/2 — Declarative + Idempotency</span><span class="dots"></span><span class="tp">6</span></a>
+      <a class="tocrow" href="#ch-04"><span class="tnum">04</span><span>Architecture — المعمارية</span><span class="dots"></span><span class="tp">7</span></a>
+      <a class="tocrow" href="#ch-05"><span class="tnum">05</span><span>Comparison — مقارنة طرق الإدارة</span><span class="dots"></span><span class="tp">8</span></a>
+      <a class="tocrow" href="#ch-06"><span class="tnum">06</span><span>Use Cases — مجالات الاستخدام</span><span class="dots"></span><span class="tp">9</span></a>
+      <a class="tocrow" href="#ch-07"><span class="tnum">07</span><span>Installation + VS Code</span><span class="dots"></span><span class="tp">10</span></a>
+      <a class="tocrow" href="#ch-08"><span class="tnum">08</span><span>SSH Keys — الاتصال الآمن</span><span class="dots"></span><span class="tp">11</span></a>
+      <a class="tocrow" href="#ch-09"><span class="tnum">09</span><span>Modules — وحدات التنفيذ</span><span class="dots"></span><span class="tp">12</span></a>
+      <a class="tocrow" href="#ch-10"><span class="tnum">10</span><span>Inventory — ملف الـ Servers</span><span class="dots"></span><span class="tp">13</span></a>
+      <a class="tocrow" href="#ch-11"><span class="tnum">11</span><span>Ad-hoc Commands</span><span class="dots"></span><span class="tp">14</span></a>
+      <a class="tocrow" href="#ch-12"><span class="tnum">12</span><span>YAML Basics — أساسيات الصيغة</span><span class="dots"></span><span class="tp">15</span></a>
+    </div>
+    <div>
+      <a class="tocrow" href="#ch-13"><span class="tnum">13</span><span>Playbooks — الـ Hierarchy والمثال</span><span class="dots"></span><span class="tp">16</span></a>
+      <a class="tocrow" href="#ch-13b"><span class="tnum">13·b</span><span>تشغيل الـ Playbook + فهم النتائج</span><span class="dots"></span><span class="tp">17</span></a>
+      <a class="tocrow" href="#ch-14"><span class="tnum">14</span><span>Roles — الفكرة ولماذا نستخدمها</span><span class="dots"></span><span class="tp">18</span></a>
+      <a class="tocrow" href="#ch-15"><span class="tnum">15</span><span>Role Structure 1/2 — tasks &amp; handlers</span><span class="dots"></span><span class="tp">19</span></a>
+      <a class="tocrow" href="#ch-15b"><span class="tnum">15·b</span><span>Role Structure 2/2 — vars..meta</span><span class="dots"></span><span class="tp">20</span></a>
+      <a class="tocrow" href="#ch-16"><span class="tnum">16</span><span>استخدام Role + منصة Galaxy</span><span class="dots"></span><span class="tp">21</span></a>
+      <a class="tocrow" href="#ch-17"><span class="tnum">17</span><span>Role vs Galaxy vs ansible-galaxy</span><span class="dots"></span><span class="tp">22</span></a>
+      <a class="tocrow" href="#ch-18"><span class="tnum">18</span><span>الصورة الكاملة لـ Ansible</span><span class="dots"></span><span class="tp">23</span></a>
+      <a class="tocrow" href="#finale"><span class="tnum">🧠</span><span>Mental Model + Final Chain</span><span class="dots"></span><span class="tp">24</span></a>
+      <a class="tocrow" href="#finale2"><span class="tnum">📌</span><span>Quick Revision Table + الخلاصة</span><span class="dots"></span><span class="tp">25</span></a>
+    </div>
+  </div>
+  <div class="taskhead">TASK [دليل ألوان الحالة]<span class="hst">status legend</span></div>
+  <div class="lgd">
+    <div><span class="dot8" style="background:var(--ok)"></span><span class="stbad st-ok">ok</span> — الـ Server بالحالة المطلوبة، لا تغيير</div>
+    <div><span class="dot8" style="background:var(--chg)"></span><span class="stbad st-chg">changed</span> — تم تنفيذ تغيير بنجاح</div>
+    <div><span class="dot8" style="background:var(--fail-t)"></span><span class="stbad st-fail">failed</span> — حدث Error في الـ Task</div>
+    <div><span class="dot8" style="background:var(--red)"></span> RED — عناوين وهيكل (ديكور بنيوي)</div>
+  </div>
+  <div class="mark m-tip" style="margin-top:11px;"><span class="tag">DEBUG</span><b>كيف تستخدم الكتاب:</b> 18 فصلًا مترابطًا يغطي كل الـ Concepts — وكل المصطلحات التقنية بالإنجليزية كما تُستخدم فعليًا في بيئة الـ DevOps. الأكواد تُقرأ من اليسار والنص من اليمين. الفصول 14–17 مخصصة كاملة للـ Roles والـ Galaxy لأنها أهم نقطة توسع بعد الـ Playbooks.</div>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 2 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span></div>
+</div>
+
+<!-- ═══ 03 · SUMMARY ═══ -->
+<div class="sheet" id="summary">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Executive Summary</div><h1 class="t">🗺️ الملخص التنفيذي — الطريق كاملًا</h1></div><span class="hmeta">ابدأ من هنا</span></div></div>
+  <p class="lead">قبل لمس أي Command، هذه القصة كاملة — كل جملة رابط يأخذك لفصلها.</p>
+  <p class="lead">نبدأ في <a class="tlink" href="#ch-01">الفصل 1 — Intro</a>: Ansible أداة <b>Automation</b> مفتوحة المصدر في ثلاثة مجالات — <b>Configuration Management</b> و<b>Infrastructure Provisioning</b> و<b>Network Automation</b> — وفكرتها الجوهرية أنك تحدد الـ <b>Desired State</b> وAnsible يتولى التنفيذ. ثم مميزاتها الأربع: <a class="tlink" href="#ch-02">Agentless</a> (SSH/WinRM بلا Agents)، <a class="tlink" href="#ch-03">Simple Syntax + Declarative + Idempotency</a> — «Apache يجب أن يكون موجودًا» لا «نفّذ apt install».</p>
+  <p class="lead">في <a class="tlink" href="#ch-04">الفصل 4 — Architecture</a>: <b>Control Node</b> عليه Ansible وPlaybooks وInventory يتصل بـ <b>Managed Nodes</b> عبر SSH/WinRM. وفي <a class="tlink" href="#ch-05">الفصل 5 — Comparison</a> نقارن Manual وBash وAnsible على 3 Servers لتثبيت Nginx. وفي <a class="tlink" href="#ch-06">الفصل 6 — Use Cases</a> نفصل بين Terraform (Provisioning) وAnsible (Configuration).</p>
+  <p class="lead">العددة العملية: <a class="tlink" href="#ch-07">التثبيت + VS Code Extensions</a>، ثم <a class="tlink" href="#ch-08">SSH Passwordless</a> — Private Key يبقى، Public Key يُرفع. ثم <a class="tlink" href="#ch-09">الـ Modules</b> السبعة، <a class="tlink" href="#ch-10">الـ Inventory</a> بالمجموعات، و<a class="tlink" href="#ch-11">الـ Ad-hoc Commands</a> الفورية.</p>
+  <p class="lead">اللغة والتنفيذ: <a class="tlink" href="#ch-12">YAML</a> — الـ Indentation والهياكل الثلاثة — ثم <a class="tlink" href="#ch-13">الـ Playbook</a> وHierarchy الـ Play→Task، وتشغيله وقراءة <a class="tlink" href="#ch-13b">ok/changed/failed</a>. وعندما يكبر المشروع: <a class="tlink" href="#ch-14">الـ Roles</a> (Build Once, Reuse Everywhere)، <a class="tlink" href="#ch-15">هيكل المجلدات السبعة</a>، <a class="tlink" href="#ch-16">استخدام Role + منصة Galaxy</a>، والفرق الجوهري بين <a class="tlink" href="#ch-17">Role وGalaxy وansible-galaxy</a>.</p>
+  <p class="lead">نختم بالصورة الكاملة في <a class="tlink" href="#ch-18">الفصل 18</a>، ثم <a class="tlink" href="#finale">الـ Mental Model للحفظ</a> و<a class="tlink" href="#finale2">جدول الـ Quick Revision</a>. الطريق واضح. ▶</p>
+  <div class="m-key"><span class="tag">KEY IDEA</span><b>الفكرة الجامعة:</b> أنت تحدد الـ Desired State — وAnsible يتولى تنفيذ الخطوات المطلوبة للوصول إليها، دون تغييرات غير ضرورية عند التكرار.</div>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 3 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span></div>
+</div>
+
+<!-- ═══ 04 · CH1 INTRO ═══ -->
+<div class="sheet" id="ch-01">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 01</div><h1 class="t">🤖 Intro <span class="ten">— مقدمة ونظرة عامة</span></h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead"><b>Ansible</b> هي أداة <b>Automation</b> مفتوحة المصدر (<b>Open-Source</b>) تُستخدم بشكل أساسي في ثلاثة مجالات:</p>
+  <div class="grid3">
+    <div class="panel" style="border-top:3px solid var(--red);"><p class="ptitle">Configuration Management</p><p class="small" style="margin:0;">إدارة الإعدادات داخل الـ Servers.</p></div>
+    <div class="panel" style="border-top:3px solid var(--cyan);"><p class="ptitle">Infrastructure Provisioning</p><p class="small" style="margin:0;">بناء وتجهيز البنية التحتية.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">Network Automation</p><p class="small" style="margin:0;">أتمتة أجهزة الشبكة.</p></div>
+  </div>
+  <div class="mark m-key" style="margin-top:12px;"><span class="tag">KEY IDEA · الفكرة الأساسية</span>أنت تحدد الـ <b>Desired State</b> التي تريد أن يصل إليها الـ Infrastructure — و<b>Ansible يتولى تنفيذ الخطوات المطلوبة للوصول إليها</b>. أنت توصف النهاية، وهو يصنع الطريق.</div>
+  <div class="taskhead">TASK [كيف تعمل الفكرة عمليًا؟]<span class="hst">the core loop</span></div>
+  <div class="zone">
+    <div class="frow">
+      <div class="blk" style="min-width:160px;">✍️ أنت تكتب<small>الـ Desired State في YAML</small></div>
+      <span class="harrow">──►</span>
+      <div class="blk b-red" style="min-width:150px;">Ansible<small>يحسب الـ Steps المطلوبة</small></div>
+      <span class="harrow">──►</span>
+      <div class="blk b-ok" style="min-width:160px;">Infrastructure<small>يصل للحالة المطلوبة ✅</small></div>
+    </div>
+  </div>
+  <p class="dnote">نفس الـ Code في كل مرة = نفس النتيجة. لا Scripts عشوائية ولا خطوات منسية.</p>
+  <div class="mark m-tip"><span class="tag">DEBUG · لماذا هذا مهم؟</span>في الإدارة اليدوية، كل Server حالة مستقلة: من لمّس ماذا؟ ما الذي تغيّر؟ مع Ansible، الـ Infrastructure كلها <b>موصوفة في Code واحد</b> قابل للقراءة والمراجعة وإعادة التنفيذ — هذا جوهر الـ IaC mindset الذي تبنيه Ansible.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>احفظ المجالات الثلاثة بالترتيب: <b>Configuration Management · Infrastructure Provisioning · Network Automation</b> — والجملة الجوهرية: «تحديد الـ Desired State وAnsible ينفّذ الخطوات».</div>
+  <p class="lead" style="margin-top:8px;">⏭️ أربع مميزات تجعل Ansible بهذا الشكل — أولها وأشهرها: <a class="tlink" href="#ch-02">الفصل 2: Agentless</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 4 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> ◀ <a class="tlink" href="#ch-02">التالي</a></span></div>
+</div>
+
+<!-- ═══ 05 · CH2 AGENTLESS ═══ -->
+<div class="sheet" id="ch-02">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 02 · Features 1/2</div><h1 class="t">📡 Agentless <span class="ten">— بدون عميل</span></h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead">من أهم مميزات Ansible أنها <b>Agentless</b> — يعني <b>لا تحتاج إلى تثبيت برنامج أو Agent خاص بـ Ansible</b> على الـ Managed Nodes. لا تثبيت مسبق، لا صيانة Agents، لا Versions تتزامن.</p>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">🐧 في Linux</p><ul class="tick" style="margin:0;">
+      <li>الاتصال عادةً باستخدام <b>SSH</b>.</li>
+      <li>المتطلب الأساسي على الـ Managed Node: وجود بيئة <b>Python</b>.</li>
+    </ul></div>
+    <div class="panel"><p class="ptitle">🪟 في Windows</p><p class="small" style="margin:0;">يمكن استخدام <b>WinRM</b> أو <b>SSH</b> للاتصال والتنفيذ.</p></div>
+  </div>
+  <div class="taskhead">TASK [القناة بين الجهازين]<span class="hst">the connection</span></div>
+  <div class="zone">
+    <div class="frow">
+      <div class="blk b-red" style="min-width:190px;">Control Node<small>عليه Ansible فقط</small></div>
+      <span class="harrow">━━━ SSH / WinRM ──►</span>
+      <div class="blk" style="min-width:190px;">Managed Node<small>Ubuntu / CentOS / DB</small></div>
+    </div>
+    <p class="dnote">الـ Control Node يتصل عند الحاجة وينفّذ ويرحل — الـ Managed Node لم يتغير إعداده أصلًا.</p>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>قارن مع أدوات أخرى تطلب Agent على كل جهاز: تثبيت، تحديث، صيانة. في Ansible: المتطلب = <b>SSH + Python</b> (موجود افتراضيًا في أغلب التوزيعات). هذا يقلل الـ friction في الـ Onboarding لأدنى حد.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>«Agentless» لا تعني «بلا متطلبات» — الـ Python environment على الـ Managed Node شرط أساسي في Linux. أنظمة نادرة بلا Python تحتاج خطوة تجهيز واحدة قبل أول Run.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>سؤال كلاسيكي: «ما معنى Agentless وما المتطلبات؟» → <b>لا Ansible Agent يُثبَّت على الـ Managed Nodes</b> · الاتصال عبر <b>SSH</b> (Linux) أو <b>WinRM</b> (Windows) · المتطلب: <b>Python</b> على الـ Target.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الميزة الثانية: لغة الكتابة نفسها — لماذا YAML؟ → <a class="tlink" href="#ch-03">الفصل 3: Simple Syntax + Declarative</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 5 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-01">السابق</a> · <a class="tlink" href="#ch-03">التالي</a></span></div>
+</div>
+
+<!-- ═══ 06 · CH3 DECLARATIVE + IDEMPOTENCY ═══ -->
+<div class="sheet" id="ch-03">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 03 · Features 2/2</div><h1 class="t">🎯 Declarative + Idempotency</h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <h3 class="sec"><span class="n">2.2</span>Simple Syntax</h3>
+  <p class="small">الـ Playbooks تُكتب باستخدام <b>YAML</b> — مصممة بحيث تكون سهلة القراءة والكتابة، وتعتمد بشكل أساسي على الـ <b>Indentation</b> لتنظيم الـ structure. (التفصيل الكامل في فصل YAML لاحقًا.)</p>
+  <h3 class="sec"><span class="n">2.3</span>Declarative Approach</h3>
+  <p class="small">في الـ Declarative Approach أنت تحدد <b>ما الذي تريده في النهاية</b> بدلًا من كتابة كل خطوة يدوية للوصول إليه:</p>
+  <div class="code"><span class="y">- name:</span> Install Apache
+  <span class="c">apt:</span>
+    <span class="c">name:</span> apache2
+    <span class="c">state:</span> present</div>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid rgba(255,90,90,.5);"><p class="ptitle">❌ أنت لم تقل</p><div class="code mini">apt install</div><p class="small" style="margin:4px 0 0; color:var(--dim);">أمر تنفيذي أعمى — يُنفَّذ دائمًا حتى لو غير مطلوب.</p></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✅ أنت قلت</p><div class="code mini">Apache must exist</div><p class="small" style="margin:4px 0 0; color:var(--dim);">وحدة هدفية — <code>state: present</code> = الـ Desired State.</p></div>
+  </div>
+  <p class="dnote">Ansible يحدد بنفسه ما إذا كان يحتاج إلى إجراء تغيير للوصول إلى هذه الحالة — أم أن كل شيء على ما يرام.</p>
+  <div class="mark m-tip"><span class="tag">DEBUG</span>Ansible يدعم أيضًا الـ <b>Imperative Approach</b> عند استخدام الـ <b>Ad-hoc Commands</b> — أمر فوري لمهمة سريعة. الأسلوبان معًا: Playbooks للتوصيف الدائم، Ad-hoc للتنفيذ اللحظي.</div>
+  <h3 class="sec"><span class="n">2.4</span>Idempotency — التكرار الآمن ♻️</h3>
+  <p class="small">الـ Idempotency تعني أن تنفيذ نفس الـ Automation عدة مرات <b>لا يؤدي إلى تغييرات غير ضرورية</b>:</p>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid var(--chg);"><p class="ptitle">🎬 First Run</p><div class="code mini"><span class="g">Apache غير مثبت</span>
+   ↓
+<span class="chg">Ansible installs Apache</span>
+   ↓
+<span class="chg">changed</span></div></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">🎬 Second Run</p><div class="code mini"><span class="g">Apache موجود بالفعل</span>
+   ↓
+<span class="g">No change required</span>
+   ↓
+<span class="ok">ok</span></div></div>
+  </div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>لو كان Apache مثبتًا بالفعل، Ansible <b>لن يعيد تثبيته بدون حاجة</b> — يظهر ok لا changed. وفرق Declarative/Imperative: الأول يوصّف الحالة (Playbooks)، الثاني ينفّذ أمرًا فوريًا (Ad-hoc).</div>
+  <p class="lead" style="margin-top:8px;">⏭️ المميزات اكتملت — الآن الصورة المعمارية: <a class="tlink" href="#ch-04">الفصل 4: Architecture</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 6 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-02">السابق</a> · <a class="tlink" href="#ch-04">التالي</a></span></div>
+</div>
+
+<!-- ═══ 07 · CH4 ARCHITECTURE ═══ -->
+<div class="sheet" id="ch-04">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 04</div><h1 class="t">🏗️ Architecture <span class="ten">— معمارية Ansible</span></h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead">تتكون الـ Ansible Architecture بشكل أساسي من <b>مكوّنين</b>: <b>Control Node</b> و<b>Managed Nodes</b>.</p>
+  <div class="zone">
+    <div class="zlabel">Architecture — المكوّنان وما يحملانه</div>
+    <div class="frow">
+      <div class="blk b-red" style="min-width:200px;">Control Node<small>Ansible · Playbooks · Inventory</small></div>
+      <span class="harrow">━━━ SSH / WinRM ──►</span>
+      <div class="blk" style="min-width:200px;">Managed Nodes<small>Ubuntu / CentOS / Database</small></div>
+    </div>
+    <p class="dnote">الـ Control Node يحمل كل العتاد الفكري — الـ Managed Nodes يستقبلون وينفّذون فقط.</p>
+  </div>
+  <h3 class="sec"><span class="n">3.1</span>Control Node — عقدة التحكم</h3>
+  <p class="small">هو الجهاز أو الـ Server الذي يتم تثبيت <b>Ansible</b> عليه. من خلاله يقوم الـ DevOps Engineer بـ:</p>
+  <ul class="tick">
+    <li>▸ تشغيل أوامر Ansible.</li>
+    <li>▸ تشغيل الـ <b>Playbooks</b>.</li>
+    <li>▸ إدارة الـ <b>Managed Nodes</b>.</li>
+  </ul>
+  <p class="small"><b>يمكن أن يكون:</b> Laptop · Linux Server · <b>WSL Ubuntu Environment</b> — أي جهاز تستطيع عليه تشغيل Ansible.</p>
+  <h3 class="sec"><span class="n">3.2</span>Managed Nodes — العقد المُدارة</h3>
+  <p class="small">هي الـ <b>Target Machines</b> التي سيقوم Ansible بإدارتها. تستقبل الـ Instructions من الـ Control Node وتنفذها <b>بدون الحاجة إلى تثبيت Ansible Agent</b> عليها.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>المعمارية «Star» بسيطة: مركز واحد ذكي (Control) يتحكم بنقاط متعددة (Managed) عبر قناة قياسية (SSH/WinRM). لا طبقات وسيطة، لا Coordination Services — لذا الـ Setup والتشخيص سهلان.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>الـ Ansible + الـ Playbooks + الـ Inventory كلها تعيش على الـ Control Node. الـ Managed Nodes تعرف شيئًا واحدًا فقط: «وصلني أمر SSH — أنفّذه».</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>«ما مكونات Ansible Architecture؟» → <b>Control Node</b> (Ansible + Playbooks + Inventory — منه التشغيل) و<b>Managed Nodes</b> (الـ Targets — تستقبل عبر SSH/WinRM بلا Agent). و«ما أشكال الـ Control Node؟» → Laptop / Linux Server / WSL.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ لكن هل تستحق كل هذا؟ مقارنة صريحة على 3 Servers → <a class="tlink" href="#ch-05">الفصل 5: Comparison</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 7 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-03">السابق</a> · <a class="tlink" href="#ch-05">التالي</a></span></div>
+</div>
+
+<!-- ═══ 08 · CH5 COMPARISON ═══ -->
+<div class="sheet" id="ch-05">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 05</div><h1 class="t">⚖️ Comparison <span class="ten">— مقارنة طرق إدارة الـ Servers</span></h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">لنفترض أن لديك <b>3 Linux Servers</b> — <b>Ubuntu، CentOS، Alpine</b> — وتريد تثبيت <b>Nginx</b> عليها جميعًا. ثلاث طرق:</p>
+  <div class="tblwrap"><table class="tb">
+    <tr><th>وجه المقارنة</th><th>🖐️ Manual</th><th>📜 Bash Scripts</th><th>▶️ Ansible</th></tr>
+    <tr><td><b>آلية العمل</b></td><td>الدخول عبر SSH لكل Server وتنفيذ الأوامر</td><td>كتابة Bash Script يتعرف على الـ OS وينفذ الأوامر</td><td>كتابة YAML يحدد الـ Desired State</td></tr>
+    <tr><td><b>السرعة والجهد</b></td><td>بطيئة وتكثر فيها الأخطاء</td><td>تحتاج إلى Scripting وخبرة أعلى</td><td>سريعة، مركزية، وSimple Syntax</td></tr>
+    <tr><td><b>Idempotency</b></td><td>غير متوفرة تلقائيًا</td><td>غير متوفرة تلقائيًا</td><td><b style="color:var(--ok)">مدعومة من خلال Ansible Modules</b></td></tr>
+    <tr><td><b>اختلاف الـ OS</b></td><td>تحتاج معرفة أوامر كل Distribution</td><td>تحتاج <code>if/else</code> logic لكل OS</td><td><b style="color:var(--ok)">يتم التعامل مع الاختلافات من خلال Modules</b></td></tr>
+  </table></div>
+  <div class="taskhead">TASK [قراءة الجدول على الواقع]<span class="hst">practical lens</span></div>
+  <p class="small">لنفس المهمة (تثبيت Nginx على الثلاثة): الـ Manual = 3 جلسات SSH و3 صيغ أوامر مختلفة (<code>apt</code>/<code>yum</code>/<code>apk</code>) وتحقق يدوي. الـ Bash = Script واحد لكن بفروع لكل Package Manager وكل توزيعة جديدة تضيف فرعًا. الـ Ansible = <b>Task واحدة بـ YAML</b> تعمل على الثلاثة — والـ Modules تختفي اختلافات التوزيعات، والـ Idempotency مدمجة تلقائيًا.</p>
+  <div class="mark m-fun"><span class="tag">ASIDE · المفارقة</span>Bash Scripts خطوة تقدم عن الـ Manual — لكنها دَين تقني يتراكم: كل توزيعة = فرع، كل تغيير = مراجعة. Ansible يقلب السؤال: لا «كيف أنفّذ على كل نظام؟» بل «ما الـ State التي أريدها؟» — والـ Modules تعرف الباقي.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>أربعة أزواج تحفظها: Manual = بطء + أخطاء + بلا Idempotency · Bash = مركزي لكن Scripting ثقيل + if/else · Ansible = <b>YAML مركزي + Idempotency عبر Modules + تجاهل اختلافات الـ OS تلقائيًا</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ أين تُستخدم فعلًا؟ ثلاثة ميادين + نقاش Terraform → <a class="tlink" href="#ch-06">الفصل 6: Use Cases</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 8 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-04">السابق</a> · <a class="tlink" href="#ch-06">التالي</a></span></div>
+</div>
+
+<!-- ═══ 09 · CH6 USE CASES ═══ -->
+<div class="sheet" id="ch-06">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 06</div><h1 class="t">🌍 Use Cases <span class="ten">— مجالات الاستخدام</span></h1></div><span class="hmeta">🟢 6 MIN</span></div></div>
+  <h3 class="sec"><span class="n">5.1</span>Configuration Management — الأشهر</h3>
+  <p class="small">يمكن استخدامه في:</p>
+  <div class="frow">
+    <span class="chipr">تثبيت الـ Packages</span>
+    <span class="chipr">تحديث الـ Packages</span>
+    <span class="chipr">ضبط الـ Configuration Files</span>
+    <span class="chipr">إدارة الـ Services</span>
+    <span class="chipr">تحديث عدة Servers من مكان واحد</span>
+  </div>
+  <h3 class="sec"><span class="n">5.2</span>Infrastructure Provisioning</h3>
+  <p class="small">يمكن لـ Ansible التعامل مع Infrastructure وCloud APIs لإنشاء أو حذف موارد: <b>Containers · EC2 · S3</b>.</p>
+  <div class="mark m-fun"><span class="tag">ASIDE · Terraform و Ansible</span>في كثير من البيئات يتم <b>الفصل بين مسؤوليات الأدوات</b>:</div>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">🏗️ Terraform</p><div class="code mini">Infrastructure Provisioning
+   ↓
+<span class="ok">Infrastructure Created</span></div></div>
+    <div class="panel"><p class="ptitle">🔧 Ansible</p><div class="code mini">Configuration Management
+   ↓
+<span class="ok">Infrastructure Configured</span></div></div>
+  </div>
+  <p class="dnote">يُفضل عادةً استخدام <b>Terraform</b> للـ Provisioning، و<b>Ansible</b> للـ Configuration Management.</p>
+  <h3 class="sec"><span class="n">5.3</span>Network Automation</h3>
+  <p class="small">يمكن استخدام Ansible في أتمتة وإدارة: <b>Routers · Switches · Firewalls</b> — برمجيًا بدل الدخول اليدوي لكل جهاز.</p>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>ثلاثة مجالات: <b>Config Management</b> (packages/files/services/multi-server) · <b>Provisioning</b> (containers/EC2/S3 — ونقاش Terraform) · <b>Network Automation</b> (routers/switches/firewalls). وقاعدة الفصل: Terraform يبني → Ansible يهيّئ.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ المجالات واضحة — نُجهّز العدة الآن: → <a class="tlink" href="#ch-07">الفصل 7: Installation</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 9 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-05">السابق</a> · <a class="tlink" href="#ch-07">التالي</a></span></div>
+</div>
+
+<!-- ═══ 10 · CH7 INSTALLATION ═══ -->
+<div class="sheet" id="ch-07">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 07</div><h1 class="t">⚙️ Installation + VS Code</h1></div><span class="hmeta">🟢 5 MIN</span></div></div>
+  <p class="lead">يتم تثبيت Ansible على الـ <b>Control Node</b> — اختر طريقك حسب نظامك:</p>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">🍎 macOS</p><div class="code mini"><span class="p">$</span> brew install ansible</div></div>
+    <div class="panel"><p class="ptitle">🐧 Ubuntu / Debian</p><div class="code mini"><span class="p">$</span> sudo apt update &amp;&amp; sudo apt install ansible <span class="y">-y</span></div></div>
+    <div class="panel"><p class="ptitle">🐍 Python Pip</p><div class="code mini"><span class="p">$</span> pip3 install ansible</div></div>
+    <div class="panel"><p class="ptitle">🪟 Windows</p><p class="small" style="margin:0;">استخدم <b>WSL</b> وتشغيل Ubuntu عليه، ثم ثبّت Ansible داخل بيئة الـ Linux.</p></div>
+  </div>
+  <div class="taskhead">TASK [VS Code Extensions المفيدة]<span class="hst">editor setup</span></div>
+  <div class="frow">
+    <span class="chipr">YAML Extension</span>
+    <span class="chipr">Ansible Extension</span>
+  </div>
+  <p class="small">هذه الـ Extensions تساعد في:</p>
+  <div class="frow">
+    <span class="chipr">Syntax Highlighting</span>
+    <span class="chipr">YAML Editing</span>
+    <span class="chipr">Ansible Editing</span>
+    <span class="chipr">اكتشاف أخطاء الـ Syntax</span>
+  </div>
+  <p class="dnote">دققتان في تجهيز المحرر تكتشفان أخطاء الـ Indentation قبل أن تصل إلى الـ Run.</p>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>التثبيت للـ <b>Control Node فقط</b> — الـ Managed Nodes تستقبل عبر SSH/WinRM ولا تحتاج Ansible إطلاقًا.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>طرق التثبيت: <code>brew</code> (macOS) · <code>apt</code> (Ubuntu/Debian) · <code>pip3</code> (Any OS) · <b>WSL</b> (Windows). Extensions المقترحة: <b>YAML + Ansible</b> من Red Hat.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الأداة جاهزة — الآن نؤمّن الطريق إلى الـ Servers: → <a class="tlink" href="#ch-08">الفصل 8: SSH Passwordless</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 10 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-06">السابق</a> · <a class="tlink" href="#ch-08">التالي</a></span></div>
+</div>
+
+<!-- ═══ 11 · CH8 SSH ═══ -->
+<div class="sheet" id="ch-08">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 08 · PLAY</div><h1 class="t">🔐 SSH Keys <span class="ten">— Passwordless Setup</span></h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <p class="lead">في Linux يستخدم Ansible عادةً <b>SSH</b> للتواصل مع الـ Managed Nodes. الفكرة:</p>
+  <div class="zone">
+    <div class="zlabel">The Key Flow — من ينقل ماذا</div>
+    <div class="frow">
+      <div class="blk" style="min-width:140px;">Control Node<small>يحمل الـ Private Key</small></div>
+      <span class="harrow">── SSH Login ──►</span>
+      <div class="blk" style="min-width:150px;">Managed Node<small>يحمل الـ Public Key<small>في Authorized Keys</small></small></div>
+    </div>
+  </div>
+  <h3 class="sec"><span class="n">8.1</span>إنشاء الـ SSH Key Pair — على الـ Control Node</h3>
+  <div class="code"><span class="p">$</span> ssh-keygen -t rsa -b 4096</div>
+  <p class="small" style="margin-top:4px;">ينتج عن ذلك ملفان:</p>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">🔑 id_rsa — Private Key</p><p class="small" style="margin:0;">يُحفظ <b style="color:var(--red-t);">بشكل سري</b> على الـ Control Node — لا يُشارك أبدًا.</p></div>
+    <div class="panel"><p class="ptitle">🗝️ id_rsa.pub — Public Key</p><p class="small" style="margin:0;">يتم وضعه على الـ <b>Managed Node</b>. قفله لا يفتح شيئًا.</p></div>
+  </div>
+  <h3 class="sec"><span class="n">8.2</span>نسخ الـ Public Key إلى الـ Managed Node</h3>
+  <div class="code"><span class="p">$</span> ssh-copy-id <span class="y">-i</span> ~/.ssh/id_rsa.pub ubuntu@&lt;MANAGED_NODE_IP&gt;</div>
+  <h3 class="sec"><span class="n">8.3</span>اختبار الاتصال</h3>
+  <div class="code"><span class="p">$</span> ssh ubuntu@&lt;MANAGED_NODE_IP&gt;
+<span class="ok">Welcome to Ubuntu 22.04 LTS …</span>   <span class="g"># no password ✅</span>
+<span class="p">$</span> exit</div>
+  <p class="dnote">إذا تم إعداد الـ SSH Keys بشكل صحيح، يمكنك الاتصال <b>بدون إدخال الـ Password</b> في كل مرة.</p>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>الـ Private لا يسافر أبدًا — الـ Public هو الوحيد الذي يُنسخ. عكسهما = اتصال لا يعمل + خطر أمني.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>السلسلة: <code>ssh-keygen -t rsa -b 4096</code> ← <code>ssh-copy-id -i ~/.ssh/id_rsa.pub user@ip</code> ← اختبار <code>ssh user@ip</code>. النتيجة: أتمتة صامتة بلا Passwords.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الاتصال مؤمَّن — الآن وحدات التنفيذ: → <a class="tlink" href="#ch-09">الفصل 9: Modules</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 11 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-07">السابق</a> · <a class="tlink" href="#ch-09">التالي</a></span></div>
+</div>
+
+<!-- ═══ 12 · CH9 MODULES ═══ -->
+<div class="sheet" id="ch-09">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 09</div><h1 class="t">🧩 Modules <span class="ten">— وحدات التنفيذ</span></h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">تعتمد الـ Ansible Tasks على الـ <b>Modules</b> — والـ Module هو <b>جزء جاهز من Ansible يقوم بوظيفة محددة</b>. أنت تستدعيه وتعطيه الـ State، وهو يعرف الـ How.</p>
+  <div class="taskhead">TASK [جدول الـ Modules]<span class="hst">core modules</span></div>
+  <div class="tblwrap"><table class="tb">
+    <tr><th>Module</th><th>الاستخدام</th></tr>
+    <tr><td><code>apt</code></td><td>إدارة Packages على Debian/Ubuntu</td></tr>
+    <tr><td><code>yum</code></td><td>إدارة Packages على الأنظمة التي تستخدم yum</td></tr>
+    <tr><td><code>ping</code></td><td>اختبار الاتصال</td></tr>
+    <tr><td><code>service</code></td><td>إدارة Services</td></tr>
+    <tr><td><code>copy</code></td><td>نسخ Files</td></tr>
+    <tr><td><code>command</code></td><td>تنفيذ Commands</td></tr>
+    <tr><td><code>shell</code></td><td>تنفيذ Shell Commands</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [مثال عملي]<span class="hst">module in action</span></div>
+  <div class="code"><span class="y">- name:</span> Install Nginx
+  <span class="c">apt:</span>
+    <span class="c">name:</span> nginx
+    <span class="c">state:</span> present</div>
+  <div class="zone" style="margin-top:8px;">
+    <div class="frow">
+      <span class="pill">apt</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Ansible Module</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Package Management</span>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>الـ Module يلخّص الـ Platform-specific details: نفس الـ Intent («nginx موجود») يُنفَّذ بالـ Command الصحيح لكل توزيعة — أنت لا تكتب <code>apt-get</code> ولا <code>yum install</code> يدويًا.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span><code>command</code> و<code>shell</code> ينفّذان أوامر خام — استخدامهما بكثرة يُفقدك الـ Idempotency والأناقة. ابحث أولًا عن Module مخصص لمهمتك.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>احفظ السبعة: <code>apt</code> (Debian/Ubuntu) · <code>yum</code> (yum-based) · <code>ping</code> · <code>service</code> · <code>copy</code> · <code>command</code> · <code>shell</code> — ووظيفة كل واحد حرفيًا من الجدول.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ العدة جاهزة — نحتاج قائمة الأهداف: → <a class="tlink" href="#ch-10">الفصل 10: Inventory</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 12 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-08">السابق</a> · <a class="tlink" href="#ch-10">التالي</a></span></div>
+</div>
+
+<!-- ═══ 13 · CH10 INVENTORY ═══ -->
+<div class="sheet" id="ch-10">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 10</div><h1 class="t">🗂️ Inventory <span class="ten">— ملف الـ Servers</span></h1></div><span class="hmeta">🟡 5 MIN</span></div></div>
+  <p class="lead">الـ <b>Inventory</b> هو الملف الذي <b>يخبر Ansible بالـ machines التي يستطيع إدارتها</b>. يمكن أن يحتوي على: <b>IP Addresses · Hostnames · Groups · Connection Variables</b>.</p>
+  <div class="taskhead">TASK [مثال hosts.ini]<span class="hst">inventory example</span></div>
+  <div class="code"><span class="c">[web]</span>
+192.168.1.101 ansible_user=ubuntu
+192.168.1.102 ansible_user=ubuntu
+
+<span class="c">[db]</span>
+192.168.1.201 ansible_user=ubuntu</div>
+  <div class="taskhead">TASK [قراءة الـ Groups]<span class="hst">group trees</span></div>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">Group: web</p><div class="tree" style="font-size:10.5px;"><b>web</b>
+ ├── 192.168.1.101
+ └── 192.168.1.102</div></div>
+    <div class="panel"><p class="ptitle">Group: db</p><div class="tree" style="font-size:10.5px;"><b>db</b>
+ └── 192.168.1.201</div></div>
+  </div>
+  <div class="mark m-tip"><span class="tag">DEBUG · التشريح</span><code>[web]</code> = اسم Group بين أقواس · الأسطر تحته = الأعضاء · <code>ansible_user=ubuntu</code> = Connection Variable تحدد الـ SSH User — تُعرَّف مرة بدل تكرارها.</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>الـ Inventory = «مصدر الحقيقة» لخريطة الـ Infrastructure: Server جديد = سطر. User متغير = تعديل واحد. كل الـ Commands والـ Playbooks القادمة تحيل إليه بـ <code>-i hosts.ini</code>.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>أسماء الـ Groups حساسة: <code>[web]</code> ≠ <code>[webs]</code>. خطأ حرف في الاستهداف = «لا Hosts مطابقة» بلا تنبيه للـ Typo.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الـ Inventory يحتوي: <b>IPs · Hostnames · Groups · Connection Variables</b> — الـ Groups وحدات استهداف، ويُمرَّر الملف بـ <code>-i</code>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الـ Modules + الـ Inventory جاهزان — أول تنفيذ فوري: → <a class="tlink" href="#ch-11">الفصل 11: Ad-hoc</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 13 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-09">السابق</a> · <a class="tlink" href="#ch-11">التالي</a></span></div>
+</div>
+
+<!-- ═══ 14 · CH11 AD-HOC ═══ -->
+<div class="sheet" id="ch-11">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 11</div><h1 class="t">⚡ Ad-hoc Commands</h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead">الـ <b>Ad-hoc Commands</b> تُستخدم عندما تريد تنفيذ <b>Task سريعة بدون إنشاء Playbook كامل</b> — هذا هو الجانب Imperative.</p>
+  <div class="taskhead">TASK [الصيغة العامة]<span class="hst">general syntax</span></div>
+  <div class="code">ansible &lt;group_or_all&gt; <span class="y">-i</span> &lt;inventory_file&gt; <span class="y">-m</span> &lt;module_name&gt; <span class="y">-a</span> <span class="s">"&lt;module_arguments&gt;"</span></div>
+  <div class="taskhead">TASK [الأمثلة الثلاثة]<span class="hst">practical examples</span></div>
+  <p class="small" style="margin-bottom:4px;"><b>11.1 اختبار الاتصال:</b></p>
+  <div class="code"><span class="p">$</span> ansible all <span class="y">-i</span> hosts.ini <span class="y">-m</span> ping
+192.168.1.101 | <span class="ok">SUCCESS</span> =&gt; { <span class="s">"ping"</span>: <span class="s">"pong"</span> }
+192.168.1.201 | <span class="ok">SUCCESS</span> =&gt; { <span class="s">"ping"</span>: <span class="s">"pong"</span> }</div>
+  <p class="small" style="margin:6px 0 4px;"><b>11.2 معرفة الـ Uptime:</b></p>
+  <div class="code"><span class="p">$</span> ansible web <span class="y">-i</span> hosts.ini <span class="y">-a</span> <span class="s">"uptime"</span></div>
+  <p class="small" style="margin:6px 0 4px;"><b>11.3 تثبيت Nginx:</b></p>
+  <div class="code"><span class="p">$</span> ansible all <span class="y">-i</span> hosts.ini <span class="y">-m</span> apt <span class="y">-a</span> <span class="s">"name=nginx state=present"</span> <span class="y">--become</span></div>
+  <div class="taskhead">TASK [معنى أهم الـ Options]<span class="hst">flags decoded</span></div>
+  <div class="grid3">
+    <div class="blk" style="width:100%;"><span class="mono" style="color:var(--red-t);">-m</span><small>اختيار الـ Module</small></div>
+    <div class="blk" style="width:100%;"><span class="mono" style="color:var(--red-t);">-a</span><small>Module Arguments</small></div>
+    <div class="blk" style="width:100%;"><span class="mono" style="color:var(--red-t);">--become</span><small>تشغيل العملية بصلاحيات مرتفعة</small></div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>اقرأ أي Ad-hoc Command كجملة: <b>«على المجموعة X، وبالـ Inventory Y، استخدم Module Z بالـ Arguments W، بصلاحيات مرتفعة»</b> — كل Flag جزء من الجملة.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>عند حذف <code>-m</code> يُستخدم الـ <code>command</code> Module افتراضيًا — لهذا <code>-a "uptime"</code> تعمل مباشرة. وAd-hoc لمهام لا تتكرر — المتكرر يذهب لـ Playbook.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الهيكل: <b>Target ← -i ← -m ← -a ← --become</b>. والافتراضي عند غياب <code>-m</code> هو <code>command</code>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ السيناريوهات الكاملة تحتاج لغة ملفات — <a class="tlink" href="#ch-12">الفصل 12: YAML</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 14 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-10">السابق</a> · <a class="tlink" href="#ch-12">التالي</a></span></div>
+</div>
+
+<!-- ═══ 15 · CH12 YAML ═══ -->
+<div class="sheet" id="ch-12">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 12</div><h1 class="t">📜 YAML Basics <span class="ten">— أساسيات الصيغة</span></h1></div><span class="hmeta">🟡 6 MIN</span></div></div>
+  <p class="lead">يعتمد الـ YAML بشكل كبير على الـ <b>Indentation</b> — الـ structure كله يُقرأ من المسافات.</p>
+  <div class="taskhead">TASK [قواعد مهمة]<span class="hst">ground rules</span></div>
+  <div class="grid2">
+    <div class="panel"><p class="ptitle">بداية الـ YAML Document</p><div class="code mini">---</div></div>
+    <div class="panel"><p class="ptitle">الـ Indentation</p><p class="small" style="margin:0;">استخدم <b>Spaces</b> وليس <b>Tabs</b> — ويُفضل <b>2 Spaces</b>.</p></div>
+  </div>
+  <div class="taskhead">TASK [هياكل الـ Data]<span class="hst">data structures</span></div>
+  <div class="grid3">
+    <div class="panel"><p class="ptitle">① Key-Value</p><div class="code mini"><span class="c">name:</span> nginx
+<span class="c">state:</span> present</div></div>
+    <div class="panel"><p class="ptitle">② List</p><div class="code mini"><span class="c">packages:</span>
+  <span class="y">-</span> nginx
+  <span class="y">-</span> git
+  <span class="y">-</span> curl</div></div>
+    <div class="panel"><p class="ptitle">③ Dictionary / Mapping</p><div class="code mini"><span class="c">server:</span>
+  <span class="c">name:</span> web01
+  <span class="c">environment:</span> production</div></div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>ثلاثة هياكل فقط — <b>Key-Value · List · Dictionary</b> — وكل Playbook ستراه لاحقًا هو تركيبة منهما: List من Dictionaries. إتقان هذه الصفحة = قراءة أي Playbook بلا حيرة.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>الـ Tab داخل ملف YAML = فشل الـ Parsing غالبًا بـ Error بعيد عن سطره الحقيقي. اضبط الـ Editor على «Spaces = 2» قبل كتابة أول سطر.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>القواعد: <b>ابدأ بـ <code>---</code></b> · <b>Spaces لا Tabs (يفضل 2)</b> · الهياكل: <b>Key-Value, List, Dictionary/Mapping</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ اللغة جاهزة — أول Playbook كامل: → <a class="tlink" href="#ch-13">الفصل 13</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 15 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-11">السابق</a> · <a class="tlink" href="#ch-13">التالي</a></span></div>
+</div>
+
+<!-- ═══ 16 · CH13 PLAYBOOKS ═══ -->
+<div class="sheet" id="ch-13">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 13 · PLAY</div><h1 class="t">📖 Playbooks <span class="ten">— الكتيبات</span></h1></div><span class="hmeta">🟠 8 MIN</span></div></div>
+  <p class="lead">الـ <b>Playbook</b> هو ملف YAML يحتوي على مجموعة من الـ <b>Plays</b>. كل <b>Play</b> تستهدف مجموعة من الـ <b>hosts</b> وتحتوي على مجموعة من الـ <b>Tasks</b>.</p>
+  <div class="taskhead">TASK [الـ Hierarchy الأساسية]<span class="hst">the structure</span></div>
+  <div class="tree">Playbook
+   │
+   ├── Play
+   │    ├── Task
+   │    ├── Task
+   │    └── Task
+   │
+   └── Play
+        ├── Task
+        └── Task</div>
+  <div class="taskhead">TASK [مثال: تثبيت وتشغيل Apache]<span class="hst">أنشئ ملف site.yml</span></div>
+  <div class="code"><span class="g">---</span>
+<span class="y">- name:</span> Install and Start Apache Web Server
+  <span class="c">hosts:</span> web
+  <span class="c">become:</span> yes
+
+  <span class="c">tasks:</span>
+
+    <span class="y">- name:</span> Install Apache Package
+      <span class="c">apt:</span>
+        <span class="c">name:</span> apache2
+        <span class="c">state:</span> present
+
+    <span class="y">- name:</span> Ensure Apache Service is Running and Enabled
+      <span class="c">service:</span>
+        <span class="c">name:</span> apache2
+        <span class="c">state:</span> started
+        <span class="c">enabled:</span> yes</div>
+  <div class="mark m-tip"><span class="tag">DEBUG · القراءة السريعة</span>الملف = List فيها Play واحد · الـ Play تستهدف <code>hosts: web</code> (من الـ Inventory) · <code>become: yes</code> = صلاحيات root · Task1 تضمن الحزمة <code>present</code> · Task2 تضمن الـ Service <code>started + enabled</code>.</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>لاحظ أن كل Task = <b>Name وصفي + Module + State</b> — أنت تقرأ الـ Playbook كقصة: «ثبّت Apache، ثم تأكد أن الخدمة تعمل ومفعّلة». الـ YAML يجعل الـ Automation مقروءًا كوثيقة.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>الـ Hierarchy: <b>Playbook → Plays → Tasks</b> · Play = hosts targeting + قائمة Tasks · وكل Task يستدعي Module بـ State محددة.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الكُتيّب مكتوب — الآن التشغيل وفهم النتائج: → <a class="tlink" href="#ch-13b">الفصل 13·b</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 16 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-12">السابق</a> · <a class="tlink" href="#ch-13b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 17 · CH13b RUN + RESULTS ═══ -->
+<div class="sheet" id="ch-13b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 13·b</div><h1 class="t">▶️ Running + Results <span class="ten">— التشغيل والنتائج</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <div class="taskhead">TASK [تشغيل الـ Playbook]<span class="hst">execute it</span></div>
+  <div class="code"><span class="p">$</span> ansible-playbook <span class="y">-i</span> hosts.ini site.yml</div>
+  <p class="small">الـ Command يتكون منطقيًا من:</p>
+  <div class="frow">
+    <span class="chipr">ansible-playbook</span>
+    <span class="harrow">◂</span>
+    <span class="chipr">-i hosts.ini<small>&nbsp;استخدم هذا Inventory</small></span>
+    <span class="harrow">◂</span>
+    <span class="chipr">site.yml<small>&nbsp;شغّل هذا Playbook</small></span>
+  </div>
+  <div class="taskhead">TASK [فهم نتائج Ansible]<span class="hst">the three statuses</span></div>
+  <div class="grid3">
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle"><span class="stbad st-ok">ok</span></p><p class="small" style="margin:0;">الـ host بالفعل في الـ <b>Desired State</b> — لم يكن هناك تغيير مطلوب.</p></div>
+    <div class="panel" style="border-top:3px solid var(--chg);"><p class="ptitle"><span class="stbad st-chg">changed</span></p><p class="small" style="margin:0;">Ansible قام <b>بإجراء تغيير بنجاح</b>.</p></div>
+    <div class="panel" style="border-top:3px solid var(--fail-t);"><p class="ptitle"><span class="stbad st-fail">failed</span></p><p class="small" style="margin:0;">الـ Task <b>فشلت بسبب Error</b>.</p></div>
+  </div>
+  <div class="zone" style="margin-top:9px;">
+    <div class="zlabel">The status flow</div>
+    <div class="frow">
+      <div class="blk" style="min-width:90px;">Task</div>
+      <span class="harrow">◄── branches ──►</span>
+    </div>
+    <div class="frow">
+      <div class="blk b-ok" style="min-width:100px;">ok<small>No change</small></div>
+      <div class="blk" style="min-width:110px;background:var(--t-chg);border-color:var(--chg);">changed<small>Changed</small></div>
+      <div class="blk" style="min-width:100px;background:var(--t-fail);border-color:var(--fail-t);">failed<small>Error</small></div>
+    </div>
+  </div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>كل Task تنتهي بأحد ثلاثة مصائر — والفرق بين <b>ok</b> و<b>changed</b> هو جوهر الـ Idempotency: نفس الـ Playbook مرة ثانية = كل شيء ok وصفر Changes.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>عند failed: اسم الـ Task الأحمر يخبرك <b>أي خطوة</b>، والسطر أسفله يخبرك <b>لماذا</b> — اقرأهما قبل أي بحث خارجي.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>التشغيل: <code>ansible-playbook -i hosts.ini site.yml</code> · الحالات: <b>ok</b> = بالفعل بالحالة المطلوبة · <b>changed</b> = تغيير ناجح · <b>failed</b> = Error وتوقف.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ والآن.. الـ Playbook كبر. مئات الـ Tasks في ملف واحد؟ الحل: → <a class="tlink" href="#ch-14">الفصل 14: Roles</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 17 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-13">السابق</a> · <a class="tlink" href="#ch-14">التالي</a></span></div>
+</div>
+
+<!-- ═══ 18 · CH14 ROLES CONCEPT ═══ -->
+<div class="sheet" id="ch-14">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 14</div><h1 class="t">🎭 Roles <span class="ten">— الفكرة ولماذا نستخدمها</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead">عندما يكبر الـ <b>Playbook</b>، قد يحتوي على مئات الـ: <b>Tasks · Variables · Handlers · Templates · Files</b>. وضع كل شيء في ملف واحد يجعل الـ project <b>صعب التنظيم والـ Maintenance</b>. هنا يأتي دور <b>Ansible Roles</b>.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA · ما هو الـ Role؟</span>الـ Role هي طريقة منظمة لتقسيم الـ Automation Code إلى مكونات <b>Modular &amp; Reusable</b> — كل Role مسؤولة عن وظيفة محددة:</div>
+  <div class="tree" style="font-size:10.5px;"><b>Application</b>
+   ├── nginx Role
+   ├── mysql Role
+   └── docker Role</div>
+  <p class="dnote">بدل أن يكون لديك Playbook ضخم يحتوي على كل التفاصيل.</p>
+  <div class="taskhead">TASK [لماذا نستخدم Roles؟]<span class="hst">the benefits</span></div>
+  <div class="frow">
+    <span class="chipr">Organization</span>
+    <span class="chipr">Modularity</span>
+    <span class="chipr">Reusability</span>
+    <span class="chipr">سهولة الـ Maintenance</span>
+    <span class="chipr">مشاركة الـ Code مع الـ Team</span>
+    <span class="chipr">إعادة الاستخدام في عدة Projects</span>
+  </div>
+  <div class="taskhead">TASK [بدون Roles مقابل مع Roles]<span class="hst">the killer comparison</span></div>
+  <div class="grid2">
+    <div class="panel" style="border-top:3px solid rgba(255,90,90,.5);"><p class="ptitle">❌ بدون Roles</p><div class="code mini">Project A → <span class="fl">Rewrite Nginx Setup</span>
+Project B → <span class="fl">Rewrite Nginx Setup</span>
+Project C → <span class="fl">Rewrite Nginx Setup</span></div></div>
+    <div class="panel" style="border-top:3px solid var(--ok);"><p class="ptitle">✅ مع Roles</p><div class="code mini">            <span class="ok">┌── Project A</span>
+            │
+<span class="ok">Nginx Role ─┼── Project B</span>
+            │
+            <span class="ok">└── Project C</span></div></div>
+  </div>
+  <div class="zone" style="margin-top:9px;">
+    <div class="frow">
+      <span class="chipr">Build Once</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Reusable Role</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Reuse Everywhere</span>
+    </div>
+  </div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>تعريف الـ Role: <b>طريقة منظمة لتقسيم الـ Automation إلى مكونات Modular &amp; Reusable — كل Role مسؤولة عن وظيفة محددة</b>. والفائدة المختصرة: <b>Build Once → Reuse Everywhere</b>.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الفكرة واضحة — ماذا يوجد داخل الـ Role فعلًا؟ هيكل الـ Directories: → <a class="tlink" href="#ch-15">الفصل 15</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 18 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-13b">السابق</a> · <a class="tlink" href="#ch-15">التالي</a></span></div>
+</div>
+
+<!-- ═══ 19 · CH15 ROLE STRUCTURE 1 ═══ -->
+<div class="sheet" id="ch-15">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 15 · Part 1 of 2</div><h1 class="t">📁 Role Structure <span class="ten">1/2 — tasks &amp; handlers</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead">عند إنشاء Role، يتم تنظيمها في <b>Directories</b> لها وظائف محددة:</p>
+  <div class="tree">nginx/
+├── <u>tasks/</u>
+├── <i>handlers/</i>
+├── <i>vars/</i>
+├── <i>defaults/</i>
+├── <em>files/</em>
+├── <em>templates/</em>
+└── <i>meta/</i></div>
+  <h3 class="sec"><span class="n">19.1</span>tasks/ — المكان الأساسي</h3>
+  <p class="small">هذا هو المكان الذي تضع فيه الـ <b>Tasks</b> التي سينفذها الـ Role. أمثلة:</p>
+  <div class="frow">
+    <span class="chipr">Install Nginx</span>
+    <span class="chipr">Create directories</span>
+    <span class="chipr">Configure packages</span>
+    <span class="chipr">Start service</span>
+  </div>
+  <h3 class="sec"><span class="n">19.2</span>handlers/ — المهام المشروطة</h3>
+  <p class="small">يحتوي على الـ <b>Handlers</b>. الـ Handler هو Task يتم تنفيذها عندما يتم عمل <b>Trigger</b> لها — غالبًا من خلال <code>notify</code>:</p>
+  <div class="zone">
+    <div class="zlabel">The handler flow — المثال الشائع</div>
+    <div class="frow">
+      <div class="blk" style="min-width:160px;">Configuration File Changed</div>
+      <span class="harrow">▼</span>
+      <div class="blk" style="min-width:100px;">notify</div>
+      <span class="harrow">▼</span>
+      <div class="blk" style="min-width:100px;">Handler</div>
+      <span class="harrow">▼</span>
+      <div class="blk b-ok" style="min-width:170px;">Restart / Reload Service</div>
+    </div>
+  </div>
+  <p class="dnote">إذا تغيّر Nginx Configuration File، يمكن تشغيل Handler لعمل Restart أو Reload للـ Nginx Service.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>الـ Handler = <b>رد فعل مشروط</b> لا خطوة دائمة: يتلقى Trigger من <code>notify</code> عند حدوث تغيير فعلي — فلا Restarts عشوائية في كل Run، ولا تغييرات تبقى بلا تأثير.</div>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>الـ <code>notify</code> يطابق اسم الـ Handler <b>حرفيًا</b> — خطأ إملائي = الـ Handler لن يشتغل أبدًا ولا يظهر Error.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span><b>tasks/</b> = الـ Tasks الرئيسية للـ Role · <b>handlers/</b> = Tasks تُطلق بـ <code>notify</code> عند التغيير — المثال النموذجي: Config File Changed → notify → Restart Service.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ باقي المجلدات: vars, defaults, files, templates, meta → <a class="tlink" href="#ch-15b">الفصل 15·b</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 19 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-14">السابق</a> · <a class="tlink" href="#ch-15b">التالي</a></span></div>
+</div>
+
+<!-- ═══ 20 · CH15b ROLE STRUCTURE 2 ═══ -->
+<div class="sheet" id="ch-15b">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 15·b · Part 2 of 2</div><h1 class="t">📁 Role Structure <span class="ten">2/2 — vars إلى meta</span></h1></div><span class="hmeta">🟡 8 MIN</span></div></div>
+  <h3 class="sec"><span class="n">19.3</span>vars/ — المتغيرات الثابتة</h3>
+  <p class="small">يحتوي على الـ <b>Variables</b> الخاصة بالـ Role — ولها <b>High Precedence</b> مقارنةً بمصادر الـ Variables الأخرى. تُستخدم للقيم الخاصة بالـ Role التي <b>لا يُفترض تغييرها بسهولة</b>.</p>
+  <h3 class="sec"><span class="n">19.4</span>defaults/ — المتغيرات القابلة للتجاوز</h3>
+  <p class="small">يحتوي على الـ <b>Default Variables</b> — مصممة بحيث يمكن عمل <b>Override</b> لها بسهولة عند استخدام الـ Role:</p>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">defaults/</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Default Values</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Can be overridden</span>
+    </div>
+  </div>
+  <h3 class="sec"><span class="n">19.5</span>files/ — الملفات الثابتة</h3>
+  <p class="small">يحتوي على الـ <b>Static Files</b> التي يمكن للـ Role نسخها إلى الـ Managed Nodes:</p>
+  <div class="tree" style="font-size:10.5px;">files/
+└── index.html</div>
+  <h3 class="sec"><span class="n">19.6</span>templates/ — القوالب الديناميكية</h3>
+  <p class="small">يحتوي على ملفات <b>Jinja2 Templates</b> — غالبًا بامتداد <code>.j2</code>. تُستخدم لإنشاء Configuration Files بشكل <b>Dynamic</b> اعتمادًا على الـ Variables:</p>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">Variables</span>
+      <span class="harrow">+</span>
+      <span class="chipr">Jinja2 Template</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Dynamic Configuration File</span>
+    </div>
+  </div>
+  <h3 class="sec"><span class="n">19.7</span>meta/ — البيانات الوصفية</h3>
+  <p class="small">يحتوي على الـ <b>Metadata</b> الخاصة بالـ Role — ومن ضمن استخداماته تعريف الـ <b>Dependencies</b>: مثل Role أخرى يجب تنفيذها لكي يعمل الـ Role الحالي بشكل صحيح.</p>
+  <div class="mark m-warn"><span class="tag">WATCH OUT</span>أكثر خلط شائع: <b>vars/</b> = قيم داخلية عالية الـ Precedence (لا تُلمس) · <b>defaults/</b> = قيم مصممة للـ Override من المستخدم. الخاطئ في المكان = Role لا تقبل التخصيص أو تقبله أكثر من اللازم.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>السبعة بوظائفهم: <b>tasks</b> (التنفيذ) · <b>handlers</b> (مشروطة بـ notify) · <b>vars</b> (ثابتة عالية الأولوية) · <b>defaults</b> (قابلة للـ Override) · <b>files</b> (Static) · <b>templates</b> (Jinja2 .j2 ديناميكية) · <b>meta</b> (Metadata + Dependencies).</div>
+  <p class="lead" style="margin-top:8px;">⏭️ الهيكل مكتمل — كيف نستدعي الـ Role؟ وما منصة Galaxy؟ → <a class="tlink" href="#ch-16">الفصل 16</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 20 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-15">السابق</a> · <a class="tlink" href="#ch-16">التالي</a></span></div>
+</div>
+
+<!-- ═══ 21 · CH16 USING ROLE + GALAXY ═══ -->
+<div class="sheet" id="ch-16">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 16</div><h1 class="t">🔗 Using a Role + <span class="ten">Galaxy</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <div class="taskhead">TASK [استخدام Role داخل Playbook]<span class="hst">calling a role</span></div>
+  <p class="small">بدل وضع كل الـ Tasks مباشرة داخل الـ Playbook، يمكن استدعاء الـ Role:</p>
+  <div class="code"><span class="g">---</span>
+<span class="y">- name:</span> Configure Web Server
+  <span class="c">hosts:</span> web
+
+  <span class="c">roles:</span>
+    - nginx</div>
+  <p class="small">هنا الـ Playbook أصبح مسؤولًا عن الـ <b>high-level orchestration</b>، بينما الـ Role تحتوي على تفاصيل الـ <b>implementation</b>:</p>
+  <div class="tree" style="font-size:10.5px;">Playbook
+   └── nginx Role
+        ├── tasks/
+        ├── handlers/
+        ├── templates/
+        ├── files/
+        └── variables</div>
+  <div class="taskhead">TASK [منصة Ansible Galaxy]<span class="hst">the ecosystem</span></div>
+  <p class="small"><b>Ansible Galaxy</b> هي منصة و<b>ecosystem</b> لاكتشاف ومشاركة وتثبيت Ansible Content. يمكن العثور عليها: <b>Roles</b> و<b>Collections</b>.</p>
+  <div class="mark m-fun"><span class="tag">ASIDE · تشبيه مبسط</span>Galaxy بالنسبة للـ Ansible Content مثل:</div>
+  <div class="grid3">
+    <div class="panel center"><p class="small" style="margin:0;"><b>npm</b><br><span style="color:var(--dim);">↓</span><br>Node.js Packages</p></div>
+    <div class="panel center"><p class="small" style="margin:0;"><b>pip</b><br><span style="color:var(--dim);">↓</span><br>Python Packages</p></div>
+    <div class="panel center" style="border-top:3px solid var(--red);"><p class="small" style="margin:0;"><b>Ansible Galaxy</b><br><span style="color:var(--dim);">↓</span><br>Roles / Collections</p></div>
+  </div>
+  <p class="dnote">الفائدة الأساسية هي <b>Reusability</b> — بدل أن تبدأ كل Role من الصفر، تجد Content جاهزًا تستخدمه أو تشاركه في الـ Project.</p>
+  <div class="mark m-tip"><span class="tag">DEBUG · فصل المسؤوليات</span>الـ Playbook يقول <b>ماذا</b> يحدث (orchestration) — والـ Role تحمل <b>كيف</b> يحدث بالتفصيل (implementation). هذا الفصل يجعل الـ Playbook الرئيسي قصيرًا مقروءًا مهما كبر المشروع.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>استدعاء Role داخل Playbook: <code>roles: - nginx</code> — والـ Playbook = orchestration · الـ Role = implementation. وGalaxy = منصة اكتشاف ومشاركة Roles وCollections (شبيهة npm/pip).</div>
+  <p class="lead" style="margin-top:8px;">⏭️ خلط شائع قادم: ما الفرق بين Role وGalaxy وansible-galaxy؟ → <a class="tlink" href="#ch-17">الفصل 17</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 21 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-15b">السابق</a> · <a class="tlink" href="#ch-17">التالي</a></span></div>
+</div>
+
+<!-- ═══ 22 · CH17 DISTINCTION ═══ -->
+<div class="sheet" id="ch-17">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 17</div><h1 class="t">⚖️ Role vs Galaxy vs <span class="ten">ansible-galaxy</span></h1></div><span class="hmeta">🟡 8 MIN</span></div></div>
+  <p class="lead">من المهم عدم الخلط بين الثلاثة — <b>كل واحد منهم شيء مختلف</b>:</p>
+  <div class="tblwrap"><table class="tb">
+    <tr><th>Concept</th><th>معناه</th></tr>
+    <tr><td><b>Role</b></td><td>وحدة Ansible Automation قابلة لإعادة الاستخدام</td></tr>
+    <tr><td><b>Galaxy</b></td><td>Platform / Ecosystem لاكتشاف ومشاركة Ansible Content</td></tr>
+    <tr><td><b>ansible-galaxy</b></td><td>CLI للتعامل مع Ansible Content</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [علاقتهم ببعض]<span class="hst">the relationship</span></div>
+  <div class="zone">
+    <div class="frow">
+      <div class="blk b-red" style="min-width:130px;">Ansible</div>
+    </div>
+    <div class="fbarwrap"><div class="fbar" style="width:50%;"></div></div>
+    <div class="fcols">
+      <div class="fcol"><div class="fstub"></div><div class="blk" style="width:100%;">Roles</div></div>
+      <div class="fcol"><div class="fstub"></div><div class="blk" style="width:100%;">Collections</div></div>
+    </div>
+    <div class="fbarwrap"><div class="fbar" style="width:40%;"></div></div>
+    <div class="frow"><span class="harrow">▼</span></div>
+    <div class="frow"><div class="blk" style="min-width:130px;">Galaxy</div></div>
+    <div class="frow"><span class="harrow">▲</span></div>
+    <div class="frow"><div class="blk" style="min-width:200px;">ansible-galaxy CLI<small>يتعامل مع المحتوى عبر المنصة</small></div></div>
+  </div>
+  <div class="taskhead">TASK [تثبيت Role باستخدام ansible-galaxy]<span class="hst">install</span></div>
+  <div class="code"><span class="p">$</span> ansible-galaxy install username.role_name</div>
+  <div class="frow">
+    <span class="chipr">Galaxy</span><span class="harrow">▼ Find Role</span>
+    <span class="chipr">ansible-galaxy install</span><span class="harrow">▼</span>
+    <span class="chipr">Role available in your project</span>
+  </div>
+  <div class="taskhead">TASK [إنشاء Role جديدة]<span class="hst">init</span></div>
+  <div class="code"><span class="p">$</span> ansible-galaxy init my_custom_role
+<span class="g"># ينشئ الـ standard structure تلقائيًا:</span>
+<span class="g"># tasks/ handlers/ vars/ defaults/ files/ templates/ meta/</span></div>
+  <p class="dnote">بدل أن تقوم بإنشاء كل Directory يدويًا.</p>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>احفظ الثلاثية: <b>الـ Role = المحتوى نفسه</b> · <b>Galaxy = السوق/المنصة</b> · <b>ansible-galaxy = الأداة (CLI)</b> التي تجلب وتنشئ المحتوى. سؤال المقابلة يكشف من يخلط بينهم.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>أمران فقط: <code>ansible-galaxy install username.role_name</code> (تثبيت) · <code>ansible-galaxy init my_custom_role</code> (إنشاء هيكل قياسي كامل تلقائيًا).</div>
+  <p class="lead" style="margin-top:8px;">⏭️ كل القطع جاهزة — الآن نجمعها في صورة واحدة: → <a class="tlink" href="#ch-18">الفصل 18: الصورة الكاملة</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 22 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-16">السابق</a> · <a class="tlink" href="#ch-18">التالي</a></span></div>
+</div>
+
+<!-- ═══ 23 · CH18 COMPLETE PICTURE ═══ -->
+<div class="sheet" id="ch-18">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Chapter 18</div><h1 class="t">🗺️ The Complete Picture <span class="ten">— الصورة الكاملة</span></h1></div><span class="hmeta">🟡 7 MIN</span></div></div>
+  <p class="lead">كل الـ Concepts التي تعلمناها ترتبط ببعضها:</p>
+  <div class="tree" style="font-size:10.5px; line-height:1.6;">                         <b>Ansible</b>
+                            │
+             ┌──────────────┴──────────────┐
+             │                             │
+        Control Node                  Managed Nodes
+             │                             │
+             │ SSH / WinRM                 │
+             ▼                             │
+         <u>Inventory</u>                         │
+             ▼                             │
+          <b>Playbook</b>                        │
+             ▼                             │
+            Plays                          │
+             ▼                             │
+           Tasks                           │
+             ▼                             │
+          <em>Modules</em>                        │
+             └──────────────┬──────────────┘
+                            ▼
+                     <i>Desired State</i>
+                            ▼
+                       <span class="ok">Idempotency</span></div>
+  <div class="taskhead">TASK [وعندما يكبر الـ Project]<span class="hst">scaling up</span></div>
+  <div class="tree" style="font-size:10px;">Playbook
+   ├── <u>Role: nginx</u>    (tasks/ handlers/ templates/ files/ defaults/ vars/ meta/)
+   ├── Role: docker
+   └── Role: mysql</div>
+  <div class="taskhead">TASK [وعندما تريد Reusable Content جاهز]<span class="hst">galaxy enters</span></div>
+  <div class="tree" style="font-size:10.5px;"><b>Ansible Galaxy</b>
+      ├── Find Roles
+      ├── Find Collections
+      └── Reuse Ansible Content</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>اقرأ الـ Picture من الأعلى للأسفل مرة واحدة: <b>Control</b> يستخدم <b>Inventory</b> ليوجه <b>Playbook</b> → Plays → Tasks → <b>Modules</b> → تصب كلها في <b>Desired State</b> يحميها الـ <b>Idempotency</b>. وعند التوسع: Roles تنظّم، وGalaxy تزوّد. هذه خريطة Ansible كلها.</div>
+  <div class="mark m-tip"><span class="tag">DEBUG · كيف تراجع بها؟</span>غطِّ أي جزء واسأل نفسك: «ماذا يأتي بعد الـ Playbook؟» — إن أجبت دون تردد، أنت تفهم الـ Machine لا تحفظ مربعاتها.</div>
+  <div class="m-exam"><span class="tag">🎓 EXAM</span>سلسلة التنفيذ الكاملة بالترتيب: <b>Inventory → Playbook → Plays → Tasks → Modules → Desired State → Idempotency</b> — وعند التوسع: <b>Roles</b> لكل وظيفة + <b>Galaxy</b> للمحتوى الجاهز.</div>
+  <p class="lead" style="margin-top:8px;">⏭️ تبقّى شيء واحد: سلسلة الحفظ والـ Revision النهائي → <a class="tlink" href="#finale">الفصل الأخير</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 23 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-17">السابق</a> · <a class="tlink" href="#finale">التالي</a></span></div>
+</div>
+
+<!-- ═══ 24 · MENTAL MODEL + FINAL CHAIN ═══ -->
+<div class="sheet" id="finale">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Mental Model</div><h1 class="t">🧠 سلسلة الحفظ — Mental Model</h1></div><span class="hmeta">⚠ HONOR ⚠</span></div></div>
+  <p class="lead">لو هتحفظ سلسلة واحدة فقط، خليك مع دي — كل Concept يجيب على سؤال:</p>
+  <div class="tblwrap"><table class="tb">
+    <tr><th style="width:28%;">Concept</th><th>يجيب على سؤال…</th></tr>
+    <tr><td><b>Inventory</b></td><td>"Which machines?" — أي الأجهزة؟</td></tr>
+    <tr><td><b>Playbook</b></td><td>"What should happen?" — ماذا يجب أن يحدث؟</td></tr>
+    <tr><td><b>Role</b></td><td>"How do I organize and reuse the automation?"</td></tr>
+    <tr><td><b>Task</b></td><td>"One specific unit of work" — وحدة عمل محددة</td></tr>
+    <tr><td><b>Module</b></td><td>"What Ansible capability performs the operation?"</td></tr>
+    <tr><td><b>Galaxy</b></td><td>"Where can I find/share reusable Ansible content?"</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [وبشكل أبسط]<span class="hst">the chain</span></div>
+  <div class="zone">
+    <div class="frow">
+      <span class="chipr">YOU</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Playbook</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Role</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Task</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Module</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Managed Node</span>
+      <span class="harrow">▼</span>
+      <span class="chipr">Desired State</span>
+    </div>
+  </div>
+  <div class="mark m-fun"><span class="tag">ASIDE · طريقة الاستخدام</span>احفظ السلسلة كسؤال وجواب: في الـ Interview لو سُئلت «ما وظيفة الـ Role؟» — الجواب هو <b>السؤال الذي تجيبه</b>: "How do I organize and reuse the automation?" مَن يربط الـ Concept بسؤاله، يفهمه ولا ينساه.</div>
+  <div class="taskhead">TASK [Final Mental Model]<span class="hst">the last chain</span></div>
+  <div class="tree" style="font-size:10px; line-height:1.5;">             Ansible Automation
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+      Inventory              Playbook
+     "Where?"              "What?"
+                                │
+                              Roles
+                          "How / Reuse?"
+                                ▼
+                              Tasks
+                                ▼
+                             Modules
+                                ▼
+                         Managed Nodes
+                                ▼
+                         Desired State
+                                ▼
+                           Idempotency</div>
+  <div class="mark m-key"><span class="tag">KEY IDEA</span>السلسلة من الأعلى للأسفل = رحلة الـ Automation كاملة: <b>أنت</b> تكتب <b>Playbook</b> ينظمها <b>Role</b> بخطواتها <b>Tasks</b> التي تنفذها <b>Modules</b> على الـ <b>Managed Nodes</b> حتى تصل للـ <b>Desired State</b>.</div>
+  <p class="lead" style="margin-top:7px;">⏭️ آخر صفحة: جدول الـ Quick Revision الشامل — <a class="tlink" href="#finale2">التالي ▶</a></p>
+  <div class="folio"><span>📘 Ansible — الدليل الشامل · <span class="by">By Nabawy</span></span><span class="fnum">— 24 —</span><span><a class="backtoc" href="#toc">▤ TOC</a> <a class="tlink" href="#ch-18">السابق</a> · <a class="tlink" href="#finale2">التالي</a></span></div>
+</div>
+
+<!-- ═══ 25 · QUICK REVISION ═══ -->
+<div class="sheet" id="finale2">
+  <div class="pghead"><div class="hrow"><div><div class="kick">Quick Revision</div><h1 class="t">📌 جدول المراجعة السريعة + الخلاصة</h1></div><span class="hmeta">PRINT ME 🖨️</span></div></div>
+  <p class="lead">16 مصطلحًا في جدول واحد — آخر شيء تراجعه قبل الـ Interview:</p>
+  <div class="tblwrap"><table class="tb" style="font-size:10.8px;">
+    <tr><th style="width:26%;">Term</th><th>الفكرة الأساسية</th></tr>
+    <tr><td><b>Ansible</b></td><td>Automation Tool</td></tr>
+    <tr><td><b>Control Node</b></td><td>الجهاز الذي يشغل Ansible</td></tr>
+    <tr><td><b>Managed Node</b></td><td>الجهاز الذي يتم إدارته</td></tr>
+    <tr><td><b>Inventory</b></td><td>يحدد الـ Hosts والـ Groups</td></tr>
+    <tr><td><b>Module</b></td><td>وظيفة جاهزة لتنفيذ Operation معينة</td></tr>
+    <tr><td><b>Task</b></td><td>وحدة عمل واحدة</td></tr>
+    <tr><td><b>Play</b></td><td>مجموعة Tasks تستهدف Hosts</td></tr>
+    <tr><td><b>Playbook</b></td><td>ملف YAML يحتوي على Plays</td></tr>
+    <tr><td><b>Role</b></td><td>طريقة Modular &amp; Reusable لتنظيم Automation</td></tr>
+    <tr><td><b>Handler</b></td><td>Task يتم Trigger لها عند حدوث تغيير</td></tr>
+    <tr><td><b>Template</b></td><td>Dynamic file باستخدام Jinja2</td></tr>
+    <tr><td><b>Galaxy</b></td><td>Platform / Ecosystem لمشاركة واكتشاف Ansible Content</td></tr>
+    <tr><td><b>ansible-galaxy</b></td><td>CLI للتعامل مع Ansible Content</td></tr>
+    <tr><td><b>Idempotency</b></td><td>تكرار التنفيذ لا يسبب تغييرات غير ضرورية</td></tr>
+    <tr><td><b>Desired State</b></td><td>الحالة التي تريد أن يكون عليها النظام</td></tr>
+    <tr><td><b>Agentless</b></td><td>لا تحتاج Ansible Agent على Managed Nodes</td></tr>
+  </table></div>
+  <div class="taskhead">TASK [الخلاصة]<span class="hst">the summary</span></div>
+  <div class="grid2" style="gap:7px;">
+    <div class="glos"><b>Inventory</b> → مين هتدير؟</div>
+    <div class="glos"><b>Playbook</b> → عايز تعمل إيه؟</div>
+    <div class="glos"><b>Role</b> → نظّم الـ Automation وخليها Reusable</div>
+    <div class="glos"><b>Task</b> → خطوة محددة</div>
+    <div class="glos"><b>Module</b> → الأداة التي تنفذ الـ Operation</div>
+    <div class="glos"><b>Galaxy</b> → مكان تلاقي منه Ansible Content جاهز</div>
+    <div class="glos" style="grid-column:1/3;"><b>ansible-galaxy</b> → الـ CLI الذي تستخدمه للتعامل مع هذا الـ Content</div>
+  </div>
+  <div class="mark m-key" style="margin-top:9px;"><span class="tag">KEY IDEA · الختام</span><b>Inventory يسأل «مين؟» · Playbook يسأل «ماذا؟» · Role ينظّم · Task تنفّذ · Module تُجير · Galaxy تزوّد.</b> سلسلة واحدة من ست حلقات = Ansible كله. ▶</div>
+  <div class="folio"><span>📘 Ansible · <span class="by">By Nabawy</span> · REDLINE Daylight</span><span class="fnum">— 25 —</span><span><a class="backtoc" href="#toc">▤ TOC</a></span><span>▶ The End 🎬</span></div>
+</div>
+
+</body>
+</html>

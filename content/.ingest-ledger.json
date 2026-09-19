@@ -1,0 +1,217 @@
+{
+  "ce62c9a5f7c5f0656ddb3eabfdcafd6f4456119669322d091b65f449f031e660": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\aiops\\aiops__02-observability.pdf",
+    "workId": "aiops-02-observability",
+    "ingestedAt": "2026-09-19T03:22:56.048Z"
+  },
+  "cf9bf4e6162b79ffa45642130461ddb130bf15b7aae54c65e58add4ffa418f8e": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\aiops\\aiops__05-observability-study-guide-loki-prometheus-grafana-by-nabawy.pdf",
+    "workId": "aiops-05-observability-study-guide-loki-prometheus-grafana-by-nabawy",
+    "ingestedAt": "2026-09-19T03:22:56.369Z"
+  },
+  "c82592a8e2130c9b48683593f9e1492701a8aa2ac9ed57d2b237991c4b5b2299": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\aiops\\aiops__07-observability-loki-prometheus-grafana-by-nabawy.pdf",
+    "workId": "aiops-07-observability-loki-prometheus-grafana-by-nabawy",
+    "ingestedAt": "2026-09-19T03:22:56.731Z"
+  },
+  "6ce153a98c1271bc1946509f113b7f120b3227cda0bba1c6a0092f168436bd13": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__02-ansible-day-1.pdf",
+    "workId": "ansible-02-ansible-day-1",
+    "ingestedAt": "2026-09-19T03:22:56.793Z"
+  },
+  "56904b8d2bf6e38eecab972143bafd9bb831c32135b045d3590feec74d3b3f1f": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__05-ansible-day-2.pdf",
+    "workId": "ansible-05-ansible-day-2",
+    "ingestedAt": "2026-09-19T03:22:56.840Z"
+  },
+  "3dd8c3e73acdf760a5cbdd4cae1c6ffdf364d9788eb8a8ccd92966987072445c": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__08-ansible-day-3.pdf",
+    "workId": "ansible-08-ansible-day-3",
+    "ingestedAt": "2026-09-19T03:22:56.893Z"
+  },
+  "6ef48eac2ba1a0e122c41fde263163db9b9196249ea4d93ec66b867a7203b3b3": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__56-ansible-foundations-from-markdown-full-detail.pdf",
+    "workId": "ansible-56-ansible-foundations-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.021Z"
+  },
+  "910bf4342ff9772aeee4a0cc3acdd0be6e1d9c5491c129bfb0b22280c8051f89": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__57-ansible-playbook-engineering-from-markdown-full-detail.pdf",
+    "workId": "ansible-57-ansible-playbook-engineering-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.135Z"
+  },
+  "2e290ea9b4c7305722ae94d2ed1b17da84cc887522c12c41512ca15af3993135": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__58-ansible-production-from-markdown-full-detail.pdf",
+    "workId": "ansible-58-ansible-production-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.264Z"
+  },
+  "dedaebcaf49295d99edd8215d0483d63fa4fc8732cd6380d56ead67a58f7ac50": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__61-ansible-foundations-from-markdown-full-detail.pdf",
+    "workId": "ansible-61-ansible-foundations-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.408Z"
+  },
+  "d28e7fdcc256dd6ffa11f10049d8ec1e6c04c7c16f398b7e715bea43c941b95c": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__62-ansible-playbook-engineering-from-markdown-full-detail.pdf",
+    "workId": "ansible-62-ansible-playbook-engineering-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.545Z"
+  },
+  "6d77089787b529d3fa530870dc3ddccca5a9334ed298984b4143d641e1fddeef": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__63-ansible-production-from-markdown-full-detail.pdf",
+    "workId": "ansible-63-ansible-production-from-markdown-full-detail",
+    "ingestedAt": "2026-09-19T03:22:57.687Z"
+  },
+  "1a54256c5d10e034e8804892a758cf3fc35f168e0becfb56414d2d897c2ee09e": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__65-ansible-by-nabawy-redline-daylight-v6.pdf",
+    "workId": "ansible-65-ansible-by-nabawy-redline-daylight-v6",
+    "ingestedAt": "2026-09-19T03:22:57.917Z"
+  },
+  "5a4c6dc33c9912a130c51a7680d041766fcf47e3c407b0431ad64666215d9a1f": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__67-the-complete-guide-to-learning-ansible-by-nabawy-redline-day.pdf",
+    "workId": "ansible-67-the-complete-guide-to-learning-ansible-by-nabawy-redline-day",
+    "ingestedAt": "2026-09-19T03:22:58.092Z"
+  },
+  "67abde2b58065101372e11eca1f913dfdfbe4a3da92a756a5aa034b3b7f35c45": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__70-task-reusable-generic-package-role-by-nabawy-redline-dayligh.pdf",
+    "workId": "ansible-70-task-reusable-generic-package-role-by-nabawy-redline-dayligh",
+    "ingestedAt": "2026-09-19T03:22:58.232Z"
+  },
+  "9b7f9910fc2dd3161af9073fc179255eb9b698dde111a756822dfe16c315f14d": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__79-the-complete-guide-to-learning-ansible-by-nabawy-redline-day.pdf",
+    "workId": "ansible-79-the-complete-guide-to-learning-ansible-by-nabawy-redline-day",
+    "ingestedAt": "2026-09-19T03:22:58.414Z"
+  },
+  "7334b9375181348ee76ea729027d9335b666914ee110f72630c6c73b9f7b2086": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__86-ansible-by-nabawy-redline-daylight.pdf",
+    "workId": "ansible-86-ansible-by-nabawy-redline-daylight",
+    "ingestedAt": "2026-09-19T03:22:58.705Z"
+  },
+  "209e0dc3f61fc05c1b123a68ba2e6930c5f78aff047e8be9ca61f7ab444351a3": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\ansible\\ansible__88-mariadb-provisioning-with-ansible-project-documentation-by-n.pdf",
+    "workId": "ansible-88-mariadb-provisioning-with-ansible-project-documentation-by-n",
+    "ingestedAt": "2026-09-19T03:22:58.854Z"
+  },
+  "6681801a1e9b5085f84875b0514868b7950cc052d3ca14f5635f718422f20930": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\_books\\aws-certified-cloud-practitioner-slides-v44.pdf",
+    "workId": "aws-13-aws-certified-cloud-practitioner-slides-v44",
+    "ingestedAt": "2026-09-19T03:22:59.661Z"
+  },
+  "c4c1334694c164f269be4587bdf61170f6310a2e5fb719df8724e1c8369d0a09": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\_books\\aws-certified-solutions-architect-slides-v48.pdf",
+    "workId": "aws-37-aws-certified-solutions-architect-slides-v48",
+    "ingestedAt": "2026-09-19T03:23:00.589Z"
+  },
+  "119df8f3d58d58b6760b03c6b69b896f12868af31bbc2b6fda042dac302d9061": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\aws\\aws__39-alb-stack-walkthrough-ink-amber-by-nabawy.pdf",
+    "workId": "aws-39-alb-stack-walkthrough-ink-amber-by-nabawy",
+    "ingestedAt": "2026-09-19T03:23:00.719Z"
+  },
+  "6d31f2c1dc963ab9b073b67442cdd481bedcdf729ff24c57101f3d6f51734cdb": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\jenkins\\jenkins__023-jenkins-ngrok-setup-steps.pdf",
+    "workId": "jenkins-023-jenkins-ngrok-setup-steps",
+    "ingestedAt": "2026-09-19T03:23:00.729Z"
+  },
+  "eca1cb066976ab0256c0bf663c3ffcc0e7cf6b032d9194bf46adbd88eb6d5ca7": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__12-the-complete-kubernetes-guide-architecture-namespaces-worklo.pdf",
+    "workId": "kubernetes-12-the-complete-kubernetes-guide-architecture-namespaces-worklo",
+    "ingestedAt": "2026-09-19T03:23:01.052Z"
+  },
+  "c17d24efd5ae719728fabac92f07fbd9baa3b4ee7d084e6bc2f10e3a32da1300": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__13-01d-kubernetes-labs-and-review.pdf",
+    "workId": "kubernetes-13-01d-kubernetes-labs-and-review",
+    "ingestedAt": "2026-09-19T03:23:01.385Z"
+  },
+  "1a29258023c8f89b853c7ccb54cb55b066f85eba159097749b664a600ad59df3": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__14-the-complete-kubernetes-guide-architecture-namespaces-worklo.pdf",
+    "workId": "kubernetes-14-the-complete-kubernetes-guide-architecture-namespaces-worklo",
+    "ingestedAt": "2026-09-19T03:23:01.604Z"
+  },
+  "bb16bf3af27fb47cf6f08af645816ab84d9650f1cc30230eaa89a9a7b94e1a47": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__15-01a-kubernetes-architecture.pdf",
+    "workId": "kubernetes-15-01a-kubernetes-architecture",
+    "ingestedAt": "2026-09-19T03:23:02.059Z"
+  },
+  "b4ae4dcbd6cd6a8d472f6e7af00175aec4900474f59f11235d0ef0f1fa78b895": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__16-the-complete-kubernetes-guide-architecture-namespaces-worklo.pdf",
+    "workId": "kubernetes-16-the-complete-kubernetes-guide-architecture-namespaces-worklo",
+    "ingestedAt": "2026-09-19T03:23:02.356Z"
+  },
+  "3fccc83d1d39fa5f16004b6f2dc356cea65528a934a6a651831cd9f1e6d665b6": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__18-01b-kubernetes-namespaces-workloads.pdf",
+    "workId": "kubernetes-18-01b-kubernetes-namespaces-workloads",
+    "ingestedAt": "2026-09-19T03:23:02.823Z"
+  },
+  "ae814b50ba035536705d861d5d93b4cd80f4b75696f2afbc55e42a3c321d3e30": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__20-higher-level-workloads-kubernetes-book-06.pdf",
+    "workId": "kubernetes-20-higher-level-workloads-kubernetes-book-06",
+    "ingestedAt": "2026-09-19T03:23:02.994Z"
+  },
+  "0bc53b42641cd9a945a7057d2abd52d2d12ced642756f2b36f9589615732e64e": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__21-01c-kubernetes-yaml-networking.pdf",
+    "workId": "kubernetes-21-01c-kubernetes-yaml-networking",
+    "ingestedAt": "2026-09-19T03:23:03.269Z"
+  },
+  "f0d259439a6e297dd9254ff57f2606744965f0a6f5a6a6a0a248012e768f4471": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__23-services-networking-deep-dive-kubernetes-book-03.pdf",
+    "workId": "kubernetes-23-services-networking-deep-dive-kubernetes-book-03",
+    "ingestedAt": "2026-09-19T03:23:03.483Z"
+  },
+  "0bc194c224e42b0139eeafaeb0a947283a4feab7ac260ce857315e420f86a9dc": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__25-config-secrets-access-control-kubernetes-book-02.pdf",
+    "workId": "kubernetes-25-config-secrets-access-control-kubernetes-book-02",
+    "ingestedAt": "2026-09-19T03:23:03.670Z"
+  },
+  "c721cba3d7303fe38abad63b45da59aa7d3dca1e484a3a34d702a96150c1b8b8": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__26-storage-kubernetes-book-05.pdf",
+    "workId": "kubernetes-26-storage-kubernetes-book-05",
+    "ingestedAt": "2026-09-19T03:23:03.871Z"
+  },
+  "0e9e8b86d2cd6fab02c0cd2783a340161585008c39c6d58ef6e78c978840abb8": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__29-observability-operations-kubernetes-book-07.pdf",
+    "workId": "kubernetes-29-observability-operations-kubernetes-book-07",
+    "ingestedAt": "2026-09-19T03:23:04.026Z"
+  },
+  "b1e1c8b7ed2d9459e9e35dfc8bbe031feabb55ede6e29bc89c65c6f676597680": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__37-scheduling-node-management-kubernetes-book-04.pdf",
+    "workId": "kubernetes-37-scheduling-node-management-kubernetes-book-04",
+    "ingestedAt": "2026-09-19T03:23:04.201Z"
+  },
+  "28b88a8e27666e3ed9ccbb97e3795513300bd5e45a7879b5a4d37f0015379ad0": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__38-cluster-lifecycle-production-readiness-kubernetes-book-09.pdf",
+    "workId": "kubernetes-38-cluster-lifecycle-production-readiness-kubernetes-book-09",
+    "ingestedAt": "2026-09-19T03:23:04.341Z"
+  },
+  "3a9bcb689fe420bae96e6c429f65578e492f08142bec9f2e8afb94730fe2a493": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\kubernetes\\kubernetes__39-packaging-gitops-extending-kubernetes-book-08.pdf",
+    "workId": "kubernetes-39-packaging-gitops-extending-kubernetes-book-08",
+    "ingestedAt": "2026-09-19T03:23:04.493Z"
+  },
+  "fe87c051bcaa17761e1f70edc73b1113bb6ecee0fe11f23ff34cdc2513168f04": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\terraform\\terraform__10-terraform-level1-book.pdf",
+    "workId": "terraform-10-terraform-level1-book",
+    "ingestedAt": "2026-09-19T03:23:04.888Z"
+  },
+  "d3000186ed57e11ff550e0626f87abb1ad106670826ed8894ccc91b5bcca61c7": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\terraform\\terraform__11-terraform-level2-book.pdf",
+    "workId": "terraform-11-terraform-level2-book",
+    "ingestedAt": "2026-09-19T03:23:05.161Z"
+  },
+  "ac7b721937a42e33b68f46193b4db8797601979dfa1e339162df3c6dce7472ad": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\_books\\terraform-exam-command-center.pdf",
+    "workId": "terraform-13-terraform-exam-command-center",
+    "ingestedAt": "2026-09-19T03:23:06.937Z"
+  },
+  "5d39bf0adb25eeca5cf0a640f23a8d9d3260781ef7d7d7ea077024349607fffe": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\terraform\\terraform__21-terraform-vol3-practice-lab-by-nabawy.pdf",
+    "workId": "terraform-21-terraform-vol3-practice-lab-by-nabawy",
+    "ingestedAt": "2026-09-19T03:23:07.709Z"
+  },
+  "8c93e82257e8b0ee9a0e8fc0000b8315f7718ef7fdb8b18b81ee4e7079e06dc8": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\terraform\\terraform__22-terraform-interview-arsenal.pdf",
+    "workId": "terraform-22-terraform-interview-arsenal",
+    "ingestedAt": "2026-09-19T03:23:07.903Z"
+  },
+  "47b3da7e1e21d36b50f434a3cf1b282d5979c9320145cf89718d52b602221624": {
+    "file": "C:\\Users\\eslam\\OneDrive\\Desktop\\DevOps By Nabawy Website\\NTI-DevOps-Website\\content\\pdf\\_books\\continuous-delivery-reliable-software-releases-thr.pdf",
+    "workId": "book-continuous-delivery-reliable-software-releases-thr",
+    "ingestedAt": "2026-09-19T03:23:09.322Z"
+  }
+}

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jenkins Build #5 - Success Evidence</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; padding: 48px; background: #101827; color: #e8eef7; font: 16px Segoe UI, Arial, sans-serif; }
+    main { max-width: 980px; margin: auto; }
+    h1 { margin: 0 0 8px; font-size: 34px; }
+    .muted { color: #9fb0c5; }
+    .success { color: #61e294; font-weight: 700; }
+    .banner { margin: 28px 0; padding: 24px; border: 1px solid #2f9960; background: #123523; border-radius: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .card { padding: 20px; background: #192538; border: 1px solid #2b3b52; border-radius: 8px; }
+    .label { color: #9fb0c5; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { margin-top: 8px; font-size: 20px; font-weight: 600; word-break: break-word; }
+    pre { padding: 18px; background: #0a111d; border: 1px solid #2b3b52; border-radius: 8px; overflow: hidden; }
+    @media (max-width: 700px) { body { padding: 24px; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Jenkins CI/CD Result</h1>
+    <div class="muted">Repository: EslamNabawy/cicd-by-nabawy-source</div>
+    <section class="banner">
+      <div class="label">Build result</div>
+      <div class="value success">SUCCESS - Build #5</div>
+      <div class="muted">Triggered by GitHub push on main</div>
+    </section>
+    <section class="grid">
+      <div class="card"><div class="label">Commit</div><div class="value">613971b</div></div>
+      <div class="card"><div class="label">Branch</div><div class="value">main</div></div>
+      <div class="card"><div class="label">Docker image</div><div class="value">eslamnabawy/node-multi-branch:main</div></div>
+      <div class="card"><div class="label">Health check</div><div class="value success">Healthy</div></div>
+    </section>
+    <h2>Verified output</h2>
+    <pre>{"status":"healthy","branch":"main","env":"production"}</pre>
+    <p class="muted">Webhook endpoint: https://jaybird-rare-mastiff.ngrok-free.dev/github-webhook/</p>
+  </main>
+</body>
+</html>

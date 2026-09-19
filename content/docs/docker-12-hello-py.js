@@ -1,0 +1,1 @@
+window.NTI=window.NTI||{};(window.NTI.docs=window.NTI.docs||{})["docker-12-hello-py"]={"html":"<pre class=\"code\" data-lang=\"py\"><code>print(\"Hello from Jenkins + Docker Hub!\", flush=True)\n</code></pre>","toc":[],"words":8,"assets":[]};
