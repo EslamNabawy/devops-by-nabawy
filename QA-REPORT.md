@@ -132,3 +132,7 @@ Deviations (logged, spec behavior preserved): docker fixture 4p not 1p (pdfjs v1
 15/15 passed, zero console errors. Archive (50 cards, filter narrows, paging), About, 404 recovery, track pills (23) + numbered rows (23), roadmap key + next-up, palette counts + indexed-local note, dark archive, mobile 360 archive/about with no h-scroll.
 
 Screenshots: qa/archive-lg-light.png, qa/archive-lg-dark.png, qa/about-lg-light.png, qa/lost-lg-light.png, qa/track-lg-light.png, qa/palette-new.png, qa/m-archive-xs.png, qa/m-about-xs.png.
+
+## Router + P12 verification (2026-09-19)
+
+Fixed hash-router current-state getter so direct file:// loads and hash navigation keep route state in sync. qa/qa-reader.mjs passes script + lab reader checks; qa/qa-a11y.mjs passes serious/critical axe scans on library, roadmap, archive, about, and Docker track; tools/verify.mjs --full passes all checks.

@@ -10,6 +10,8 @@ body {
 h1, h2, h3 { line-height: 1.25; text-wrap: balance; }
 h1 { font-size: 1.6rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1rem; }
 a { color: var(--t-accent); }
+.view p a:not(.btn), .view li a:not(.btn) { text-decoration: underline; }
+.crumbs a:not(.btn) { text-decoration: underline; }
 :focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); }

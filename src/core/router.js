@@ -43,8 +43,8 @@ NTI.define("core/router", function () {
       if (w) A.announce(`${w.title}, ${w.kind}`);
     }
   });
+  Object.defineProperty(api, "current", { get: () => current });
   Object.assign(api, {
-    get current() { return current; },
     on(f) { subs.push(f); },
     go(h) { location.hash = h; },
     filterUrl(nf, view) {
