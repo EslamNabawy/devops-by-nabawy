@@ -269,6 +269,14 @@ NTI.define("views/library", function () {
           <span class="muted">${(f.bytes / 1024).toFixed(0)} KB</span></span>
           <span class="kind">PDF</span></a></li>`)}</ul></section>` : null}
       <section class="steps" aria-label=${copy.howTitle}>
+        <p class="muted">${copy.archiveTeaser}
+          ${(() => {
+            let n = 0;
+            Cat.works().forEach((w) => {
+              if (["lab", "script", "evidence"].includes(w.kind)) n += 1;
+            });
+            return html`<a href="#/?group=type">${copy.archiveTeaserLink} (${n})</a>`;
+          })()}</p>
         <h2>${copy.howTitle}</h2>
         <p class="muted">${copy.howBody}</p>
         <ol>${copy.howSteps.map(([h, b], i) => html`<li>

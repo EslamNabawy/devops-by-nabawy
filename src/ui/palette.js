@@ -64,6 +64,7 @@ NTI.define("ui/palette", function () {
               if (e.key === "Escape") this.props.onClose();
             }} aria-label="Search" />
           ${s.indexing ? html`<p class="muted">${copy.indexing}</p>` : null}
+          ${s.q && !s.indexing ? html`<p class="muted">${copy.resultsCount(s.results.length)} · ${copy.indexedLocal}</p>` : null}
           <ul class="pal-list">
             ${(s.results || []).map((r, i) => html`<li class=${i === s.active ? "active" : ""}>
               <button onClick=${() => this.openWork(r)}>

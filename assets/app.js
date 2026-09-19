@@ -695,6 +695,21 @@ NTI.define("core/copy", function () {
     resumeReading: "Resume reading",
     backHome: "Back to home",
     popularJumps: "Popular jump points:",
+    resultsCount: (n) => `${n} results`,
+    indexedLocal: "Indexed locally, offline query.",
+    localPrivate: "100% local and private",
+    meBody: "Your offline learning hub. Everything here stays inside this browser.",
+    curriculumOverview: "Curriculum overview",
+    tracksStatus: "Tracks status breakdown",
+    recentActivity: "Recent activity",
+    statusUpcoming: "Upcoming",
+    archiveTeaser: "Looking for labs and scripts?",
+    archiveTeaserLink: "They are in the Archive.",
+    archiveTitle: "Archive",
+    aboutTitle: "About and help",
+    aboutOpen: "Open source",
+    aboutVerified: "Verified curriculum",
+    aboutStatic: "Static site: no tracking, works from a file or GitHub Pages.",
   };
 });
 
@@ -914,6 +929,7 @@ NTI.define("ui/palette", function () {
               if (e.key === "Escape") this.props.onClose();
             }} aria-label="Search" />
           ${s.indexing ? html`<p class="muted">${copy.indexing}</p>` : null}
+          ${s.q && !s.indexing ? html`<p class="muted">${copy.resultsCount(s.results.length)} · ${copy.indexedLocal}</p>` : null}
           <ul class="pal-list">
             ${(s.results || []).map((r, i) => html`<li class=${i === s.active ? "active" : ""}>
               <button onClick=${() => this.openWork(r)}>
@@ -1262,6 +1278,14 @@ NTI.define("views/library", function () {
           <span class="muted">${(f.bytes / 1024).toFixed(0)} KB</span></span>
           <span class="kind">PDF</span></a></li>`)}</ul></section>` : null}
       <section class="steps" aria-label=${copy.howTitle}>
+        <p class="muted">${copy.archiveTeaser}
+          ${(() => {
+            let n = 0;
+            Cat.works().forEach((w) => {
+              if (["lab", "script", "evidence"].includes(w.kind)) n += 1;
+            });
+            return html`<a href="#/?group=type">${copy.archiveTeaserLink} (${n})</a>`;
+          })()}</p>
         <h2>${copy.howTitle}</h2>
         <p class="muted">${copy.howBody}</p>
         <ol>${copy.howSteps.map(([h, b], i) => html`<li>
@@ -1845,14 +1869,51 @@ NTI.define("views/me", function () {
       const copy = NTI.require("core/copy");
       const Cat = NTI.require("core/catalog");
       const S = NTI.require("core/storage");
-      const doneCount = Object.keys(store.state.progress).length;
+      const tracks = (Cat.data.tracks || []).slice()
+        .sort((a, b) => a.order - b.order);
+      let totalWorks = 0, totalDone = 0, tDone = 0, tProg = 0;
+      const rows = tracks.map((t) => {
+        const cc = Cat.counts(t.id, store.state.progress);
+        totalWorks += cc.total;
+        totalDone += cc.done;
+        let st = copy.statusUpcoming;
+        if (cc.total && cc.done >= cc.total) { st = copy.statusDone; tDone += 1; }
+        else if (cc.done > 0) { st = copy.statusProgress; tProg += 1; }
+        return { t, cc, st };
+      });
+      const pct = totalWorks ? Math.round((totalDone / totalWorks) * 100) : 0;
+      const last = store.state.last ? Cat.get(store.state.last.workId) : null;
       return html`<div class="view">
-        <h1>Me</h1>
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="#/">Home</a><span> / </span><span>Me</span>
+        </nav>
+        <p class="eyebrow">${copy.localPrivate}</p>
+        <h1 class="hero-display">Me</h1>
+        <p class="lede">${copy.meBody}</p>
         ${!S.available ? html`<p class="warn">${copy.storageBlocked}</p>` : null}
-        <section><h2>Progress</h2>
-          ${doneCount ? html`<p>${doneCount} items in progress or done.</p>`
-            : html`<p>${copy.noProgress} <a href="#/roadmap">${copy.openRoadmap}</a></p>`}
+        <section aria-label=${copy.curriculumOverview}>
+          <h2>${copy.curriculumOverview}</h2>
+          <section class="stats">
+            <div><strong>${pct}%</strong>
+              <span class="muted">${tDone} of ${tracks.length} tracks</span></div>
+            <div><strong>${tDone}</strong>
+              <span class="muted">${copy.statusDone}</span></div>
+            <div><strong>${tProg}</strong>
+              <span class="muted">${copy.statusProgress}</span></div>
+          </section>
         </section>
+        <section aria-label=${copy.tracksStatus}>
+          <h2>${copy.tracksStatus}</h2>
+          <ul class="rows">${rows.map(({ t, cc, st }) => html`<li class="row">
+            <a href="#/track/${t.id}">
+              <span class="row-t"><strong>${t.title}</strong>
+              <span class="muted">${cc.done}/${cc.total}</span></span>
+              <span class="pill">${st}</span></a></li>`)}</ul>
+        </section>
+        ${last && last.kind !== "external" ? html`<section aria-label=${copy.recentActivity}>
+          <h2>${copy.recentActivity}</h2>
+          <p><a class="btn btn-primary" href="#/read/${last.id}">${copy.resumeReading}: ${last.title}</a></p>
+        </section>` : null}
         <section><h2>Bookmarks</h2>
           ${store.state.bookmarks.length ? html`<ul class="rows">
             ${store.state.bookmarks.map((b) => {
@@ -1936,6 +1997,14 @@ NTI.define("views/me", function () {
         <section><h2>Library info</h2><p>${copy.libraryInfo}</p>
         ${Cat.data.site && Cat.data.site.maintainerMode
           ? html`<p><a class="btn" href="#/add">Add PDF</a></p>` : null}</section>
+        <section aria-label=${copy.aboutTitle}>
+          <h2>${copy.aboutTitle}</h2>
+          <ul>
+            <li>${copy.aboutOpen}</li>
+            <li>${copy.aboutVerified}</li>
+            <li>${copy.aboutStatic}</li>
+          </ul>
+        </section>
       </div>`;
     }
   }
