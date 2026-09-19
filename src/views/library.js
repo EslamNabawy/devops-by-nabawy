@@ -90,11 +90,37 @@ NTI.define("views/library", function () {
     const fTrack = filters.track || [];
     return html`<div class="view">
       <h1 class="sr-only">Library</h1>
+      <section class="hero" aria-label="DevOps By Nabawy">
+        <h2 class="hero-t">${copy.heroTitle}</h2>
+        <p class="muted">${copy.heroBody}</p>
+        <p class="hero-cta">
+          <a class="btn btn-primary" href="#track-cards">${copy.heroCtaTracks}</a>
+          <a class="btn" href="#/roadmap">${copy.heroCtaRoadmap}</a>
+        </p>
+      </section>
       <p class="hint">${copy.hint}</p>
       ${cont ? html`<section class="continue" aria-label="Continue">
         <h2>${copy.continueBtn}</h2>
         <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}: ${cont.title}</a>
       </section>` : null}
+      <section class="trackcards" id="track-cards" aria-label=${copy.tracksTitle}>
+        <h2>${copy.tracksTitle}</h2>
+        <p class="muted">${copy.tracksBody}</p>
+        <ul class="cards">
+        ${tracks.map((t) => {
+          const cc = Cat.counts(t.id, store.state.progress);
+          const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+          return html`<li class="card" data-track=${t.id}>
+            <a href="#/track/${t.id}">
+              <strong>${t.title}</strong>
+              <span class="muted">${t.short} · ${cc.done}/${cc.total} · ${pct}%</span>
+              <span class="muted">${t.summary || ""}</span>
+              <span class="kind">${copy.openTrack}</span>
+            </a>
+          </li>`;
+        })}
+        </ul>
+      </section>
       ${books.length && !fTrack.length ? html`<section aria-label="Books">
         <h2>Books</h2><ul class="rows">
         ${books.map((b) => html`<${Row} w=${{ id: b.id, track: b.track,

@@ -632,6 +632,19 @@ NTI.define("core/copy", function () {
     start: "Start",
     resume: "Resume",
     open: "Open",
+    heroTitle: "DevOps By Nabawy",
+    heroBody: "One library for the full pipeline, from Linux to delivery. Pick a track, follow the roadmap, resume in one tap.",
+    heroCtaTracks: "Browse tracks",
+    heroCtaRoadmap: "Follow the roadmap",
+    tracksTitle: "Tracks",
+    tracksBody: "Nine jobs in six stages. Nothing is locked, prerequisites are suggestions.",
+    openTrack: "Open track",
+    cmdDeckTitle: "Quick command deck",
+    cmdDeckBody: "One tap to copy. Full lessons below carry the detail.",
+    copyCmd: "Copy",
+    studyDeckTitle: "Study deck",
+    studyDeckBody: "Flip, recall, master. Open the online course for the full deck.",
+    onlineCourse: "Online course",
   };
 });
 
@@ -1016,11 +1029,37 @@ NTI.define("views/library", function () {
     const fTrack = filters.track || [];
     return html`<div class="view">
       <h1 class="sr-only">Library</h1>
+      <section class="hero" aria-label="DevOps By Nabawy">
+        <h2 class="hero-t">${copy.heroTitle}</h2>
+        <p class="muted">${copy.heroBody}</p>
+        <p class="hero-cta">
+          <a class="btn btn-primary" href="#track-cards">${copy.heroCtaTracks}</a>
+          <a class="btn" href="#/roadmap">${copy.heroCtaRoadmap}</a>
+        </p>
+      </section>
       <p class="hint">${copy.hint}</p>
       ${cont ? html`<section class="continue" aria-label="Continue">
         <h2>${copy.continueBtn}</h2>
         <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}: ${cont.title}</a>
       </section>` : null}
+      <section class="trackcards" id="track-cards" aria-label=${copy.tracksTitle}>
+        <h2>${copy.tracksTitle}</h2>
+        <p class="muted">${copy.tracksBody}</p>
+        <ul class="cards">
+        ${tracks.map((t) => {
+          const cc = Cat.counts(t.id, store.state.progress);
+          const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+          return html`<li class="card" data-track=${t.id}>
+            <a href="#/track/${t.id}">
+              <strong>${t.title}</strong>
+              <span class="muted">${t.short} · ${cc.done}/${cc.total} · ${pct}%</span>
+              <span class="muted">${t.summary || ""}</span>
+              <span class="kind">${copy.openTrack}</span>
+            </a>
+          </li>`;
+        })}
+        </ul>
+      </section>
       ${books.length && !fTrack.length ? html`<section aria-label="Books">
         <h2>Books</h2><ul class="rows">
         ${books.map((b) => html`<${Row} w=${{ id: b.id, track: b.track,
@@ -1249,6 +1288,33 @@ NTI.define("views/track", function () {
     const R = NTI.require("core/router");
     const shots = ((Cat.data.assets || []).filter((a) =>
       a.track === id && a.kind === "evidence"));
+    const exts = ((Cat.data.externals || []).filter((e) => e.track === id));
+    const CMDS = id === "terraform" ? [
+      ["terraform init -upgrade", "Downloads providers, configures backend"],
+      ["terraform plan -out=tfplan", "Preview exactly what will run"],
+      ["terraform apply tfplan", "Run the saved plan"],
+      ["terraform destroy", "Safe teardown with confirm"],
+      ["terraform state list", "List addresses in state"],
+      ["terraform fmt -recursive -check", "Pre-commit style gate"],
+      ["terraform plan -refresh-only", "Drift audit without edits"],
+    ] : id === "docker" ? [
+      ["docker build -t app:local .", "Build image from Dockerfile"],
+      ["docker run --rm -p 8080:80 app:local", "Run container, remove on stop"],
+      ["docker ps -a", "List containers"],
+      ["docker compose up --build", "Build and start the stack"],
+    ] : id === "kubernetes" ? [
+      ["kubectl get pods -A", "List pods everywhere"],
+      ["kubectl describe pod <name>", "Inspect one pod"],
+      ["kubectl apply -f deploy.yaml", "Apply manifests"],
+      ["helm list -A", "List releases"],
+    ] : [];
+    const copyCmd = (cmd) => {
+      const done = () => NTI.require("ui/primitives")
+        .toast(NTI.require("core/copy").copied);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cmd).then(done, done);
+      } else { done(); }
+    };
     const secs = [];
     for (const w of items) {
       let s = secs.find((x) => x.name === (w.section || "More"));
@@ -1256,14 +1322,43 @@ NTI.define("views/track", function () {
       s.items.push(w);
     }
     return html`<div class="view" data-track=${id}>
-      <h1>${t.title}</h1>
-      <p class="muted">${t.summary || ""}</p>
-      <${ProgressRing} done=${c.done} total=${c.total} />
-      ${next ? html`<button class="btn btn-primary" onClick=${() =>
-        R.go(`#/read/${next.id}`)}>${copy.continueBtn}: ${next.title}</button>`
-        : items.length ? html`<p>All done.</p>`
-        : html`<h2>${copy.nothingHere}</h2><p>${copy.nothingHereBody}</p>
-          <a class="btn" href="#/">${copy.backToLibrary}</a>`}
+      <section class="hero hero-track" aria-label=${t.title}>
+        <h1>${t.title}</h1>
+        <p class="muted">${t.summary || ""}</p>
+        <p class="hero-cta">
+          ${next ? html`<button class="btn btn-primary" onClick=${() =>
+            R.go(`#/read/${next.id}`)}>${copy.continueBtn}: ${next.title}</button>`
+          : items.length ? html`<span class="muted">All done.</span>`
+          : null}
+          <a class="btn" href="#/roadmap">${copy.openRoadmap}</a>
+        </p>
+        <${ProgressRing} done=${c.done} total=${c.total} />
+      </section>
+      ${exts.length ? html`<section aria-label=${copy.onlineCourse}>
+        <h2>${copy.onlineCourse}</h2>
+        <ul class="rows">${exts.map((e) => html`<li class="row">
+          <a href=${e.url} target="_blank" rel="noopener noreferrer">
+            <span class="row-t"><strong>${e.title}</strong>
+            <span class="muted">${e.host} · Online${!navigator.onLine ? " · " + copy.needsInternet : ""}</span></span>
+            <span class="kind">${copy.onlineCourse}</span></a></li>`)}</ul>
+      </section>` : null}
+      ${!items.length && !exts.length ? html`<section>
+        <h2>${copy.nothingHere}</h2><p>${copy.nothingHereBody}</p>
+        <a class="btn" href="#/">${copy.backToLibrary}</a>
+      </section>` : null}
+      ${CMDS.length ? html`<section aria-label=${copy.cmdDeckTitle}>
+        <h2>${copy.cmdDeckTitle}</h2>
+        <p class="muted">${copy.cmdDeckBody}</p>
+        <ul class="rows">${CMDS.map(([cmd, what]) => html`<li class="row">
+          <span class="row-t"><strong><code>${cmd}</code></strong>
+          <span class="muted">${what}</span></span>
+          <button class="btn" onClick=${() => copyCmd(cmd)}>${copy.copyCmd}</button>
+        </li>`)}</ul>
+      </section>` : null}
+      ${id === "cicd" ? html`<section aria-label=${copy.studyDeckTitle}>
+        <h2>${copy.studyDeckTitle}</h2>
+        <p class="muted">${copy.studyDeckBody}</p>
+      </section>` : null}
       ${secs.map((s) => html`<section><h2>${s.name}</h2><ul class="rows">
         ${s.items.map((w) => html`<li class="row"><a href="#/read/${w.id}">
           <span class="row-t"><strong>${w.title}</strong>

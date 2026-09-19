@@ -2,12 +2,13 @@
 /* tokens.css — ALL hex colors and font families live here. Nothing else
    may contain a hex literal or font-family. */
 :root {
-  --t-paper: #ffffff;
+  --t-paper: #FFF8F6;
   --t-ink: #1c1a15;
   --t-muted: #6b6455;
-  --t-line: #e3ddcf;
-  --t-accent: #1f6feb;
-  --t-focus: #1f6feb;
+  --t-line: #e8ddd4;
+  --t-accent: #00685F;
+  --t-accent2: #FD761A;
+  --t-focus: #00685F;
   --t-danger: #a03f3c;
   --t-radius: 10px;
   --t-font: "InterVariable", "Segoe UI", "Noto Naskh Arabic", system-ui,
@@ -19,8 +20,9 @@
   --t-ink: #ece6d8;
   --t-muted: #a89e8a;
   --t-line: #35301f;
-  --t-accent: #7aa7f5;
-  --t-focus: #7aa7f5;
+  --t-accent: #5ECDC0;
+  --t-accent2: #F5A06B;
+  --t-focus: #5ECDC0;
   --t-danger: #f4928a;
 }
 /* Track hues: mark + tint, light then dark. Hue = identity only. */
@@ -83,8 +85,8 @@ code, pre { font-family: var(--t-mono); font-size: 0.9em; }
   border: 1px solid var(--t-line); border-radius: var(--t-radius);
   background: var(--t-paper); color: var(--t-ink); cursor: pointer;
   font-size: 1rem; text-decoration: none; }
-.btn-primary { background: var(--t-ink); color: var(--t-paper);
-  border-color: var(--t-ink); }
+.btn-primary { background: var(--t-accent); color: var(--t-paper);
+  border-color: var(--t-accent); }
 .btn-ghost { border-color: transparent; }
 .iconbtn { min-width: 44px; min-height: 44px; background: none;
   border: none; font-size: 1.2rem; cursor: pointer; color: var(--t-ink); }
@@ -203,7 +205,30 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 .drop-card { background: var(--t-paper); color: var(--t-ink);
   padding: 32px; border-radius: var(--t-radius); text-align: center; }
 .bottomnav { display: none; }
+.hero { border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  padding: 20px 18px; margin: 12px 0 16px; background: var(--t-paper); }
+.hero-t { font-size: 1.8rem; margin: 0 0 8px; }
+.hero-cta { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; }
+.trackcards { margin: 8px 0 16px; }
+.cards { list-style: none; margin: 12px 0; padding: 0; display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.card { border: 2px solid var(--t-line); border-radius: var(--t-radius);
+  background: var(--t-paper); }
+.card > a { display: flex; flex-direction: column; gap: 6px;
+  padding: 12px; text-decoration: none; color: inherit; min-height: 88px; }
+.card[data-track="linux"] { border-left-width: 6px; border-left-color: var(--tr-linux-mark); }
+.card[data-track="aws"] { border-left-width: 6px; border-left-color: var(--tr-aws-mark); }
+.card[data-track="docker"] { border-left-width: 6px; border-left-color: var(--tr-docker-mark); }
+.card[data-track="kubernetes"] { border-left-width: 6px; border-left-color: var(--tr-kubernetes-mark); }
+.card[data-track="terraform"] { border-left-width: 6px; border-left-color: var(--tr-terraform-mark); }
+.card[data-track="ansible"] { border-left-width: 6px; border-left-color: var(--tr-ansible-mark); }
+.card[data-track="jenkins"] { border-left-width: 6px; border-left-color: var(--tr-jenkins-mark); }
+.card[data-track="cicd"] { border-left-width: 6px; border-left-color: var(--tr-cicd-mark); }
+.card[data-track="aiops"] { border-left-width: 6px; border-left-color: var(--tr-aiops-mark); }
 @media (max-width: 640px) {
+  .cards { grid-template-columns: 1fr; }
+  .hero-t { font-size: 1.5rem; }
+}
   .bottomnav { display: flex; position: fixed; bottom: 0; left: 0; right: 0;
     z-index: 20; background: var(--t-paper);
     border-top: 1px solid var(--t-line); justify-content: space-around;

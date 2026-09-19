@@ -72,5 +72,18 @@ NTI.define("core/copy", function () {
     start: "Start",
     resume: "Resume",
     open: "Open",
+    heroTitle: "DevOps By Nabawy",
+    heroBody: "One library for the full pipeline, from Linux to delivery. Pick a track, follow the roadmap, resume in one tap.",
+    heroCtaTracks: "Browse tracks",
+    heroCtaRoadmap: "Follow the roadmap",
+    tracksTitle: "Tracks",
+    tracksBody: "Nine jobs in six stages. Nothing is locked, prerequisites are suggestions.",
+    openTrack: "Open track",
+    cmdDeckTitle: "Quick command deck",
+    cmdDeckBody: "One tap to copy. Full lessons below carry the detail.",
+    copyCmd: "Copy",
+    studyDeckTitle: "Study deck",
+    studyDeckBody: "Flip, recall, master. Open the online course for the full deck.",
+    onlineCourse: "Online course",
   };
 });
