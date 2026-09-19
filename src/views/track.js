@@ -85,6 +85,7 @@ NTI.define("views/track", function () {
         <ul class="rows">${exts.map((e) => html`<li class="row">
           <span class="row-t"><strong>${e.title}</strong>
           <span class="muted">${e.host} · ${!navigator.onLine ? copy.needsInternet : copy.requiresInternet}</span></span>
+          <a class="btn btn-primary" href="#/course/${e.id}">${copy.courseView}</a>
           <a class="btn" href=${e.url} target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a></li>`)}</ul>
       </section>` : null}
       ${!items.length && !exts.length ? html`<section>

@@ -90,7 +90,7 @@ NTI.define("views/archive", function () {
         <p class="muted">${copy.itemsAvailable(all.length)}</p>
         <ul class="cards">
           ${items.map((w) => html`<li class="card" data-track=${w.track}>
-            <a href="#/read/${w.id}">
+            <a href="#/read/${w.id}?from=archive">
               <span class="eyebrow">${(tmap[w.track] || {}).title || w.track}</span>
               <strong dir="auto">${w.title}</strong>
               <span class="muted">${w.summary || ""}</span>

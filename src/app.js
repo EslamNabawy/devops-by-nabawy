@@ -90,6 +90,9 @@ NTI.define("app", function () {
     } else if (route.view === "read") {
       const V = NTI.require("views/reader");
       view = html`<${V.Reader} id=${route.params.id} store=${store} query=${q} />`;
+    } else if (route.view === "course") {
+      const V = NTI.require("views/course");
+      view = html`<${V.Course} id=${route.params.id} store=${store} />`;
     } else if (route.view === "me") {
       const V = NTI.require("views/me");
       view = html`<${V.Me} store=${store} />`;

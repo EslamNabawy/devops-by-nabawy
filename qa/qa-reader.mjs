@@ -64,6 +64,21 @@ try {
     ok('lab reader renders', t.trim().length > 2, t.trim().slice(0, 50));
   }
   ok('zero page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
+  // P12 archive chrome on the lab opened from archive
+  const labBody = await page.textContent('body');
+  ok('archive breadcrumb', /Archive/.test(labBody) &&
+    /Back to Archive/.test(labBody));
+  ok('archive cache line', /Cached locally/.test(labBody));
+  // P05 course view
+  await page.goto(index + '#/course/ext-terraform', { waitUntil: 'load' });
+  await page.waitForSelector('.hero-display', { timeout: 15000 });
+  const courseBody = await page.textContent('body');
+  ok('course sandbox state', /Demo sandbox state/.test(courseBody));
+  ok('course blocked embed note', /may block embedding/.test(courseBody));
+  ok('course syllabus', /Curriculum syllabus/.test(courseBody));
+  ok('course snapshots', /Cached offline snapshots/.test(courseBody));
+  ok('course finish toggle', /I finished this course/.test(courseBody));
+  await page.screenshot({ path: 'qa/course-lg-light.png' });
 } finally {
   await browser.close();
 }

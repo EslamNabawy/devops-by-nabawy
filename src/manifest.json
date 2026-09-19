@@ -28,6 +28,7 @@
     "views/me.js",
     "views/archive.js",
     "views/about.js",
+    "views/course.js",
     "views/add.js",
     "views/notfound.js",
     "app.js"

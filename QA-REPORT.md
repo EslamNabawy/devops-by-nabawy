@@ -136,3 +136,7 @@ Screenshots: qa/archive-lg-light.png, qa/archive-lg-dark.png, qa/about-lg-light.
 ## Router + P12 verification (2026-09-19)
 
 Fixed hash-router current-state getter so direct file:// loads and hash navigation keep route state in sync. qa/qa-reader.mjs passes script + lab reader checks; qa/qa-a11y.mjs passes serious/critical axe scans on library, roadmap, archive, about, and Docker track; tools/verify.mjs --full passes all checks.
+
+## P12 + P05 (2026-09-19)
+
+Archive reader gains Archive/track/work breadcrumb, Back to Archive, cached-local + bundle size, attached lab-guide card, lab step checklist with Alt+J next-step, and from=archive preserved across outline/prev/next. External courses gain #/course/<id> view (sandbox state, blocked-embed note, HTTPS check, real track syllabus, cached snapshots, finish toggle), linked from track pages. qa/qa-reader.mjs extended; all checks green.

@@ -17,6 +17,8 @@ NTI.define("core/router", function () {
       r = { view: "track", params: { id: seg[1] }, query };
     } else if (seg[0] === "read" && seg[1]) {
       r = { view: "read", params: { id: seg[1] }, query };
+    } else if (seg[0] === "course" && seg[1]) {
+      r = { view: "course", params: { id: seg[1] }, query };
     } else if (seg[0] === "me") r = { view: "me", params: {}, query };
     else if (seg[0] === "add") r = { view: "add", params: {}, query };
     else if (seg[0] === "404" || (seg.length && seg[0] !== "")) {
@@ -27,7 +29,7 @@ NTI.define("core/router", function () {
   function titles(r) {
     return { library: "Library", roadmap: "Roadmap", archive: "Archive",
       about: "About",
-      track: "Track", read: "Reader", me: "Me", add: "Add PDF",
+      track: "Track", read: "Reader", course: "Course", me: "Me", add: "Add PDF",
       notfound: "Not found" }[r.view] || "Library";
   }
   window.addEventListener("hashchange", () => {
