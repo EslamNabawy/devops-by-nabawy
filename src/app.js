@@ -19,8 +19,7 @@ NTI.define("app", function () {
     const Cat = NTI.require("core/catalog");
     const copy = NTI.require("core/copy");
     const [route, setRoute] = window.htmPreact.useState(R.current);
-    const [pal, setPal] = window.htmPreact.useState(false);
-    const [help, setHelp] = window.htmPreact.useState(false);
+    const [pal, setPal] = window.htmPreact.useState(false);    const [help, setHelp] = window.htmPreact.useState(false);
     const [filters, setFilters] = window.htmPreact.useState(
       store.state.filters || {});
     const [files, setFiles] = window.htmPreact.useState([]);
@@ -74,7 +73,8 @@ NTI.define("app", function () {
       const L = NTI.require("views/library");
       view = html`<${L.Library} store=${store}
         filters=${filters}
-        myFiles=${files} />`;
+        myFiles=${files}
+        onSearch=${(q) => setPal(q || true)} />`;
     } else if (route.view === "roadmap") {
       const V = NTI.require("views/roadmap");
       view = html`<${V.Roadmap} store=${store} open=${q.open} />`;
@@ -117,6 +117,7 @@ NTI.define("app", function () {
       ${view}
       <${Bottomnav} route=${route} />
       ${pal ? html`<${Palette} count=${total}
+        initialQ=${typeof pal === "string" ? pal : ""}
         onClose=${() => setPal(false)} />` : null}
       ${help ? html`<${HelpModal} onClose=${() => setHelp(false)} />` : null}
     <//>`;

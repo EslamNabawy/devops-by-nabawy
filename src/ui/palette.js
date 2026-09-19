@@ -4,7 +4,11 @@ NTI.define("ui/palette", function () {
   class Palette extends Component {
     constructor(p) {
       super(p);
-      this.state = { q: "", results: [], active: 0, indexing: false };
+      this.state = { q: (p && p.initialQ) || "", results: [],
+        active: 0, indexing: false };
+    }
+    componentDidMount() {
+      if (this.props.initialQ) this.onInput(this.props.initialQ);
     }
     async onInput(q) {
       this.setState({ q, active: 0 });

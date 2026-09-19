@@ -1,15 +1,17 @@
 /* tokens.css — ALL hex colors and font families live here. Nothing else
    may contain a hex literal or font-family. */
 :root {
-  --t-paper: #FFF8F6;
-  --t-ink: #1c1a15;
-  --t-muted: #6b6455;
+  --t-paper: #FFF9F0;
+  --t-ink: #1D1B16;
+  --t-muted: #3D4947;
   --t-line: #e8ddd4;
   --t-accent: #00685F;
   --t-accent2: #FD761A;
+  --t-tertiary: #8455EF;
   --t-focus: #00685F;
   --t-danger: #a03f3c;
-  --t-radius: 10px;
+  --t-radius: 14px;
+  --t-radius-lg: 20px;
   --t-font: "InterVariable", "Segoe UI", "Noto Naskh Arabic", system-ui,
     sans-serif;
   --t-mono: "JetBrains Mono", Consolas, monospace;

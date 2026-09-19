@@ -632,8 +632,26 @@ NTI.define("core/copy", function () {
     start: "Start",
     resume: "Resume",
     open: "Open",
-    heroTitle: "DevOps By Nabawy",
-    heroBody: "One library for the full pipeline, from Linux to delivery. Pick a track, follow the roadmap, resume in one tap.",
+    heroEyebrow: "Engineered for NTI Egypt, offline first",
+    heroTitleLead: "Learn DevOps,",
+    heroTitleAccent: "one page",
+    heroTitleTail: "at a time.",
+    heroBody: "Read offline, search every page, and track your progress through cloud infrastructure without high-friction signups.",
+    searchCta: "What do you want to learn today?",
+    searchTip: "Tip: press Ctrl/Cmd + K to search anywhere.",
+    popularLabel: "Popular:",
+    popular: ["kubernetes ingress", "docker volumes", "ansible roles"],
+    continueEyebrow: "Continue reading",
+    statsOffline: "100% offline",
+    statsOfflineBody: "Local storage caching, zero network loss.",
+    howTitle: "How it works",
+    howBody: "No complicated registration. Pure offline-ready knowledge transfer.",
+    howSteps: [
+      ["Pick a track", "Select from curated topics built around industry demands and NTI tracks."],
+      ["Read a PDF or open a course", "Open right in your browser or save it locally. Every paragraph and snippet is indexed."],
+      ["Watch your progress grow", "Your browser stores checkpoints safely on your device. Zero cloud sync delays."],
+    ],
+    footerTag: "Free, offline-first DevOps learning. No tracking, no accounts.",
     heroCtaTracks: "Browse tracks",
     heroCtaRoadmap: "Follow the roadmap",
     tracksTitle: "Tracks",
@@ -804,7 +822,11 @@ NTI.define("ui/palette", function () {
   class Palette extends Component {
     constructor(p) {
       super(p);
-      this.state = { q: "", results: [], active: 0, indexing: false };
+      this.state = { q: (p && p.initialQ) || "", results: [],
+        active: 0, indexing: false };
+    }
+    componentDidMount() {
+      if (this.props.initialQ) this.onInput(this.props.initialQ);
     }
     async onInput(q) {
       this.setState({ q, active: 0 });
@@ -1003,7 +1025,7 @@ NTI.define("views/library", function () {
     }
     return arr;
   }
-  function Library({ store, filters, myFiles }) {
+  function Library({ store, filters, myFiles, onSearch }) {
     const Cat = NTI.require("core/catalog");
     const copy = NTI.require("core/copy");
     const R = NTI.require("core/router");
@@ -1015,6 +1037,7 @@ NTI.define("views/library", function () {
       const nf = Object.assign({}, filters, { [k]: v ? [v] : [] });
       R.go(R.filterUrl(nf, "library"));
     };
+    const ask = (q) => { if (onSearch) onSearch(q || ""); };
     // Continue block
     let cont = null;
     if (store.state.last && !Cat.isDone(store.state.last.workId,
@@ -1025,23 +1048,55 @@ NTI.define("views/library", function () {
       const rec = Cat.recommendedTrack(store.state.progress);
       if (rec) cont = Cat.nextWork(rec.id, store.state.progress);
     }
+    // Live stats: tracks carrying PDFs, total PDF pages.
+    let pdfTracks = 0, pdfPages = 0;
+    tracks.forEach((t) => {
+      let has = false;
+      Cat.byTrack(t.id).forEach((w) => {
+        (w.formats || []).forEach((f) => {
+          if (f.type === "pdf" && f.status === "ready") {
+            has = true;
+            if (f.pages) pdfPages += f.pages;
+          }
+        });
+      });
+      if (has) pdfTracks += 1;
+    });
     const books = (Cat.data.books || []);
     const fTrack = filters.track || [];
     return html`<div class="view">
       <h1 class="sr-only">Library</h1>
       <section class="hero" aria-label="DevOps By Nabawy">
-        <h2 class="hero-t">${copy.heroTitle}</h2>
-        <p class="muted">${copy.heroBody}</p>
+        <p class="eyebrow">${copy.heroEyebrow}</p>
+        <h2 class="hero-display">${copy.heroTitleLead}
+          <span class="accent">${copy.heroTitleAccent}</span>
+          ${copy.heroTitleTail}</h2>
+        <p class="lede">${copy.heroBody}</p>
+        <button class="search-hero" onClick=${() => ask("")}
+          aria-label="Search">
+          <span>${copy.searchCta}</span>
+          <span class="kbd">Ctrl K</span>
+        </button>
+        <p class="hint">${copy.searchTip}</p>
+        <p class="popular"><span>${copy.popularLabel}</span>
+          ${copy.popular.map((p) => html`<button class="chip"
+            onClick=${() => ask(p)}>${p}</button>`)}</p>
         <p class="hero-cta">
-          <a class="btn btn-primary" href="#track-cards">${copy.heroCtaTracks}</a>
-          <a class="btn" href="#/roadmap">${copy.heroCtaRoadmap}</a>
+          <a class="btn btn-primary" href="#/roadmap">${copy.heroCtaRoadmap}</a>
+          <a class="btn" href="#track-cards">${copy.heroCtaTracks}</a>
         </p>
       </section>
       <p class="hint">${copy.hint}</p>
       ${cont ? html`<section class="continue" aria-label="Continue">
-        <h2>${copy.continueBtn}</h2>
+        <p class="eyebrow">${copy.continueEyebrow}</p>
         <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}: ${cont.title}</a>
       </section>` : null}
+      <section class="stats" aria-label="Library stats">
+        <div><strong>${pdfTracks} PDF tracks</strong>
+          <span class="muted">${pdfPages} pages of structured curation</span></div>
+        <div><strong>${copy.statsOffline}</strong>
+          <span class="muted">${copy.statsOfflineBody}</span></div>
+      </section>
       <section class="trackcards" id="track-cards" aria-label=${copy.tracksTitle}>
         <h2>${copy.tracksTitle}</h2>
         <p class="muted">${copy.tracksBody}</p>
@@ -1049,11 +1104,21 @@ NTI.define("views/library", function () {
         ${tracks.map((t) => {
           const cc = Cat.counts(t.id, store.state.progress);
           const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+          let npdf = 0, npages = 0;
+          Cat.byTrack(t.id).forEach((w) => {
+            (w.formats || []).forEach((f) => {
+              if (f.type === "pdf" && f.status === "ready") {
+                npdf += 1;
+                if (f.pages) npages += f.pages;
+              }
+            });
+          });
           return html`<li class="card" data-track=${t.id}>
             <a href="#/track/${t.id}">
               <strong>${t.title}</strong>
-              <span class="muted">${t.short} · ${cc.done}/${cc.total} · ${pct}%</span>
+              <span class="muted">${npdf} PDFs · ${npages} pages</span>
               <span class="muted">${t.summary || ""}</span>
+              <span class="muted">${pct}% read (${cc.done}/${cc.total})</span>
               <span class="kind">${copy.openTrack}</span>
             </a>
           </li>`;
@@ -1149,6 +1214,17 @@ NTI.define("views/library", function () {
           <span class="row-t"><strong>${f.name}</strong>
           <span class="muted">${(f.bytes / 1024).toFixed(0)} KB</span></span>
           <span class="kind">PDF</span></a></li>`)}</ul></section>` : null}
+      <section class="steps" aria-label=${copy.howTitle}>
+        <h2>${copy.howTitle}</h2>
+        <p class="muted">${copy.howBody}</p>
+        <ol>${copy.howSteps.map(([h, b], i) => html`<li>
+          <strong>${i + 1}. ${h}</strong>
+          <span class="muted">${b}</span></li>`)}</ol>
+      </section>
+      <footer class="sitefoot">
+        <strong>DevOps By Nabawy</strong>
+        <span class="muted">${copy.footerTag} ${copy.libraryInfo}</span>
+      </footer>
     </div>`;
   }
   return { Library };
@@ -1810,8 +1886,7 @@ NTI.define("app", function () {
     const Cat = NTI.require("core/catalog");
     const copy = NTI.require("core/copy");
     const [route, setRoute] = window.htmPreact.useState(R.current);
-    const [pal, setPal] = window.htmPreact.useState(false);
-    const [help, setHelp] = window.htmPreact.useState(false);
+    const [pal, setPal] = window.htmPreact.useState(false);    const [help, setHelp] = window.htmPreact.useState(false);
     const [filters, setFilters] = window.htmPreact.useState(
       store.state.filters || {});
     const [files, setFiles] = window.htmPreact.useState([]);
@@ -1865,7 +1940,8 @@ NTI.define("app", function () {
       const L = NTI.require("views/library");
       view = html`<${L.Library} store=${store}
         filters=${filters}
-        myFiles=${files} />`;
+        myFiles=${files}
+        onSearch=${(q) => setPal(q || true)} />`;
     } else if (route.view === "roadmap") {
       const V = NTI.require("views/roadmap");
       view = html`<${V.Roadmap} store=${store} open=${q.open} />`;
@@ -1908,6 +1984,7 @@ NTI.define("app", function () {
       ${view}
       <${Bottomnav} route=${route} />
       ${pal ? html`<${Palette} count=${total}
+        initialQ=${typeof pal === "string" ? pal : ""}
         onClose=${() => setPal(false)} />` : null}
       ${help ? html`<${HelpModal} onClose=${() => setHelp(false)} />` : null}
     <//>`;
