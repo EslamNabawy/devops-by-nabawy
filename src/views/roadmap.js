@@ -128,7 +128,8 @@ NTI.define("views/roadmap", function () {
         }}>${store.state.progress[next.id] ? "Continue" : "Start"}: ${next.title}</button>` : null}
         <ol>
         ${exts.map((e) => html`<li>
-          <a href="${e.url}" target="_blank" rel="noopener noreferrer">${e.title} (Online course)</a>
+          <a href="#/course/${e.id}" onClick=${() => onClose()}>${e.title} (Online course)</a>
+          <a href="${e.url}" target="_blank" rel="noopener noreferrer" aria-label="Open ${e.title} in new tab">↗</a>
         </li>`)}
         ${items.map((w) => html`<li>
           <a href="#/read/${w.id}" onClick=${() => onClose()}>${w.title}</a>

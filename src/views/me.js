@@ -4,11 +4,17 @@ NTI.define("views/me", function () {
   class Me extends Component {
     constructor(p) {
       super(p);
-      this.state = { files: [], confirmId: null };
+      this.state = { files: [], confirmId: null, storage: "" };
     }
     componentDidMount() {
       NTI.require("core/storage").filesAll()
         .then((files) => this.setState({ files }));
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then((est) => {
+          if (est.usage) this.setState({ storage:
+            `${(est.usage / 1048576).toFixed(1)} MB cached locally` });
+        }).catch(() => {});
+      }
     }
     render({ store }, s) {
       const copy = NTI.require("core/copy");
@@ -32,7 +38,7 @@ NTI.define("views/me", function () {
         <nav class="crumbs" aria-label="Breadcrumb">
           <a href="#/">Home</a><span> / </span><span>Me</span>
         </nav>
-        <p class="eyebrow">${copy.localPrivate}</p>
+        <p class="eyebrow">${copy.localPrivate}${s.storage ? ` · ${s.storage}` : ""}</p>
         <h1 class="hero-display">Me</h1>
         <p class="lede">${copy.meBody}</p>
         ${!S.available ? html`<p class="warn">${copy.storageBlocked}</p>` : null}

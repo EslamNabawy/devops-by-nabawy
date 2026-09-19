@@ -749,6 +749,23 @@ NTI.define("core/copy", function () {
     offlineSnapshots: "Cached offline snapshots",
     finishCourse: "I finished this course",
     courseDone: "Course done",
+    recEyebrow: "Recommended step",
+    ntiPathway: "NTI Pathway",
+    seeRoadmap: "See full roadmap",
+    learnOnline: "Learn online",
+    learnOnlineBody: "Interactive courses that open right here in your browser.",
+    onlineLabs: "Online labs",
+    onlineLabsBody: "Interactive browser courses",
+    browseCourses: "Browse courses",
+    egyptEyebrow: "Egyptian cloud initiative",
+    egyptTitle: "Designed for NTI cohort sync & intermittent connections",
+    egyptBody: "Download the syllabus once and keep reading through campus Wi-Fi drops. Zero telemetry, zero logins.",
+    recentLink: "Not this one? See recent",
+    footLearn: "Learn",
+    footCourses: "Courses",
+    footCommunity: "Community",
+    tracksLink: "Tracks",
+    searchLink: "Search",
     preIndexed: "All archive scripts and documents are pre-indexed for offline reading.",
     aboutEyebrow: "NTI mentorship, self-paced cloud engineering",
     aboutTitle: "About DevOps By Nabawy",
@@ -1189,13 +1206,27 @@ NTI.define("views/library", function () {
         </p>
       </section>
       <p class="hint">${copy.hint}</p>
-      ${cont ? html`<section class="continue" aria-label="Continue">
-        <p class="eyebrow">${copy.continueEyebrow}</p>
-        <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}: ${cont.title}</a>
-      </section>` : null}
+      ${cont ? (() => {
+        const ct = (Cat.data.tracks || []).find((t) => t.id === cont.track) || {};
+        const cc = Cat.counts(cont.track, store.state.progress);
+        const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+        return html`<section class="continue hero" aria-label="Continue">
+          <p class="eyebrow">${copy.continueEyebrow}</p>
+          <p><span class="pill">${copy.offlineReady}</span></p>
+          <h2 dir="auto">${cont.title}</h2>
+          <p class="muted">${ct.title || cont.track} · ${cont.kind} · ${pct}% of track read</p>
+          <p class="hero-cta">
+            <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}</a>
+            <a class="btn" href="#/me">${copy.recentLink}</a>
+          </p>
+        </section>`;
+      })() : null}
       <section class="stats" aria-label="Library stats">
         <div><strong>${pdfTracks} PDF tracks</strong>
           <span class="muted">${pdfPages} pages of structured curation</span></div>
+        <div><strong>${(Cat.data.externals || []).length} ${copy.onlineLabs}</strong>
+          <span class="muted">${copy.onlineLabsBody}</span>
+          <a href="#learn-online">${copy.browseCourses}</a></div>
         <div><strong>${copy.statsOffline}</strong>
           <span class="muted">${copy.statsOfflineBody}</span></div>
       </section>
@@ -1331,7 +1362,7 @@ NTI.define("views/library", function () {
           <span class="row-t"><strong>${f.name}</strong>
           <span class="muted">${(f.bytes / 1024).toFixed(0)} KB</span></span>
           <span class="kind">PDF</span></a></li>`)}</ul></section>` : null}
-      <section class="steps" aria-label=${copy.howTitle}>
+      <section class="steps" aria-label=${copy.howTitle} id="how-it-works">
         <p class="muted">${copy.archiveTeaser}
           ${(() => {
             let n = 0;
@@ -1346,12 +1377,68 @@ NTI.define("views/library", function () {
           <strong>${i + 1}. ${h}</strong>
           <span class="muted">${b}</span></li>`)}</ol>
       </section>
+      ${(() => {
+        const rec = Cat.recommendedTrack(store.state.progress);
+        if (!rec) return null;
+        return html`<section class="hero" aria-label=${copy.recEyebrow}>
+          <p class="eyebrow">${copy.recEyebrow} · ${copy.ntiPathway}</p>
+          <h2>Next up: ${rec.title}</h2>
+          <p class="muted">${rec.summary || ""}</p>
+          <p class="hero-cta">
+            <a class="btn btn-primary" href="#/track/${rec.id}">${copy.openTrack}</a>
+            <a class="btn" href="#/roadmap">${copy.seeRoadmap}</a>
+          </p>
+        </section>`;
+      })()}
+      ${(() => {
+        const exts = Cat.data.externals || [];
+        if (!exts.length) return null;
+        return html`<section id="learn-online" aria-label=${copy.learnOnline}>
+          <p class="eyebrow">${copy.onlineLabs}</p>
+          <h2>${copy.learnOnline}</h2>
+          <p class="muted">${copy.learnOnlineBody}</p>
+          <ul class="cards">${exts.map((e) => {
+            const t = tracks.find((x) => x.id === e.track) || {};
+            return html`<li class="card" data-track=${e.track}>
+              <a href="#/course/${e.id}">
+                <span class="eyebrow">${t.title || e.track}</span>
+                <strong dir="auto">${e.title}</strong>
+                <span class="muted">${e.host} · ${!navigator.onLine ? copy.needsInternet : copy.requiresInternet}</span>
+                <span class="cardfoot"><span class="pill">Online</span></span>
+              </a>
+            </li>`;
+          })}</ul>
+        </section>`;
+      })()}
+      <section class="hero" aria-label=${copy.egyptEyebrow}>
+        <p class="eyebrow">${copy.egyptEyebrow}</p>
+        <h2>${copy.egyptTitle}</h2>
+        <p class="muted">${copy.egyptBody}</p>
+        <p class="hero-cta">
+          <a class="btn btn-primary" href="#/roadmap">${copy.seeRoadmap}</a>
+          <a class="btn" href="#how-it-works">${copy.howTitle}</a>
+        </p>
+      </section>
       <footer class="sitefoot">
         <strong>DevOps By Nabawy</strong>
         <span class="muted">${copy.footerTag} ${copy.libraryInfo}</span>
-        <p><a href="#/archive">${copy.archiveTitle}</a> ·
-          <a href="#/about">${copy.aboutTitle}</a> ·
-          <a href="#/roadmap">${copy.openRoadmap}</a></p>
+        <div class="footgrid">
+          <div><h2>${copy.footLearn}</h2>
+            <p><a href="#/">${copy.tracksLink}</a></p>
+            <p><a href="#/roadmap">${copy.openRoadmap}</a></p>
+            <p><a href="#/archive">${copy.archiveTitle}</a></p>
+          </div>
+          <div><h2>${copy.footCourses}</h2>
+            ${(Cat.data.externals || []).map((e) =>
+              html`<p><a href="#/course/${e.id}">${e.title}</a></p>`)}
+          </div>
+          <div><h2>${copy.footCommunity}</h2>
+            <p>${copy.aboutOpen}</p>
+            <p>${copy.aboutVerified}</p>
+            <p>${copy.aboutStatic}</p>
+          </div>
+        </div>
+        <p><a href="#/about">${copy.aboutTitle}</a></p>
       </footer>
     </div>`;
   }
@@ -1489,7 +1576,8 @@ NTI.define("views/roadmap", function () {
         }}>${store.state.progress[next.id] ? "Continue" : "Start"}: ${next.title}</button>` : null}
         <ol>
         ${exts.map((e) => html`<li>
-          <a href="${e.url}" target="_blank" rel="noopener noreferrer">${e.title} (Online course)</a>
+          <a href="#/course/${e.id}" onClick=${() => onClose()}>${e.title} (Online course)</a>
+          <a href="${e.url}" target="_blank" rel="noopener noreferrer" aria-label="Open ${e.title} in new tab">↗</a>
         </li>`)}
         ${items.map((w) => html`<li>
           <a href="#/read/${w.id}" onClick=${() => onClose()}>${w.title}</a>
@@ -2004,11 +2092,17 @@ NTI.define("views/me", function () {
   class Me extends Component {
     constructor(p) {
       super(p);
-      this.state = { files: [], confirmId: null };
+      this.state = { files: [], confirmId: null, storage: "" };
     }
     componentDidMount() {
       NTI.require("core/storage").filesAll()
         .then((files) => this.setState({ files }));
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then((est) => {
+          if (est.usage) this.setState({ storage:
+            `${(est.usage / 1048576).toFixed(1)} MB cached locally` });
+        }).catch(() => {});
+      }
     }
     render({ store }, s) {
       const copy = NTI.require("core/copy");
@@ -2032,7 +2126,7 @@ NTI.define("views/me", function () {
         <nav class="crumbs" aria-label="Breadcrumb">
           <a href="#/">Home</a><span> / </span><span>Me</span>
         </nav>
-        <p class="eyebrow">${copy.localPrivate}</p>
+        <p class="eyebrow">${copy.localPrivate}${s.storage ? ` · ${s.storage}` : ""}</p>
         <h1 class="hero-display">Me</h1>
         <p class="lede">${copy.meBody}</p>
         ${!S.available ? html`<p class="warn">${copy.storageBlocked}</p>` : null}
