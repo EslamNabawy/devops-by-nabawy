@@ -50,11 +50,32 @@ NTI.define("views/library", function () {
       }}>${done ? "✓" : "○"}</button>
     </li>`;
   }
+  function sortItems(items, sort) {
+    const arr = items.slice();
+    if (sort === "title") {
+      arr.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sort === "shortest") {
+      arr.sort((a, b) => (a.minutes || 0) - (b.minutes || 0));
+    } else if (sort === "recent") {
+      arr.sort((a, b) => String(b.addedAt || "").localeCompare(
+        String(a.addedAt || "")) || b.order - a.order);
+    } else {
+      arr.sort((a, b) => a.order - b.order);
+    }
+    return arr;
+  }
   function Library({ store, filters, myFiles }) {
     const Cat = NTI.require("core/catalog");
     const copy = NTI.require("core/copy");
+    const R = NTI.require("core/router");
     const tracks = (Cat.data.tracks || []).slice()
       .sort((a, b) => a.order - b.order);
+    const sort = (filters.sort && filters.sort[0]) || "order";
+    const group = (filters.group && filters.group[0]) || "track";
+    const setList = (k, v) => {
+      const nf = Object.assign({}, filters, { [k]: v ? [v] : [] });
+      R.go(R.filterUrl(nf, "library"));
+    };
     // Continue block
     let cont = null;
     if (store.state.last && !Cat.isDone(store.state.last.workId,
@@ -79,7 +100,49 @@ NTI.define("views/library", function () {
         ${books.map((b) => html`<${Row} w=${{ id: b.id, track: b.track,
           kind: "book", title: b.title, minutes: 0,
           formats: b.formats }} store=${store} />`)}</ul></section>` : null}
-      ${tracks.filter((t) => !fTrack.length || fTrack.includes(t.id))
+      <div class="sortbar" role="group" aria-label="Sort and group">
+        <label>Sort <select value=${sort} onChange=${(e) =>
+          setList("sort", e.target.value)}>
+          <option value="order">Learning order</option>
+          <option value="title">Title</option>
+          <option value="recent">Recently added</option>
+          <option value="shortest">Shortest</option>
+        </select></label>
+        <label>Group <select value=${group} onChange=${(e) =>
+          setList("group", e.target.value)}>
+          <option value="track">Track</option>
+          <option value="type">Type</option>
+          <option value="none">None</option>
+        </select></label>
+      </div>
+      ${group === "none" ? html`<section aria-label="All works"><ul class="rows">
+        ${sortItems(tracks.flatMap((t) =>
+          (!fTrack.length || fTrack.includes(t.id))
+            ? [...(Cat.data.externals || []).filter((e) => e.track === t.id)
+              .map((e) => ({ id: e.id, track: t.id, kind: "external",
+                title: e.title, summary: e.summary, minutes: 0,
+                formats: [], external: e })),
+              ...Cat.byTrack(t.id)] : []), sort)
+          .filter((w) => matchWork(w, filters, store))
+          .map((w) => html`<${Row} w=${w} store=${store} />`)}
+        </ul></section>`
+      : group === "type" ? ["lesson", "lab", "script", "book",
+          "reference", "evidence", "external"].map((k) => {
+          const items = sortItems(tracks.flatMap((t) =>
+            (!fTrack.length || fTrack.includes(t.id))
+              ? [...(Cat.data.externals || []).filter((e) => e.track === t.id)
+                .map((e) => ({ id: e.id, track: t.id, kind: "external",
+                  title: e.title, summary: e.summary, minutes: 0,
+                  formats: [], external: e })),
+                ...Cat.byTrack(t.id)] : [])
+            .filter((w) => w.kind === k)
+            .filter((w) => matchWork(w, filters, store)), sort);
+          if (!items.length) return null;
+          return html`<section aria-label=${k}><h2>${k}</h2>
+            <ul class="rows">${items.map((w) =>
+              html`<${Row} w=${w} store=${store} />`)}</ul></section>`;
+        })
+      : tracks.filter((t) => !fTrack.length || fTrack.includes(t.id))
         .map((t) => {
           let items = Cat.byTrack(t.id).filter((w) =>
             matchWork(w, filters, store));
@@ -94,7 +157,7 @@ NTI.define("views/library", function () {
               formats: [], external: e }))
             .filter((w) => matchWork(
               Object.assign({ formats: [] }, w), filters, store));
-          const all = [...exts, ...items];
+          const all = sortItems([...exts, ...items], sort);
           if (!all.length) return null;
           return html`<section aria-label=${t.title} data-track=${t.id}>
             <h2>${t.title}</h2>
@@ -102,6 +165,19 @@ NTI.define("views/library", function () {
               html`<${Row} w=${w} store=${store} />`)}</ul>
           </section>`;
         })}
+      ${Cat.data.site && Cat.data.site.maintainerMode ?
+        (() => {
+          const un = Cat.byTrack("_unsorted")
+            .filter((w) => matchWork(w, filters, store));
+          if (!un.length) return null;
+          const ids = (Cat.data.tracks || []).map((t) => t.id).join(", ");
+          return html`<section aria-label="Needs a track" data-track="_unsorted">
+            <h2>Needs a track (maintainer)</h2>
+            <p class="muted">Rename with a track prefix (${ids}), then refresh.</p>
+            <ul class="rows">${un.map((w) =>
+              html`<${Row} w=${w} store=${store} />`)}</ul>
+          </section>`;
+        })() : null}
       ${(myFiles || []).length ? html`<section aria-label="My files">
         <h2>My files</h2><ul class="rows">
         ${myFiles.map((f) => html`<li class="row"><a href="#/read/${f.id}?fmt=local">

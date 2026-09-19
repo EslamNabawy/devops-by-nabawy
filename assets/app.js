@@ -95,7 +95,6 @@ NTI.define("core/storage", function () {
 ﻿// store.js — single state store, pure selectors, export/import.
 NTI.define("core/store", function () {
   const S = NTI.require("core/storage");
-  const bus = {};
   const listeners = [];
   const state = {
     progress: S.ls.get("nti.v1.progress") || {},
@@ -160,7 +159,6 @@ NTI.define("core/store", function () {
       Object.assign(state.settings, d.settings || {});
       save();
     },
-    bus,
   };
 });
 
@@ -241,6 +239,7 @@ NTI.define("core/catalog", function () {
 /* core/router.js */
 ﻿// router.js — hash router with params, scroll restore, focus hook.
 NTI.define("core/router", function () {
+  const api = {};
   const mem = {};
   let current = { view: "library", params: {}, query: {} };
   const subs = [];
@@ -280,17 +279,40 @@ NTI.define("core/router", function () {
       if (w) A.announce(`${w.title}, ${w.kind}`);
     }
   });
-  return {
+  Object.assign(api, {
     get current() { return current; },
     on(f) { subs.push(f); },
     go(h) { location.hash = h; },
+    filterUrl(nf, view) {
+      const q = new URLSearchParams();
+      ["track", "type", "format", "status"].forEach((k) =>
+        (nf[k] || []).forEach((v) => q.append(k, v)));
+      ["sort", "group"].forEach((k) => {
+        if (nf[k] && nf[k][0]) q.append(k, nf[k][0]);
+      });
+      const qs = q.toString();
+      return `#/${view === "library" ? "" : view}${qs ? "?" + qs : ""}`;
+    },
+    readFilterQuery() {
+      // Multi-values need raw reparse (fromEntries drops repeats).
+      const raw = (location.hash.split("?")[1] || "");
+      const rp = new URLSearchParams(raw);
+      const out = { track: rp.getAll("track"), type: rp.getAll("type"),
+        format: rp.getAll("format"), status: rp.getAll("status") };
+      const s = rp.get("sort"), g = rp.get("group");
+      if (s) out.sort = [s];
+      if (g) out.group = [g];
+      return out;
+    },
     init() {
       current = parse();
       document.title = titles(current) + " — DevOps By Nabawy";
+      api._lastHash = location.hash;
     },
     saveScroll(k, y) { mem[k] = y; },
     restoreScroll(k) { return mem[k] || 0; },
-  };
+  });
+  return api;
 });
 
 /* core/loader.js */
@@ -690,8 +712,8 @@ NTI.define("ui/status", function () {
       <span class="ring-n">${done}/${total}</span></span>`;
   }
   function SegmentedBar({ done, total }) {
-    const p = total ? (done / total) * 100 : 0;
-    return html`<span class="segbar"><span class="segbar-f" style="width:${p}%"></span></span>`;
+    return html`<progress class="segbar" max=${total} value=${done}
+      aria-label="${done} of ${total} done">${done}/${total}</progress>`;
   }
   function StatusGlyph({ state }) {
     return html`<span class="glyph glyph-${state}" aria-hidden="true">${state === "done" ? "✓" : state === "reading" ? "◐" : "○"}</span>`;
@@ -708,11 +730,14 @@ NTI.define("ui/topbar", function () {
   function Topbar({ route, onSearch, count }) {
     const R = NTI.require("core/router");
     const copy = NTI.require("core/copy");
+    const Cat = NTI.require("core/catalog");
+    const maint = !!(Cat.data.site && Cat.data.site.maintainerMode);
     return html`<header class="topbar">
       <a class="brand" href="#/">DevOps By Nabawy</a>
       <nav class="topnav" aria-label="Primary">
         <a href="#/" aria-current=${route.view === "library" ? "page" : null}>Library</a>
         <a href="#/roadmap" aria-current=${route.view === "roadmap" ? "page" : null}>Roadmap</a>
+        ${maint ? html`<a href="#/add" aria-current=${route.view === "add" ? "page" : null}>Add PDF</a>` : null}
       </nav>
       <button class="search-trigger" onClick=${onSearch} aria-label="Search">
         <${Icon} name="search" /><span>${copy.searchPlaceholder(count)}</span>
@@ -775,13 +800,28 @@ NTI.define("ui/palette", function () {
       this.setState({ indexing: true });
       S.ensureTier2().finally(() => this.setState({ indexing: false }));
       const r = await S.query(q.trim());
+      // My files: name-only entries (never in the shared index).
+      try {
+        const files = await NTI.require("core/storage").filesAll();
+        const ql = q.trim().toLowerCase();
+        files.filter((f) => (f.name || "").toLowerCase().includes(ql))
+          .slice(0, 5)
+          .forEach((f) => r.push({ id: f.id, ref: f.id, track: "",
+            kind: "local", title: f.name, heading: "", anchor: null,
+            page: null, local: true }));
+      } catch { /* ignore */ }
       this.setState({ results: r });
       NTI.require("core/a11y").announce(`${r.length} results`);
     }
     openWork(r) {
       const store = NTI.require("core/store");
-      store.pushRecent(this.state.q);
       const R = NTI.require("core/router");
+      if (r.local) {
+        this.props.onClose();
+        R.go(`#/read/${r.id}?fmt=local`);
+        return;
+      }
+      store.pushRecent(this.state.q);
       let h = `#/read/${r.id}`;
       const params = [];
       if (r.page) params.push(`fmt=pdf&page=${r.page}`);
@@ -793,6 +833,8 @@ NTI.define("ui/palette", function () {
     render(_, s) {
       const copy = NTI.require("core/copy");
       const A = NTI.require("core/a11y");
+      const store = NTI.require("core/store");
+      const R = NTI.require("core/router");
       const trap = (el) => { if (el) { this._untrap && this._untrap(); this._untrap = A.trapFocus(el); const i = el.querySelector("input"); if (i) i.focus(); } };
       return html`<div class="modal-back" onClick=${this.props.onClose}>
         <div class="palette modal" role="dialog" aria-label="Search" ref=${trap} onClick=${(e) => e.stopPropagation()}>
@@ -815,6 +857,14 @@ NTI.define("ui/palette", function () {
               </button></li>`)}
           </ul>
           ${s.q && !s.results.length && !s.indexing ? html`<p><strong>${copy.nothingMatches}</strong></p><p>${copy.nothingMatchesBody}</p>` : null}
+          ${!s.q && (store.state.recent || []).length ? html`<div class="recent">
+            <p class="muted">Recent</p>
+            <ul class="pal-list">${store.state.recent.map((r) => html`<li>
+              <button onClick=${() => {
+                const inp = document.querySelector(".palette input");
+                if (inp) { inp.value = r; }
+                this.onInput(r);
+              }}>${r}</button></li>`)}</ul></div>` : null}
           <p class="muted pal-foot">${copy.paletteFooter}</p>
         </div></div>`;
     }
@@ -926,11 +976,32 @@ NTI.define("views/library", function () {
       }}>${done ? "✓" : "○"}</button>
     </li>`;
   }
+  function sortItems(items, sort) {
+    const arr = items.slice();
+    if (sort === "title") {
+      arr.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sort === "shortest") {
+      arr.sort((a, b) => (a.minutes || 0) - (b.minutes || 0));
+    } else if (sort === "recent") {
+      arr.sort((a, b) => String(b.addedAt || "").localeCompare(
+        String(a.addedAt || "")) || b.order - a.order);
+    } else {
+      arr.sort((a, b) => a.order - b.order);
+    }
+    return arr;
+  }
   function Library({ store, filters, myFiles }) {
     const Cat = NTI.require("core/catalog");
     const copy = NTI.require("core/copy");
+    const R = NTI.require("core/router");
     const tracks = (Cat.data.tracks || []).slice()
       .sort((a, b) => a.order - b.order);
+    const sort = (filters.sort && filters.sort[0]) || "order";
+    const group = (filters.group && filters.group[0]) || "track";
+    const setList = (k, v) => {
+      const nf = Object.assign({}, filters, { [k]: v ? [v] : [] });
+      R.go(R.filterUrl(nf, "library"));
+    };
     // Continue block
     let cont = null;
     if (store.state.last && !Cat.isDone(store.state.last.workId,
@@ -955,7 +1026,49 @@ NTI.define("views/library", function () {
         ${books.map((b) => html`<${Row} w=${{ id: b.id, track: b.track,
           kind: "book", title: b.title, minutes: 0,
           formats: b.formats }} store=${store} />`)}</ul></section>` : null}
-      ${tracks.filter((t) => !fTrack.length || fTrack.includes(t.id))
+      <div class="sortbar" role="group" aria-label="Sort and group">
+        <label>Sort <select value=${sort} onChange=${(e) =>
+          setList("sort", e.target.value)}>
+          <option value="order">Learning order</option>
+          <option value="title">Title</option>
+          <option value="recent">Recently added</option>
+          <option value="shortest">Shortest</option>
+        </select></label>
+        <label>Group <select value=${group} onChange=${(e) =>
+          setList("group", e.target.value)}>
+          <option value="track">Track</option>
+          <option value="type">Type</option>
+          <option value="none">None</option>
+        </select></label>
+      </div>
+      ${group === "none" ? html`<section aria-label="All works"><ul class="rows">
+        ${sortItems(tracks.flatMap((t) =>
+          (!fTrack.length || fTrack.includes(t.id))
+            ? [...(Cat.data.externals || []).filter((e) => e.track === t.id)
+              .map((e) => ({ id: e.id, track: t.id, kind: "external",
+                title: e.title, summary: e.summary, minutes: 0,
+                formats: [], external: e })),
+              ...Cat.byTrack(t.id)] : []), sort)
+          .filter((w) => matchWork(w, filters, store))
+          .map((w) => html`<${Row} w=${w} store=${store} />`)}
+        </ul></section>`
+      : group === "type" ? ["lesson", "lab", "script", "book",
+          "reference", "evidence", "external"].map((k) => {
+          const items = sortItems(tracks.flatMap((t) =>
+            (!fTrack.length || fTrack.includes(t.id))
+              ? [...(Cat.data.externals || []).filter((e) => e.track === t.id)
+                .map((e) => ({ id: e.id, track: t.id, kind: "external",
+                  title: e.title, summary: e.summary, minutes: 0,
+                  formats: [], external: e })),
+                ...Cat.byTrack(t.id)] : [])
+            .filter((w) => w.kind === k)
+            .filter((w) => matchWork(w, filters, store)), sort);
+          if (!items.length) return null;
+          return html`<section aria-label=${k}><h2>${k}</h2>
+            <ul class="rows">${items.map((w) =>
+              html`<${Row} w=${w} store=${store} />`)}</ul></section>`;
+        })
+      : tracks.filter((t) => !fTrack.length || fTrack.includes(t.id))
         .map((t) => {
           let items = Cat.byTrack(t.id).filter((w) =>
             matchWork(w, filters, store));
@@ -970,7 +1083,7 @@ NTI.define("views/library", function () {
               formats: [], external: e }))
             .filter((w) => matchWork(
               Object.assign({ formats: [] }, w), filters, store));
-          const all = [...exts, ...items];
+          const all = sortItems([...exts, ...items], sort);
           if (!all.length) return null;
           return html`<section aria-label=${t.title} data-track=${t.id}>
             <h2>${t.title}</h2>
@@ -978,6 +1091,19 @@ NTI.define("views/library", function () {
               html`<${Row} w=${w} store=${store} />`)}</ul>
           </section>`;
         })}
+      ${Cat.data.site && Cat.data.site.maintainerMode ?
+        (() => {
+          const un = Cat.byTrack("_unsorted")
+            .filter((w) => matchWork(w, filters, store));
+          if (!un.length) return null;
+          const ids = (Cat.data.tracks || []).map((t) => t.id).join(", ");
+          return html`<section aria-label="Needs a track" data-track="_unsorted">
+            <h2>Needs a track (maintainer)</h2>
+            <p class="muted">Rename with a track prefix (${ids}), then refresh.</p>
+            <ul class="rows">${un.map((w) =>
+              html`<${Row} w=${w} store=${store} />`)}</ul>
+          </section>`;
+        })() : null}
       ${(myFiles || []).length ? html`<section aria-label="My files">
         <h2>My files</h2><ul class="rows">
         ${myFiles.map((f) => html`<li class="row"><a href="#/read/${f.id}?fmt=local">
@@ -999,10 +1125,19 @@ NTI.define("views/roadmap", function () {
       this.state = { open: p.open || null, ran: false };
     }
     componentDidMount() {
+      let ran = false;
+      try { ran = sessionStorage.getItem("nti.roadmap.ran") === "1"; } catch {}
+      if (ran) { this.setState({ ran: true }); return; }
       const A = NTI.require("core/a11y");
       if (!A.reducedMotion(NTI.require("core/store"))) {
-        setTimeout(() => this.setState({ ran: true }), 60);
-      } else this.setState({ ran: true });
+        setTimeout(() => {
+          this.setState({ ran: true });
+          try { sessionStorage.setItem("nti.roadmap.ran", "1"); } catch {}
+        }, 60);
+      } else {
+        this.setState({ ran: true });
+        try { sessionStorage.setItem("nti.roadmap.ran", "1"); } catch {}
+      }
     }
     render({ store }, s) {
       const Cat = NTI.require("core/catalog");
@@ -1019,7 +1154,7 @@ NTI.define("views/roadmap", function () {
       return html`<div class="view roadmap ${s.ran ? "ran" : "run"}">
         <h1>Roadmap</h1>
         <ol class="stages">
-        ${stages.map((st, si) => html`<li class="stage" style="--si:${si}">
+        ${stages.map((st) => html`<li class="stage">
           <h2>${st.title}</h2>
           <ol class="jobs">${(st.tracks || []).map((tid) => {
             const t = tmap[tid];
@@ -1054,8 +1189,11 @@ NTI.define("views/roadmap", function () {
     const Cat = NTI.require("core/catalog");
     const t = (Cat.data.tracks || []).find((x) => x.id === trackId);
     const R = NTI.require("core/router");
+    const A = NTI.require("core/a11y");
     const ref = (el) => {
       if (el) {
+        if (ref._untrap) ref._untrap();
+        ref._untrap = A.trapFocus(el);
         const first = el.querySelector("button,a");
         if (first) first.focus();
       }
@@ -1228,10 +1366,37 @@ NTI.define("views/reader", function () {
           <button class="btn btn-ghost" onClick=${() =>
             store.toggleBookmark(id, anchor || null)}>
             ${store.state.bookmarks.some((b) => b.workId === id) ? "★" : "☆"}</button>
+          <details class="readsettings">
+            <summary class="btn btn-ghost">Aa</summary>
+            <div class="readsettings-pop">
+              <div role="group" aria-label="Text size">
+                <button class="btn btn-ghost" aria-label="Smaller text" onClick=${() => {
+                  const v = Math.max(0, store.state.settings.readingSize - 1);
+                  store.setSettings({ readingSize: v });
+                  NTI.require("core/theme").apply(store.state.settings);
+                }}>A-</button>
+                <button class="btn btn-ghost" aria-label="Larger text" onClick=${() => {
+                  const v = Math.min(2, store.state.settings.readingSize + 1);
+                  store.setSettings({ readingSize: v });
+                  NTI.require("core/theme").apply(store.state.settings);
+                }}>A+</button>
+              </div>
+              <label>Theme <select value=${store.state.settings.theme} onChange=${(e) => {
+                store.setSettings({ theme: e.target.value });
+                NTI.require("core/theme").apply(store.state.settings);
+              }}>
+                <option value="system">system</option>
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+              </select></label>
+            </div>
+          </details>
         </div>
         ${(s.doc.toc || []).length ? html`<details class="outline"><summary>Outline</summary><ol>
           ${(s.doc.toc || []).map((h) => html`<li><a href="#/read/${id}?a=${h.id}">${h.text}</a></li>`)}
         </ol></details>` : null}
+        ${(w.formats || []).some((f) => (f.type === "html") && f.status === "ready" && f.path)
+          ? html`<p><a href="${(w.formats || []).find((f) => f.type === "html").path}" target="_blank" rel="noopener noreferrer">View original</a></p>` : null}
         <article class="article" ref=${(el) => {
           if (el && anchor) {
             const t = el.querySelector("#" + CSS.escape(anchor));
@@ -1376,7 +1541,7 @@ NTI.define("views/me", function () {
   class Me extends Component {
     constructor(p) {
       super(p);
-      this.state = { files: [] };
+      this.state = { files: [], confirmId: null };
     }
     componentDidMount() {
       NTI.require("core/storage").filesAll()
@@ -1405,12 +1570,15 @@ NTI.define("views/me", function () {
           ${s.files.length ? html`<ul class="rows">
             ${s.files.map((f) => html`<li class="row">
               <a href="#/read/${f.id}?fmt=local">${f.name}</a>
-              <button class="btn btn-ghost" onClick=${async () => {
-                if (!confirm("Remove?")) return;
-                await S.filesDel(f.id);
-                this.setState({ files: (await S.filesAll()) });
-                NTI.require("ui/primitives").toast(copy.removed);
-              }}>Remove</button></li>`)}</ul>`
+              ${s.confirmId === f.id
+                ? html`<span><button class="btn btn-ghost" onClick=${() => this.setState({ confirmId: null })}>Keep</button>
+                  <button class="btn" onClick=${async () => {
+                    await S.filesDel(f.id);
+                    this.setState({ files: (await S.filesAll()), confirmId: null });
+                    NTI.require("ui/primitives").toast(copy.removed);
+                  }}>Confirm remove</button></span>`
+                : html`<button class="btn btn-ghost" onClick=${() =>
+                  this.setState({ confirmId: f.id })}>Remove</button>`}</li>`)}</ul>`
             : html`<p>${copy.noFiles}</p>`}
           <button class="btn" onClick=${() => {
             const inp = document.createElement("input");
@@ -1471,7 +1639,9 @@ NTI.define("views/me", function () {
             inp.click();
           }}>${copy.importBtn}</button>
         </section>
-        <section><h2>Library info</h2><p>${copy.libraryInfo}</p></section>
+        <section><h2>Library info</h2><p>${copy.libraryInfo}</p>
+        ${Cat.data.site && Cat.data.site.maintainerMode
+          ? html`<p><a class="btn" href="#/add">Add PDF</a></p>` : null}</section>
       </div>`;
     }
   }
@@ -1546,37 +1716,23 @@ NTI.define("app", function () {
     const copy = NTI.require("core/copy");
     const [route, setRoute] = window.htmPreact.useState(R.current);
     const [pal, setPal] = window.htmPreact.useState(false);
+    const [help, setHelp] = window.htmPreact.useState(false);
     const [filters, setFilters] = window.htmPreact.useState(
       store.state.filters || {});
     const [files, setFiles] = window.htmPreact.useState([]);
     // URL <-> filter sync (Back restores previous filter state).
     function pushFilterUrl(nf, view) {
-      const q = new URLSearchParams();
-      (nf.track || []).forEach((t) => q.append("track", t));
-      (nf.type || []).forEach((t) => q.append("type", t));
-      (nf.format || []).forEach((t) => q.append("format", t));
-      (nf.status || []).forEach((t) => q.append("status", t));
-      const qs = q.toString();
-      R.go(`#/${view === "library" ? "" : view}${qs ? "?" + qs : ""}`);
-    }
-    function urlFilters(query) {
-      const g = (k) => {
-        const v = query[k];
-        if (v === undefined) return [];
-        return Array.isArray(v) ? v : [v];
-      };
-      // URLSearchParams drops repeated keys via Object.fromEntries —
-      // reparse from the raw hash for multi-values.
-      const raw = (location.hash.split("?")[1] || "");
-      const rp = new URLSearchParams(raw);
-      return { track: rp.getAll("track"), type: rp.getAll("type"),
-        format: rp.getAll("format"), status: rp.getAll("status") };
+      R.go(R.filterUrl(nf, view));
     }
     window.htmPreact.useEffect(() => {
       const off = R.on((r) => {
+        if (R._lastHash !== undefined) {
+          R.saveScroll(R._lastHash, window.scrollY);
+        }
+        R._lastHash = location.hash;
         setRoute(r);
         if (r.view === "library" && location.hash.includes("?")) {
-          const nf = urlFilters(r.query);
+          const nf = R.readFilterQuery();
           setFilters(nf); store.setFilters(nf);
         }
       });
@@ -1584,6 +1740,21 @@ NTI.define("app", function () {
       NTI.require("core/storage").filesAll().then(setFiles);
       void off;
     }, []);
+    window.htmPreact.useEffect(() => {
+      const onHelp = () => setHelp(true);
+      const onEsc = () => { setHelp(false); setPal(false); };
+      document.addEventListener("nti:help", onHelp);
+      document.addEventListener("nti:escape", onEsc);
+      return () => {
+        document.removeEventListener("nti:help", onHelp);
+        document.removeEventListener("nti:escape", onEsc);
+      };
+    }, []);
+    window.htmPreact.useEffect(() => {
+      const y = R.restoreScroll(location.hash);
+      if (y) requestAnimationFrame(() => window.scrollTo(0, y));
+      else if (window.scrollY) window.scrollTo(0, 0);
+    }, [route]);
     const { Topbar } = NTI.require("ui/topbar");
     const { Bottomnav } = NTI.require("ui/bottomnav");
     const { Strip } = NTI.require("ui/strip");
@@ -1643,7 +1814,31 @@ NTI.define("app", function () {
       <${Bottomnav} route=${route} />
       ${pal ? html`<${Palette} count=${total}
         onClose=${() => setPal(false)} />` : null}
+      ${help ? html`<${HelpModal} onClose=${() => setHelp(false)} />` : null}
     <//>`;
+  }
+  function HelpModal({ onClose }) {
+    const rows = [
+      ["/ or Ctrl+K", "Open search"], ["g l", "Go to Library"],
+      ["g r", "Go to Roadmap"], ["g m", "Go to Me"],
+      ["j / k", "Next / previous row"], ["Enter", "Open focused row"],
+      ["[ / ]", "Previous / next work"], ["m", "Toggle done"],
+      ["b", "Toggle bookmark"], ["f", "Focus mode"], ["t", "Cycle theme"],
+      ["?", "This list"], ["Esc", "Close overlay"],
+    ];
+    return html`<div class="modal-back" onClick=${onClose}>
+      <div class="modal" role="dialog" aria-label="Keyboard shortcuts"
+        ref=${(el) => {
+          if (el) {
+            const first = el.querySelector("button");
+            if (first) first.focus();
+          }
+        }}
+        onClick=${(e) => e.stopPropagation()}>
+        <h2>Keyboard shortcuts</h2>
+        <ul>${rows.map(([k, v]) => html`<li><code>${k}</code> — ${v}</li>`)}</ul>
+        <button class="btn" onClick=${onClose}>Close</button>
+      </div></div>`;
   }
   function boot() {
     if (!window.htmPreact || !window.MiniSearch) {
@@ -1670,7 +1865,13 @@ NTI.define("app", function () {
     K.on("g l", () => R.go("#/"));
     K.on("g r", () => R.go("#/roadmap"));
     K.on("g m", () => R.go("#/me"));
-    K.on("?", () => alert("/ search · g l library · g r roadmap · g m me · j/k rows · m done · b bookmark · f focus · t theme · Esc close"));
+    K.on("?", () => {
+      const ev = new CustomEvent("nti:help");
+      document.dispatchEvent(ev);
+    });
+    K.on("Escape", () => {
+      document.dispatchEvent(new CustomEvent("nti:escape"));
+    });
     // Row navigation (j/k) + row actions (m) across list views.
     function rows() {
       return [...document.querySelectorAll(".rows .row a, .jobs .job")];

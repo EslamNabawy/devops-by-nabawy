@@ -20,8 +20,8 @@ NTI.define("ui/status", function () {
       <span class="ring-n">${done}/${total}</span></span>`;
   }
   function SegmentedBar({ done, total }) {
-    const p = total ? (done / total) * 100 : 0;
-    return html`<span class="segbar"><span class="segbar-f" style="width:${p}%"></span></span>`;
+    return html`<progress class="segbar" max=${total} value=${done}
+      aria-label="${done} of ${total} done">${done}/${total}</progress>`;
   }
   function StatusGlyph({ state }) {
     return html`<span class="glyph glyph-${state}" aria-hidden="true">${state === "done" ? "✓" : state === "reading" ? "◐" : "○"}</span>`;

@@ -1,7 +1,6 @@
 ﻿// store.js — single state store, pure selectors, export/import.
 NTI.define("core/store", function () {
   const S = NTI.require("core/storage");
-  const bus = {};
   const listeners = [];
   const state = {
     progress: S.ls.get("nti.v1.progress") || {},
@@ -66,6 +65,5 @@ NTI.define("core/store", function () {
       Object.assign(state.settings, d.settings || {});
       save();
     },
-    bus,
   };
 });

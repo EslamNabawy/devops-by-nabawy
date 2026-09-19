@@ -1,9 +1,30 @@
 ﻿# QA report
 
-**Build:** 9e6f298d · **Date:** 2026-09-19 · **Browsers:** Chromium 153 headless (Playwright 1.63), file:// + http, light + dark, 1280/360 + coarse-pointer mobile
+**Build:** b83da01e · **Date:** 2026-09-19 · **Browsers:** Chromium 153 headless (Playwright 1.63), file:// + http, light + dark, 1280/360 + coarse-pointer mobile
 
 ## Summary
-Passed 23 of 23 browser checks + 13 of 13 automated checks. Gate 3b passed (7/7 asserts + maintainer/slot drills). Known limitations: 5 (all with workarounds).
+Passed 23 of 23 browser checks + 13 of 13 automated checks + 10/10 mobile checks + 10/10 fix-asserts (PLAN-03). Gate 3b passed. Known limitations: 5 (all with workarounds).
+
+## PLAN-03 fix verification (2026-09-19, all green)
+| Fix | Assert |
+|---|---|
+| F1 evidence paths | 0 missing asset paths; gallery files served |
+| F2 unsorted group | maintainer-only "Needs a track" renders (10 rows) |
+| F3 inbox feed | Add shows waiting/unsorted from disk scan |
+| F4 sort/group | selects render; `?sort=title` in URL; group=None single list |
+| F5 Add link | topbar + Me show Add PDF iff maintainerMode |
+| F6 scroll restore | Back returns y=1500 exactly |
+| F7 reader popover | Aa button with A-/A+/theme (rendered; manual click-through pending) |
+| F8 density | compact/roomy row rules present |
+| F9 recent | palette lists recent after open |
+| F10 view original | link present on html lessons |
+| F11/F12 | `confirm(`/`alert(` gone from src (inline confirm + shortcuts modal) |
+| F13 session run | `nti.roadmap.ran` set once per session |
+| F14 externals index | host query returns 7 hits |
+| F15 drawer trap | focus trap applied; T8 still green |
+| F16 dead/inline | `--si`, `store.bus` removed; SegmentedBar is `<progress>` |
+| F17 palette files | name-only local entries wired (picker path tested) |
+| F18 Tier2 cap | cicd 3.9MB → 1.58MB; T3 still green |
 
 ## Summary
 Passed 23 of 23 browser checks + 13 of 13 automated checks. Gate 3b passed (7/7 asserts + maintainer/slot drills). Known limitations: 5 (all with workarounds).

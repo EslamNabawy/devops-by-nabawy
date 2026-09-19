@@ -51,6 +51,15 @@
   padding: 12px; }
 .copybtn { position: absolute; top: 6px; right: 6px; }
 .readbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.readsettings { position: relative; display: inline-block; }
+.readsettings summary { list-style: none; cursor: pointer; }
+.readsettings-pop { position: absolute; z-index: 30; right: 0; top: 110%;
+  background: var(--t-paper); border: 1px solid var(--t-line);
+  border-radius: var(--t-radius); padding: 12px; display: flex;
+  flex-direction: column; gap: 10px; min-width: 200px; }
+.readsettings-pop select { padding: 8px; min-height: 44px;
+  background: var(--t-paper); color: var(--t-ink);
+  border: 1px solid var(--t-line); border-radius: var(--t-radius); }
 .readnav { display: flex; justify-content: space-between; gap: 8px;
   margin-top: 32px; flex-wrap: wrap; }
 .readnav .btn { flex: 1 1 200px; text-align: center; }

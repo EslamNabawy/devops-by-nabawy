@@ -13,13 +13,28 @@ NTI.define("ui/palette", function () {
       this.setState({ indexing: true });
       S.ensureTier2().finally(() => this.setState({ indexing: false }));
       const r = await S.query(q.trim());
+      // My files: name-only entries (never in the shared index).
+      try {
+        const files = await NTI.require("core/storage").filesAll();
+        const ql = q.trim().toLowerCase();
+        files.filter((f) => (f.name || "").toLowerCase().includes(ql))
+          .slice(0, 5)
+          .forEach((f) => r.push({ id: f.id, ref: f.id, track: "",
+            kind: "local", title: f.name, heading: "", anchor: null,
+            page: null, local: true }));
+      } catch { /* ignore */ }
       this.setState({ results: r });
       NTI.require("core/a11y").announce(`${r.length} results`);
     }
     openWork(r) {
       const store = NTI.require("core/store");
-      store.pushRecent(this.state.q);
       const R = NTI.require("core/router");
+      if (r.local) {
+        this.props.onClose();
+        R.go(`#/read/${r.id}?fmt=local`);
+        return;
+      }
+      store.pushRecent(this.state.q);
       let h = `#/read/${r.id}`;
       const params = [];
       if (r.page) params.push(`fmt=pdf&page=${r.page}`);
@@ -31,6 +46,8 @@ NTI.define("ui/palette", function () {
     render(_, s) {
       const copy = NTI.require("core/copy");
       const A = NTI.require("core/a11y");
+      const store = NTI.require("core/store");
+      const R = NTI.require("core/router");
       const trap = (el) => { if (el) { this._untrap && this._untrap(); this._untrap = A.trapFocus(el); const i = el.querySelector("input"); if (i) i.focus(); } };
       return html`<div class="modal-back" onClick=${this.props.onClose}>
         <div class="palette modal" role="dialog" aria-label="Search" ref=${trap} onClick=${(e) => e.stopPropagation()}>
@@ -53,6 +70,14 @@ NTI.define("ui/palette", function () {
               </button></li>`)}
           </ul>
           ${s.q && !s.results.length && !s.indexing ? html`<p><strong>${copy.nothingMatches}</strong></p><p>${copy.nothingMatchesBody}</p>` : null}
+          ${!s.q && (store.state.recent || []).length ? html`<div class="recent">
+            <p class="muted">Recent</p>
+            <ul class="pal-list">${store.state.recent.map((r) => html`<li>
+              <button onClick=${() => {
+                const inp = document.querySelector(".palette input");
+                if (inp) { inp.value = r; }
+                this.onInput(r);
+              }}>${r}</button></li>`)}</ul></div>` : null}
           <p class="muted pal-foot">${copy.paletteFooter}</p>
         </div></div>`;
     }

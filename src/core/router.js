@@ -1,5 +1,6 @@
 ﻿// router.js — hash router with params, scroll restore, focus hook.
 NTI.define("core/router", function () {
+  const api = {};
   const mem = {};
   let current = { view: "library", params: {}, query: {} };
   const subs = [];
@@ -39,15 +40,38 @@ NTI.define("core/router", function () {
       if (w) A.announce(`${w.title}, ${w.kind}`);
     }
   });
-  return {
+  Object.assign(api, {
     get current() { return current; },
     on(f) { subs.push(f); },
     go(h) { location.hash = h; },
+    filterUrl(nf, view) {
+      const q = new URLSearchParams();
+      ["track", "type", "format", "status"].forEach((k) =>
+        (nf[k] || []).forEach((v) => q.append(k, v)));
+      ["sort", "group"].forEach((k) => {
+        if (nf[k] && nf[k][0]) q.append(k, nf[k][0]);
+      });
+      const qs = q.toString();
+      return `#/${view === "library" ? "" : view}${qs ? "?" + qs : ""}`;
+    },
+    readFilterQuery() {
+      // Multi-values need raw reparse (fromEntries drops repeats).
+      const raw = (location.hash.split("?")[1] || "");
+      const rp = new URLSearchParams(raw);
+      const out = { track: rp.getAll("track"), type: rp.getAll("type"),
+        format: rp.getAll("format"), status: rp.getAll("status") };
+      const s = rp.get("sort"), g = rp.get("group");
+      if (s) out.sort = [s];
+      if (g) out.group = [g];
+      return out;
+    },
     init() {
       current = parse();
       document.title = titles(current) + " — DevOps By Nabawy";
+      api._lastHash = location.hash;
     },
     saveScroll(k, y) { mem[k] = y; },
     restoreScroll(k) { return mem[k] || 0; },
-  };
+  });
+  return api;
 });

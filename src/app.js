@@ -20,37 +20,23 @@ NTI.define("app", function () {
     const copy = NTI.require("core/copy");
     const [route, setRoute] = window.htmPreact.useState(R.current);
     const [pal, setPal] = window.htmPreact.useState(false);
+    const [help, setHelp] = window.htmPreact.useState(false);
     const [filters, setFilters] = window.htmPreact.useState(
       store.state.filters || {});
     const [files, setFiles] = window.htmPreact.useState([]);
     // URL <-> filter sync (Back restores previous filter state).
     function pushFilterUrl(nf, view) {
-      const q = new URLSearchParams();
-      (nf.track || []).forEach((t) => q.append("track", t));
-      (nf.type || []).forEach((t) => q.append("type", t));
-      (nf.format || []).forEach((t) => q.append("format", t));
-      (nf.status || []).forEach((t) => q.append("status", t));
-      const qs = q.toString();
-      R.go(`#/${view === "library" ? "" : view}${qs ? "?" + qs : ""}`);
-    }
-    function urlFilters(query) {
-      const g = (k) => {
-        const v = query[k];
-        if (v === undefined) return [];
-        return Array.isArray(v) ? v : [v];
-      };
-      // URLSearchParams drops repeated keys via Object.fromEntries —
-      // reparse from the raw hash for multi-values.
-      const raw = (location.hash.split("?")[1] || "");
-      const rp = new URLSearchParams(raw);
-      return { track: rp.getAll("track"), type: rp.getAll("type"),
-        format: rp.getAll("format"), status: rp.getAll("status") };
+      R.go(R.filterUrl(nf, view));
     }
     window.htmPreact.useEffect(() => {
       const off = R.on((r) => {
+        if (R._lastHash !== undefined) {
+          R.saveScroll(R._lastHash, window.scrollY);
+        }
+        R._lastHash = location.hash;
         setRoute(r);
         if (r.view === "library" && location.hash.includes("?")) {
-          const nf = urlFilters(r.query);
+          const nf = R.readFilterQuery();
           setFilters(nf); store.setFilters(nf);
         }
       });
@@ -58,6 +44,21 @@ NTI.define("app", function () {
       NTI.require("core/storage").filesAll().then(setFiles);
       void off;
     }, []);
+    window.htmPreact.useEffect(() => {
+      const onHelp = () => setHelp(true);
+      const onEsc = () => { setHelp(false); setPal(false); };
+      document.addEventListener("nti:help", onHelp);
+      document.addEventListener("nti:escape", onEsc);
+      return () => {
+        document.removeEventListener("nti:help", onHelp);
+        document.removeEventListener("nti:escape", onEsc);
+      };
+    }, []);
+    window.htmPreact.useEffect(() => {
+      const y = R.restoreScroll(location.hash);
+      if (y) requestAnimationFrame(() => window.scrollTo(0, y));
+      else if (window.scrollY) window.scrollTo(0, 0);
+    }, [route]);
     const { Topbar } = NTI.require("ui/topbar");
     const { Bottomnav } = NTI.require("ui/bottomnav");
     const { Strip } = NTI.require("ui/strip");
@@ -117,7 +118,31 @@ NTI.define("app", function () {
       <${Bottomnav} route=${route} />
       ${pal ? html`<${Palette} count=${total}
         onClose=${() => setPal(false)} />` : null}
+      ${help ? html`<${HelpModal} onClose=${() => setHelp(false)} />` : null}
     <//>`;
+  }
+  function HelpModal({ onClose }) {
+    const rows = [
+      ["/ or Ctrl+K", "Open search"], ["g l", "Go to Library"],
+      ["g r", "Go to Roadmap"], ["g m", "Go to Me"],
+      ["j / k", "Next / previous row"], ["Enter", "Open focused row"],
+      ["[ / ]", "Previous / next work"], ["m", "Toggle done"],
+      ["b", "Toggle bookmark"], ["f", "Focus mode"], ["t", "Cycle theme"],
+      ["?", "This list"], ["Esc", "Close overlay"],
+    ];
+    return html`<div class="modal-back" onClick=${onClose}>
+      <div class="modal" role="dialog" aria-label="Keyboard shortcuts"
+        ref=${(el) => {
+          if (el) {
+            const first = el.querySelector("button");
+            if (first) first.focus();
+          }
+        }}
+        onClick=${(e) => e.stopPropagation()}>
+        <h2>Keyboard shortcuts</h2>
+        <ul>${rows.map(([k, v]) => html`<li><code>${k}</code> — ${v}</li>`)}</ul>
+        <button class="btn" onClick=${onClose}>Close</button>
+      </div></div>`;
   }
   function boot() {
     if (!window.htmPreact || !window.MiniSearch) {
@@ -144,7 +169,13 @@ NTI.define("app", function () {
     K.on("g l", () => R.go("#/"));
     K.on("g r", () => R.go("#/roadmap"));
     K.on("g m", () => R.go("#/me"));
-    K.on("?", () => alert("/ search · g l library · g r roadmap · g m me · j/k rows · m done · b bookmark · f focus · t theme · Esc close"));
+    K.on("?", () => {
+      const ev = new CustomEvent("nti:help");
+      document.dispatchEvent(ev);
+    });
+    K.on("Escape", () => {
+      document.dispatchEvent(new CustomEvent("nti:escape"));
+    });
     // Row navigation (j/k) + row actions (m) across list views.
     function rows() {
       return [...document.querySelectorAll(".rows .row a, .jobs .job")];

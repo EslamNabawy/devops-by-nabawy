@@ -141,6 +141,24 @@ async function main() {
         }
       }
     }
+    // Manifest assets (evidence gallery, lab downloads): copy into served
+    // dirs and rewrite site paths (F1 — FINAL-relative paths 404 live).
+    manifest.siteAssets = [];
+    for (const a of manifest.assets || []) {
+      const ext = ((a.path || "").split(".").pop() || "").toLowerCase();
+      const dir = ["png", "jpg", "jpeg", "webp", "gif", "bmp"].includes(ext)
+        ? "evidence" : a.kind === "evidence" ? "evidence"
+        : a.kind === "script" ? "scripts" : "labs";
+      const dest = path.join(ROOT, "content", dir,
+        path.basename(a.path || a.id));
+      try {
+        await copyFile(path.join(FINAL, a.path || ""), dest);
+        manifest.siteAssets.push({ ...a,
+          path: path.relative(ROOT, dest).replace(/\\/g, "/") });
+      } catch {
+        manifest.siteAssets.push({ ...a, path: null });
+      }
+    }
     return `${manifest.works.length} works, ${manifest.books.length} books`;
   });
 
@@ -408,6 +426,24 @@ async function main() {
         pdfs: ready.filter((w) => w.formats.some((f) =>
           f.type === "pdf" && f.status === "ready")).length } };
     });
+    // Inbox + unsorted feed for the Add page (F3 — names only, no parse).
+    let inboxWaiting = 0;
+    const inboxUnsorted = [];
+    try {
+      const inboxFiles = await fs.readdir(
+        path.join(ROOT, "content", "_inbox"));
+      inboxWaiting = inboxFiles.filter((f) => /\.pdf$/i.test(f)).length;
+    } catch { /* no inbox */ }
+    try {
+      const uns = await fs.readdir(
+        path.join(ROOT, "content", "pdf", "_unsorted"));
+      for (const f of uns.filter((x) => /\.pdf$/i.test(x))) {
+        inboxUnsorted.push({ file: f,
+          reason: "Track unknown — rename to <track>__name.pdf " +
+            "(tracks: linux, aws, docker, kubernetes, terraform, ansible, " +
+            "jenkins, cicd, aiops)" });
+      }
+    } catch { /* none */ }
     const catalog = { schemaVersion: 1,
       generatedAt: manifest.generatedAt || new Date().toISOString(),
       contentVersion: "tmp",
@@ -419,8 +455,9 @@ async function main() {
         url: s.url, host: (() => { try {
           return new URL(s.url).host; } catch { return ""; } })(),
         badge: "Online", pinned: true })),
-      assets: manifest.assets || [],
-      inbox: { waiting: 0, unsorted: [] },
+      assets: (manifest.siteAssets || manifest.assets || [])
+        .filter((a) => a.path),
+      inbox: { waiting: inboxWaiting, unsorted: inboxUnsorted },
       slots: (slotsCfg.slots || []).map((s) => {
         const direct = works.find((w) => w.id === s.id &&
           (w.formats || []).some((f) => f.status === "ready"));
@@ -464,6 +501,14 @@ async function main() {
       docs.push(tier1Entry(bw));
       docs.push(...headingEntries(bw));
     }
+    // Externals indexed by title/summary/host (never inside-site claims).
+    for (const s of externals.sites || []) {
+      let host = "";
+      try { host = new URL(s.url).host; } catch { /* keep empty */ }
+      docs.push({ id: s.id, ref: s.id, track: s.track, kind: "external",
+        title: s.title, summary: s.summary || "", tags: [host, s.track],
+        heading: null, format: [] });
+    }
     const tier1 = `window.NTI=window.NTI||{};window.NTI.searchIndex=` +
       JSON.stringify({ schemaVersion: 1, docs }) + ";";
     if (!DRY) {
@@ -472,12 +517,14 @@ async function main() {
       const byTrack = {};
       for (const w of works) {
         const meta = (globalThis.__docMeta || {})[w.id];
-        const chunks = (meta ? meta.chunks : []) || [];
+        // F18: cap Tier2 at 25 chunks/work (worst-case weight control).
+        const chunks = ((meta ? meta.chunks : []) || []).slice(0, 25);
         (byTrack[w.track] = byTrack[w.track] || {})[w.id] = { chunks };
       }
       const pdfs = globalThis.__pdfFormats || [];
       for (const pf of pdfs) {
         const chunks = (pf.texts || []).filter((t) => t.length >= 20)
+          .slice(0, 60)
           .map((text, i) => ({ page: i + 1,
             text: text.slice(0, 1200) }));
         if (chunks.length) {

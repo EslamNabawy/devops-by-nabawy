@@ -7,10 +7,19 @@ NTI.define("views/roadmap", function () {
       this.state = { open: p.open || null, ran: false };
     }
     componentDidMount() {
+      let ran = false;
+      try { ran = sessionStorage.getItem("nti.roadmap.ran") === "1"; } catch {}
+      if (ran) { this.setState({ ran: true }); return; }
       const A = NTI.require("core/a11y");
       if (!A.reducedMotion(NTI.require("core/store"))) {
-        setTimeout(() => this.setState({ ran: true }), 60);
-      } else this.setState({ ran: true });
+        setTimeout(() => {
+          this.setState({ ran: true });
+          try { sessionStorage.setItem("nti.roadmap.ran", "1"); } catch {}
+        }, 60);
+      } else {
+        this.setState({ ran: true });
+        try { sessionStorage.setItem("nti.roadmap.ran", "1"); } catch {}
+      }
     }
     render({ store }, s) {
       const Cat = NTI.require("core/catalog");
@@ -27,7 +36,7 @@ NTI.define("views/roadmap", function () {
       return html`<div class="view roadmap ${s.ran ? "ran" : "run"}">
         <h1>Roadmap</h1>
         <ol class="stages">
-        ${stages.map((st, si) => html`<li class="stage" style="--si:${si}">
+        ${stages.map((st) => html`<li class="stage">
           <h2>${st.title}</h2>
           <ol class="jobs">${(st.tracks || []).map((tid) => {
             const t = tmap[tid];
@@ -62,8 +71,11 @@ NTI.define("views/roadmap", function () {
     const Cat = NTI.require("core/catalog");
     const t = (Cat.data.tracks || []).find((x) => x.id === trackId);
     const R = NTI.require("core/router");
+    const A = NTI.require("core/a11y");
     const ref = (el) => {
       if (el) {
+        if (ref._untrap) ref._untrap();
+        ref._untrap = A.trapFocus(el);
         const first = el.querySelector("button,a");
         if (first) first.focus();
       }

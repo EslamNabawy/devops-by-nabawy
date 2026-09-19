@@ -85,10 +85,37 @@ NTI.define("views/reader", function () {
           <button class="btn btn-ghost" onClick=${() =>
             store.toggleBookmark(id, anchor || null)}>
             ${store.state.bookmarks.some((b) => b.workId === id) ? "★" : "☆"}</button>
+          <details class="readsettings">
+            <summary class="btn btn-ghost">Aa</summary>
+            <div class="readsettings-pop">
+              <div role="group" aria-label="Text size">
+                <button class="btn btn-ghost" aria-label="Smaller text" onClick=${() => {
+                  const v = Math.max(0, store.state.settings.readingSize - 1);
+                  store.setSettings({ readingSize: v });
+                  NTI.require("core/theme").apply(store.state.settings);
+                }}>A-</button>
+                <button class="btn btn-ghost" aria-label="Larger text" onClick=${() => {
+                  const v = Math.min(2, store.state.settings.readingSize + 1);
+                  store.setSettings({ readingSize: v });
+                  NTI.require("core/theme").apply(store.state.settings);
+                }}>A+</button>
+              </div>
+              <label>Theme <select value=${store.state.settings.theme} onChange=${(e) => {
+                store.setSettings({ theme: e.target.value });
+                NTI.require("core/theme").apply(store.state.settings);
+              }}>
+                <option value="system">system</option>
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+              </select></label>
+            </div>
+          </details>
         </div>
         ${(s.doc.toc || []).length ? html`<details class="outline"><summary>Outline</summary><ol>
           ${(s.doc.toc || []).map((h) => html`<li><a href="#/read/${id}?a=${h.id}">${h.text}</a></li>`)}
         </ol></details>` : null}
+        ${(w.formats || []).some((f) => (f.type === "html") && f.status === "ready" && f.path)
+          ? html`<p><a href="${(w.formats || []).find((f) => f.type === "html").path}" target="_blank" rel="noopener noreferrer">View original</a></p>` : null}
         <article class="article" ref=${(el) => {
           if (el && anchor) {
             const t = el.querySelector("#" + CSS.escape(anchor));

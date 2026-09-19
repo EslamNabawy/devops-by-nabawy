@@ -4,7 +4,7 @@ NTI.define("views/me", function () {
   class Me extends Component {
     constructor(p) {
       super(p);
-      this.state = { files: [] };
+      this.state = { files: [], confirmId: null };
     }
     componentDidMount() {
       NTI.require("core/storage").filesAll()
@@ -33,12 +33,15 @@ NTI.define("views/me", function () {
           ${s.files.length ? html`<ul class="rows">
             ${s.files.map((f) => html`<li class="row">
               <a href="#/read/${f.id}?fmt=local">${f.name}</a>
-              <button class="btn btn-ghost" onClick=${async () => {
-                if (!confirm("Remove?")) return;
-                await S.filesDel(f.id);
-                this.setState({ files: (await S.filesAll()) });
-                NTI.require("ui/primitives").toast(copy.removed);
-              }}>Remove</button></li>`)}</ul>`
+              ${s.confirmId === f.id
+                ? html`<span><button class="btn btn-ghost" onClick=${() => this.setState({ confirmId: null })}>Keep</button>
+                  <button class="btn" onClick=${async () => {
+                    await S.filesDel(f.id);
+                    this.setState({ files: (await S.filesAll()), confirmId: null });
+                    NTI.require("ui/primitives").toast(copy.removed);
+                  }}>Confirm remove</button></span>`
+                : html`<button class="btn btn-ghost" onClick=${() =>
+                  this.setState({ confirmId: f.id })}>Remove</button>`}</li>`)}</ul>`
             : html`<p>${copy.noFiles}</p>`}
           <button class="btn" onClick=${() => {
             const inp = document.createElement("input");
@@ -99,7 +102,9 @@ NTI.define("views/me", function () {
             inp.click();
           }}>${copy.importBtn}</button>
         </section>
-        <section><h2>Library info</h2><p>${copy.libraryInfo}</p></section>
+        <section><h2>Library info</h2><p>${copy.libraryInfo}</p>
+        ${Cat.data.site && Cat.data.site.maintainerMode
+          ? html`<p><a class="btn" href="#/add">Add PDF</a></p>` : null}</section>
       </div>`;
     }
   }

@@ -33,9 +33,11 @@
 .ring-bg { fill: none; stroke: var(--t-line); stroke-width: 3; }
 .ring-fg { fill: none; stroke: var(--t-ink); stroke-width: 3;
   stroke-dasharray: 0 100; }
-.segbar { display: block; height: 6px; background: var(--t-line);
-  border-radius: 3px; overflow: hidden; }
-.segbar-f { display: block; height: 100%; background: var(--t-ink); }
+.segbar { display: block; width: 100%; height: 8px; appearance: none;
+  border: none; background: var(--t-line); border-radius: 3px; }
+.segbar::-webkit-progress-bar { background: var(--t-line); border-radius: 3px; }
+.segbar::-webkit-progress-value { background: var(--t-ink); border-radius: 3px; }
+.segbar::-moz-progress-bar { background: var(--t-ink); border-radius: 3px; }
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; gap: 8px;
   align-items: center; padding: 8px 12px; background: var(--t-paper);
   border-bottom: 1px solid var(--t-line); min-height: 56px; }
@@ -82,6 +84,18 @@ section[data-track="jenkins"] > h2 { color: var(--tr-jenkins-mark); }
 section[data-track="cicd"] > h2 { color: var(--tr-cicd-mark); }
 section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 .filters { padding: 8px 16px; max-width: 860px; margin: 0 auto; }
+.sortbar { display: flex; gap: 12px; flex-wrap: wrap; padding: 8px 16px;
+  max-width: 860px; margin: 0 auto; }
+.sortbar label { display: inline-flex; gap: 6px; align-items: center;
+  font-size: 0.9rem; }
+.sortbar select { padding: 8px; min-height: 44px; border: 1px solid var(--t-line);
+  border-radius: var(--t-radius); background: var(--t-paper);
+  color: var(--t-ink); }
+/* Density: compact / comfortable / roomy actually change rhythm. */
+:root[data-density="compact"] .row > a { padding: 6px 4px; min-height: 36px; }
+:root[data-density="compact"] .strip-node { min-height: 36px; padding: 6px 10px; }
+:root[data-density="roomy"] .row > a { padding: 18px 4px; }
+:root[data-density="roomy"] .strip-node { min-height: 52px; padding: 12px 16px; }
 .fgroup h3 { font-size: 0.8rem; color: var(--t-muted); margin: 8px 0 4px; }
 .modal-back { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4);
   z-index: 50; display: flex; justify-content: center; align-items: flex-start;
