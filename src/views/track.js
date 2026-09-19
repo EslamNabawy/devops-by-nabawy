@@ -49,8 +49,16 @@ NTI.define("views/track", function () {
       if (!s) { s = { name: w.section || "More", items: [] }; secs.push(s); }
       s.items.push(w);
     }
+    const stage = (Cat.data.stages || []).find((x) => x.id === t.stage);
+    const ordered = (Cat.data.tracks || []).slice()
+      .sort((a, b) => a.order - b.order);
+    const upNext = ordered[ordered.findIndex((x) => x.id === id) + 1] || null;
     return html`<div class="view" data-track=${id}>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#/">${copy.crumbTracks}</a><span> / </span><span>${t.title}</span>
+      </nav>
       <section class="hero hero-track" aria-label=${t.title}>
+        <p class="eyebrow">${exts.length ? copy.interactiveTrack : (stage ? stage.title : "")}</p>
         <h1>${t.title}</h1>
         <p class="muted">${t.summary || ""}</p>
         <p class="hero-cta">
@@ -65,10 +73,9 @@ NTI.define("views/track", function () {
       ${exts.length ? html`<section aria-label=${copy.onlineCourse}>
         <h2>${copy.onlineCourse}</h2>
         <ul class="rows">${exts.map((e) => html`<li class="row">
-          <a href=${e.url} target="_blank" rel="noopener noreferrer">
-            <span class="row-t"><strong>${e.title}</strong>
-            <span class="muted">${e.host} · Online${!navigator.onLine ? " · " + copy.needsInternet : ""}</span></span>
-            <span class="kind">${copy.onlineCourse}</span></a></li>`)}</ul>
+          <span class="row-t"><strong>${e.title}</strong>
+          <span class="muted">${e.host} · ${!navigator.onLine ? copy.needsInternet : copy.requiresInternet}</span></span>
+          <a class="btn" href=${e.url} target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a></li>`)}</ul>
       </section>` : null}
       ${!items.length && !exts.length ? html`<section>
         <h2>${copy.nothingHere}</h2><p>${copy.nothingHereBody}</p>
@@ -96,6 +103,11 @@ NTI.define("views/track", function () {
         <div class="shots">${shots.map((a) => html`<a href="${a.path}" target="_blank" rel="noopener noreferrer">
           <img src="${a.path}" alt="${a.title}" loading="lazy" />
           <span>${a.title}</span></a>`)}</div></section>` : null}
+      ${upNext ? html`<section aria-label=${copy.upNext}>
+        <p class="eyebrow">${copy.upNext}</p>
+        <h2>${upNext.title}</h2>
+        <p><a class="btn" href="#/track/${upNext.id}">${copy.openTrack}</a></p>
+      </section>` : null}
     </div>`;
   }
   return { Track };

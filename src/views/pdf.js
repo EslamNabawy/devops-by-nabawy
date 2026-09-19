@@ -50,8 +50,14 @@ NTI.define("views/pdf", function () {
           </ol></details>` : null}</div>`;
     }
     return html`<div class="view pdfview">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#/">${copy.crumbTracks}</a><span> / </span>
+        <a href="#/track/${w.track}">${t.title || w.track}</a>
+      </nav>
       <h1 dir="auto">${w.title}</h1>
-      <div class="pdfbar"><span class="muted">${readyPdf.pages || ""} ${readyPdf.pages ? "pages" : ""}</span>
+      <p><span class="pill">${copy.offlineReady}${readyPdf.pages ? ` (${readyPdf.pages} pages)` : ""}</span>
+        <span class="muted">${copy.worksOffline}${readyPdf.bytes ? ` · ${(readyPdf.bytes / 1048576).toFixed(1)} MB` : ""}</span></p>
+      <div class="pdfbar">
         <a class="btn btn-ghost" href="${readyPdf.path}" target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a>
         <button class="btn btn-ghost" onClick=${() =>
           store.setDone(id, !Cat.isDone(id, store.state.progress))}>

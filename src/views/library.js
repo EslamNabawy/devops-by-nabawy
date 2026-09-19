@@ -137,12 +137,26 @@ NTI.define("views/library", function () {
           <span class="muted">${copy.statsOfflineBody}</span></div>
       </section>
       <section class="trackcards" id="track-cards" aria-label=${copy.tracksTitle}>
-        <h2>${copy.tracksTitle}</h2>
-        <p class="muted">${copy.tracksBody}</p>
+        <p class="eyebrow">${copy.tracksEyebrow}</p>
+        <h2>${copy.allTracksTitle}</h2>
+        <p class="muted">${copy.allTracksBody}</p>
+        <p class="muted">${(() => {
+          let d = 0, n = 0;
+          tracks.forEach((t) => {
+            const cc = Cat.counts(t.id, store.state.progress);
+            if (!cc.total) return;
+            n += 1;
+            if (cc.done >= cc.total) d += 1;
+          });
+          return `${d} of ${n} tracks done`;
+        })()}</p>
         <ul class="cards">
         ${tracks.map((t) => {
           const cc = Cat.counts(t.id, store.state.progress);
           const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+          const st = (Cat.data.stages || []).find((x) => x.id === t.stage);
+          const status = cc.total && cc.done >= cc.total ? copy.statusDone
+            : cc.done > 0 ? copy.statusProgress : copy.statusTodo;
           let npdf = 0, npages = 0;
           Cat.byTrack(t.id).forEach((w) => {
             (w.formats || []).forEach((f) => {
@@ -154,11 +168,12 @@ NTI.define("views/library", function () {
           });
           return html`<li class="card" data-track=${t.id}>
             <a href="#/track/${t.id}">
+              <span class="eyebrow">${st ? st.title : ""}</span>
               <strong>${t.title}</strong>
               <span class="muted">${npdf} PDFs · ${npages} pages</span>
               <span class="muted">${t.summary || ""}</span>
-              <span class="muted">${pct}% read (${cc.done}/${cc.total})</span>
-              <span class="kind">${copy.openTrack}</span>
+              <span class="cardfoot"><span class="pill">${status}</span>
+                <span class="muted">${copy.continueOf(cc.done, cc.total)}</span></span>
             </a>
           </li>`;
         })}

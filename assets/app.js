@@ -663,6 +663,27 @@ NTI.define("core/copy", function () {
     studyDeckTitle: "Study deck",
     studyDeckBody: "Flip, recall, master. Open the online course for the full deck.",
     onlineCourse: "Online course",
+    journeyEyebrow: "NTI Egypt curriculum flow",
+    journeyTitle: "Your learning journey",
+    journeyBody: "A suggested path. Learn in any order you like. The order is a recommendation, not a rule.",
+    savedLocal: "Progress saved only in this browser.",
+    overallProgress: "Overall progress",
+    tracksRemaining: (n) => `${n} tracks remaining`,
+    mapKey: "Map key",
+    statusDone: "Done",
+    statusProgress: "In progress",
+    statusTodo: "Not started",
+    nextUp: "Next up in sequence",
+    tracksEyebrow: "Curriculum roadmap",
+    allTracksTitle: "All tracks",
+    allTracksBody: "Nine topics, one friendly place to learn them.",
+    continueOf: (d, t) => `Continue (${d}/${t})`,
+    crumbTracks: "Tracks",
+    interactiveTrack: "Interactive track",
+    requiresInternet: "Requires live internet",
+    upNext: "Up next",
+    offlineReady: "Offline ready",
+    worksOffline: "Works offline",
   };
 });
 
@@ -1098,12 +1119,26 @@ NTI.define("views/library", function () {
           <span class="muted">${copy.statsOfflineBody}</span></div>
       </section>
       <section class="trackcards" id="track-cards" aria-label=${copy.tracksTitle}>
-        <h2>${copy.tracksTitle}</h2>
-        <p class="muted">${copy.tracksBody}</p>
+        <p class="eyebrow">${copy.tracksEyebrow}</p>
+        <h2>${copy.allTracksTitle}</h2>
+        <p class="muted">${copy.allTracksBody}</p>
+        <p class="muted">${(() => {
+          let d = 0, n = 0;
+          tracks.forEach((t) => {
+            const cc = Cat.counts(t.id, store.state.progress);
+            if (!cc.total) return;
+            n += 1;
+            if (cc.done >= cc.total) d += 1;
+          });
+          return `${d} of ${n} tracks done`;
+        })()}</p>
         <ul class="cards">
         ${tracks.map((t) => {
           const cc = Cat.counts(t.id, store.state.progress);
           const pct = cc.total ? Math.round((cc.done / cc.total) * 100) : 0;
+          const st = (Cat.data.stages || []).find((x) => x.id === t.stage);
+          const status = cc.total && cc.done >= cc.total ? copy.statusDone
+            : cc.done > 0 ? copy.statusProgress : copy.statusTodo;
           let npdf = 0, npages = 0;
           Cat.byTrack(t.id).forEach((w) => {
             (w.formats || []).forEach((f) => {
@@ -1115,11 +1150,12 @@ NTI.define("views/library", function () {
           });
           return html`<li class="card" data-track=${t.id}>
             <a href="#/track/${t.id}">
+              <span class="eyebrow">${st ? st.title : ""}</span>
               <strong>${t.title}</strong>
               <span class="muted">${npdf} PDFs · ${npages} pages</span>
               <span class="muted">${t.summary || ""}</span>
-              <span class="muted">${pct}% read (${cc.done}/${cc.total})</span>
-              <span class="kind">${copy.openTrack}</span>
+              <span class="cardfoot"><span class="pill">${status}</span>
+                <span class="muted">${copy.continueOf(cc.done, cc.total)}</span></span>
             </a>
           </li>`;
         })}
@@ -1256,6 +1292,7 @@ NTI.define("views/roadmap", function () {
     }
     render({ store }, s) {
       const Cat = NTI.require("core/catalog");
+      const copy = NTI.require("core/copy");
       const stages = (Cat.data.stages || []).slice()
         .sort((a, b) => a.order - b.order);
       const tmap = {};
@@ -1266,8 +1303,32 @@ NTI.define("views/roadmap", function () {
       });
       const rec = Cat.recommendedTrack(store.state.progress);
       const R = NTI.require("core/router");
+      const ids = Object.keys(tmap);
+      const withWorks = ids.filter((id) =>
+        (counts[id] || { total: 0 }).total > 0);
+      const doneTracks = withWorks.filter((id) =>
+        counts[id].done >= counts[id].total).length;
+      const remaining = withWorks.length - doneTracks;
       return html`<div class="view roadmap ${s.ran ? "ran" : "run"}">
-        <h1>Roadmap</h1>
+        <p class="eyebrow">${copy.journeyEyebrow}</p>
+        <h1 class="hero-display">${copy.journeyTitle}</h1>
+        <p class="lede">${copy.journeyBody}</p>
+        <p class="hint">${copy.savedLocal}</p>
+        <section class="stats" aria-label=${copy.overallProgress}>
+          <div><strong>${doneTracks} of ${withWorks.length}</strong>
+            <span class="muted">${copy.overallProgress.toLowerCase()} · ${copy.tracksRemaining(remaining)}</span></div>
+          ${rec ? html`<div><span class="eyebrow">${copy.nextUp}</span>
+            <strong>${rec.title}</strong>
+            <span class="muted">${rec.summary || ""}</span>
+            <p><a class="btn btn-primary" href="#/track/${rec.id}">${copy.openTrack}</a></p>
+          </div>` : null}
+        </section>
+        <section class="mapkey" aria-label=${copy.mapKey}>
+          <h2>${copy.mapKey}</h2>
+          <p><span class="pill">${copy.statusDone}</span>
+            <span class="pill">${copy.statusProgress}</span>
+            <span class="pill">${copy.statusTodo}</span></p>
+        </section>
         <ol class="stages">
         ${stages.map((st) => html`<li class="stage">
           <h2>${st.title}</h2>
@@ -1276,6 +1337,8 @@ NTI.define("views/roadmap", function () {
             if (!t) return null;
             const c = counts[tid] || { done: 0, total: 0 };
             const here = rec && rec.id === tid;
+            const st = c.total && c.done >= c.total ? copy.statusDone
+              : c.done > 0 ? copy.statusProgress : copy.statusTodo;
             return html`<li><button class="job ${here ? "here" : ""}"
               data-track=${tid}
               onClick=${() => this.setState({ open: tid })}
@@ -1284,6 +1347,7 @@ NTI.define("views/roadmap", function () {
               }}>
               <span class="dot"></span><strong>${t.title}</strong>
               <span class="n">${c.done}/${c.total}</span>
+              <span class="pill">${st}</span>
               ${here ? html`<span class="here-tag">Continue here</span>` : null}
             </button></li>`;
           })}</ol></li>`)}
@@ -1397,8 +1461,16 @@ NTI.define("views/track", function () {
       if (!s) { s = { name: w.section || "More", items: [] }; secs.push(s); }
       s.items.push(w);
     }
+    const stage = (Cat.data.stages || []).find((x) => x.id === t.stage);
+    const ordered = (Cat.data.tracks || []).slice()
+      .sort((a, b) => a.order - b.order);
+    const upNext = ordered[ordered.findIndex((x) => x.id === id) + 1] || null;
     return html`<div class="view" data-track=${id}>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#/">${copy.crumbTracks}</a><span> / </span><span>${t.title}</span>
+      </nav>
       <section class="hero hero-track" aria-label=${t.title}>
+        <p class="eyebrow">${exts.length ? copy.interactiveTrack : (stage ? stage.title : "")}</p>
         <h1>${t.title}</h1>
         <p class="muted">${t.summary || ""}</p>
         <p class="hero-cta">
@@ -1413,10 +1485,9 @@ NTI.define("views/track", function () {
       ${exts.length ? html`<section aria-label=${copy.onlineCourse}>
         <h2>${copy.onlineCourse}</h2>
         <ul class="rows">${exts.map((e) => html`<li class="row">
-          <a href=${e.url} target="_blank" rel="noopener noreferrer">
-            <span class="row-t"><strong>${e.title}</strong>
-            <span class="muted">${e.host} · Online${!navigator.onLine ? " · " + copy.needsInternet : ""}</span></span>
-            <span class="kind">${copy.onlineCourse}</span></a></li>`)}</ul>
+          <span class="row-t"><strong>${e.title}</strong>
+          <span class="muted">${e.host} · ${!navigator.onLine ? copy.needsInternet : copy.requiresInternet}</span></span>
+          <a class="btn" href=${e.url} target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a></li>`)}</ul>
       </section>` : null}
       ${!items.length && !exts.length ? html`<section>
         <h2>${copy.nothingHere}</h2><p>${copy.nothingHereBody}</p>
@@ -1444,6 +1515,11 @@ NTI.define("views/track", function () {
         <div class="shots">${shots.map((a) => html`<a href="${a.path}" target="_blank" rel="noopener noreferrer">
           <img src="${a.path}" alt="${a.title}" loading="lazy" />
           <span>${a.title}</span></a>`)}</div></section>` : null}
+      ${upNext ? html`<section aria-label=${copy.upNext}>
+        <p class="eyebrow">${copy.upNext}</p>
+        <h2>${upNext.title}</h2>
+        <p><a class="btn" href="#/track/${upNext.id}">${copy.openTrack}</a></p>
+      </section>` : null}
     </div>`;
   }
   return { Track };
@@ -1670,8 +1746,14 @@ NTI.define("views/pdf", function () {
           </ol></details>` : null}</div>`;
     }
     return html`<div class="view pdfview">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#/">${copy.crumbTracks}</a><span> / </span>
+        <a href="#/track/${w.track}">${t.title || w.track}</a>
+      </nav>
       <h1 dir="auto">${w.title}</h1>
-      <div class="pdfbar"><span class="muted">${readyPdf.pages || ""} ${readyPdf.pages ? "pages" : ""}</span>
+      <p><span class="pill">${copy.offlineReady}${readyPdf.pages ? ` (${readyPdf.pages} pages)` : ""}</span>
+        <span class="muted">${copy.worksOffline}${readyPdf.bytes ? ` · ${(readyPdf.bytes / 1048576).toFixed(1)} MB` : ""}</span></p>
+      <div class="pdfbar">
         <a class="btn btn-ghost" href="${readyPdf.path}" target="_blank" rel="noopener noreferrer">${copy.openNewTab}</a>
         <button class="btn btn-ghost" onClick=${() =>
           store.setDone(id, !Cat.isDone(id, store.state.progress))}>

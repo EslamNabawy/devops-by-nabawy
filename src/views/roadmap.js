@@ -23,6 +23,7 @@ NTI.define("views/roadmap", function () {
     }
     render({ store }, s) {
       const Cat = NTI.require("core/catalog");
+      const copy = NTI.require("core/copy");
       const stages = (Cat.data.stages || []).slice()
         .sort((a, b) => a.order - b.order);
       const tmap = {};
@@ -33,8 +34,32 @@ NTI.define("views/roadmap", function () {
       });
       const rec = Cat.recommendedTrack(store.state.progress);
       const R = NTI.require("core/router");
+      const ids = Object.keys(tmap);
+      const withWorks = ids.filter((id) =>
+        (counts[id] || { total: 0 }).total > 0);
+      const doneTracks = withWorks.filter((id) =>
+        counts[id].done >= counts[id].total).length;
+      const remaining = withWorks.length - doneTracks;
       return html`<div class="view roadmap ${s.ran ? "ran" : "run"}">
-        <h1>Roadmap</h1>
+        <p class="eyebrow">${copy.journeyEyebrow}</p>
+        <h1 class="hero-display">${copy.journeyTitle}</h1>
+        <p class="lede">${copy.journeyBody}</p>
+        <p class="hint">${copy.savedLocal}</p>
+        <section class="stats" aria-label=${copy.overallProgress}>
+          <div><strong>${doneTracks} of ${withWorks.length}</strong>
+            <span class="muted">${copy.overallProgress.toLowerCase()} · ${copy.tracksRemaining(remaining)}</span></div>
+          ${rec ? html`<div><span class="eyebrow">${copy.nextUp}</span>
+            <strong>${rec.title}</strong>
+            <span class="muted">${rec.summary || ""}</span>
+            <p><a class="btn btn-primary" href="#/track/${rec.id}">${copy.openTrack}</a></p>
+          </div>` : null}
+        </section>
+        <section class="mapkey" aria-label=${copy.mapKey}>
+          <h2>${copy.mapKey}</h2>
+          <p><span class="pill">${copy.statusDone}</span>
+            <span class="pill">${copy.statusProgress}</span>
+            <span class="pill">${copy.statusTodo}</span></p>
+        </section>
         <ol class="stages">
         ${stages.map((st) => html`<li class="stage">
           <h2>${st.title}</h2>
@@ -43,6 +68,8 @@ NTI.define("views/roadmap", function () {
             if (!t) return null;
             const c = counts[tid] || { done: 0, total: 0 };
             const here = rec && rec.id === tid;
+            const st = c.total && c.done >= c.total ? copy.statusDone
+              : c.done > 0 ? copy.statusProgress : copy.statusTodo;
             return html`<li><button class="job ${here ? "here" : ""}"
               data-track=${tid}
               onClick=${() => this.setState({ open: tid })}
@@ -51,6 +78,7 @@ NTI.define("views/roadmap", function () {
               }}>
               <span class="dot"></span><strong>${t.title}</strong>
               <span class="n">${c.done}/${c.total}</span>
+              <span class="pill">${st}</span>
               ${here ? html`<span class="here-tag">Continue here</span>` : null}
             </button></li>`;
           })}</ol></li>`)}

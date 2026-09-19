@@ -207,6 +207,16 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
 .drop-card { background: var(--t-paper); color: var(--t-ink);
   padding: 32px; border-radius: var(--t-radius); text-align: center; }
 .bottomnav { display: none; }
+.crumbs { font-size: 0.85rem; color: var(--t-muted); margin: 4px 0 8px; }
+.crumbs a { color: var(--t-accent); text-decoration: none; }
+.pill { display: inline-block; padding: 4px 12px; margin: 2px 4px 2px 0;
+  border: 1px solid var(--t-line); border-radius: 999px; font-size: 0.75rem;
+  font-weight: 600; background: var(--t-paper); color: var(--t-ink);
+  white-space: nowrap; }
+.cardfoot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-top: 4px; }
+.mapkey { margin: 0 0 16px; }
+.mapkey h2 { font-size: 0.9rem; color: var(--t-muted); }
 .hero { border: 1px solid var(--t-line); border-radius: var(--t-radius-lg);
   padding: 24px 20px; margin: 12px 0 16px; background: var(--t-paper); }
 .hero-t { font-size: 1.8rem; margin: 0 0 8px; }
