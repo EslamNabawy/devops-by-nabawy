@@ -37,7 +37,7 @@ NTI.define("views/library", function () {
     return html`<li class="row" data-kind=${w.kind}>
       <a href="#/read/${w.id}" onClick=${open}>
         <${StatusGlyph} state=${done ? "done" : reading ? "reading" : "todo"} />
-        <span class="row-t"><strong>${w.title}</strong>
+        <span class="row-t"><strong>${Cat.plain(w.title)}</strong>
           <span class="muted">${metaLine(w)}${w.kind === "external" ? ` · ${w.external.host} · Online` : ""}${!navigator.onLine && w.kind === "external" ? " · Needs internet" : ""}</span></span>
         <${KindLabel} kind=${w.kind} />
         <${FormatChips} formats=${w.formats} />
@@ -133,7 +133,7 @@ NTI.define("views/library", function () {
         return html`<section class="continue hero" aria-label="Continue">
           <p class="eyebrow">${copy.continueEyebrow}</p>
           <p><span class="pill">${copy.offlineReady}</span></p>
-          <h2 dir="auto">${cont.title}</h2>
+          <h2 dir="auto">${Cat.plain(cont.title)}</h2>
           <p class="muted">${ct.title || cont.track} · ${cont.kind} · ${pct}% of track read</p>
           <p class="hero-cta">
             <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}</a>

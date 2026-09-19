@@ -136,7 +136,7 @@ NTI.define("views/reader", function () {
           <span> / </span><span>${w.title}</span>
         </nav>
         <p><a class="btn" href="#/archive">${copy.backToArchive}</a></p>` : null}
-        <h1 dir="auto">${w.title}</h1>
+        <h1 dir="auto">${Cat.plain(w.title)}</h1>
         ${fromArchive ? html`<p>
           <span class="pill">${copy.cachedLocal}</span>
           ${bundleBytes ? html`<span class="muted">${copy.bundleSizeShort(mb(bundleBytes))}</span>` : null}

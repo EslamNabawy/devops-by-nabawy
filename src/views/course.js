@@ -62,7 +62,7 @@ NTI.define("views/course", function () {
         <ul class="cards">${snaps.map((w) => html`<li class="card" data-track=${w.track}>
           <a href="#/read/${w.id}">
             <span class="eyebrow">${t.title || w.track}</span>
-            <strong dir="auto">${w.title}</strong>
+            <strong dir="auto">${Cat.plain(w.title)}</strong>
             <span class="cardfoot"><span class="pill">${w.kind}</span>
               ${w.minutes ? html`<span class="muted">${w.minutes} min</span>` : null}</span>
           </a>

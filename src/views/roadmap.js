@@ -132,7 +132,7 @@ NTI.define("views/roadmap", function () {
           <a href="${e.url}" target="_blank" rel="noopener noreferrer" aria-label="Open ${e.title} in new tab">↗</a>
         </li>`)}
         ${items.map((w) => html`<li>
-          <a href="#/read/${w.id}" onClick=${() => onClose()}>${w.title}</a>
+          <a href="#/read/${w.id}" onClick=${() => onClose()}>${Cat.plain(w.title)}</a>
           <span class="muted">${Cat.isDone(w.id, store.state.progress) ? "✓" : ""}</span>
         </li>`)}</ol>
         <button class="btn" onClick=${onClose}>Close</button>

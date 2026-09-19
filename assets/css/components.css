@@ -19,7 +19,7 @@
 .rows { list-style: none; margin: 0; padding: 0; }
 .row { border-bottom: 1px solid var(--t-line); content-visibility: auto;
   contain-intrinsic-size: 64px; }
-.row > a { display: flex; gap: 10px; align-items: baseline;
+.row > a:not(.btn) { display: flex; gap: 10px; align-items: baseline;
   padding: 12px 4px; text-decoration: none; color: inherit;
   min-height: 44px; }
 .row-t { flex: 1; display: flex; flex-direction: column; }
@@ -129,7 +129,7 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
   border: 1px solid var(--t-line); border-radius: 999px; font-size: 0.75rem;
   font-weight: 600; background: var(--t-paper); color: var(--t-ink);
   white-space: nowrap; }
-.rownum > a { align-items: center; }
+.rownum > a:not(.btn) { align-items: center; }
 .rownum .num { flex: none; width: 32px; height: 32px; display: inline-flex;
   align-items: center; justify-content: center;
   border: 1px solid var(--t-line); border-radius: 50%;
@@ -210,7 +210,6 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
   .hero-display { font-size: 2rem; }
   .steps ol { grid-template-columns: 1fr; }
   .stats { grid-template-columns: 1fr; }
-}
   .bottomnav { display: flex; position: fixed; bottom: 0; left: 0; right: 0;
     z-index: 20; background: var(--t-paper);
     border-top: 1px solid var(--t-line); justify-content: space-around;

@@ -73,7 +73,7 @@ NTI.define("core/copy", function () {
     resume: "Resume",
     open: "Open",
     heroEyebrow: "Engineered for NTI Egypt, offline first",
-    heroTitleLead: "Learn DevOps,",
+    heroTitleLead: "Learn DevOps, ",
     heroTitleAccent: "one page",
     heroTitleTail: "at a time.",
     heroBody: "Read offline, search every page, and track your progress through cloud infrastructure without high-friction signups.",

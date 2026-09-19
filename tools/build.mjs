@@ -554,6 +554,12 @@ async function main() {
           path.join(ROOT, "assets", "css", f), "utf8") + "\n";
       } catch { /* keep going */ }
     }
+    let depth = 0;
+    for (const ch of out) {
+      if (ch === "{") depth++;
+      if (ch === "}") { depth--; if (depth < 0) break; }
+    }
+    if (depth !== 0) throw new Error(`css braces unbalanced (${depth})`);
     if (!DRY) {
       await fs.writeFile(path.join(ROOT, "assets", "site.css"), out);
     }

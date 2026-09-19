@@ -121,7 +121,7 @@ NTI.define("views/track", function () {
             : reading ? copy.continueReading : copy.startReading;
           return html`<li class="row rownum"><a href="#/read/${w.id}">
             <span class="num">${w.order}</span>
-            <span class="row-t"><strong dir="auto">${w.title}</strong>
+            <span class="row-t"><strong dir="auto">${Cat.plain(w.title)}</strong>
             <span class="muted">${bits.join(" · ")} · ${w.kind}</span></span>
             <span class="pill">${st}</span>
             <span class="kind">${act}</span></a></li>`;

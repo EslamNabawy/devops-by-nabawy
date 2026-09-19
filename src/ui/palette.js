@@ -49,6 +49,7 @@ NTI.define("ui/palette", function () {
     }
     render(_, s) {
       const copy = NTI.require("core/copy");
+      const Cat = NTI.require("core/catalog");
       const A = NTI.require("core/a11y");
       const store = NTI.require("core/store");
       const R = NTI.require("core/router");
@@ -68,8 +69,8 @@ NTI.define("ui/palette", function () {
           <ul class="pal-list">
             ${(s.results || []).map((r, i) => html`<li class=${i === s.active ? "active" : ""}>
               <button onClick=${() => this.openWork(r)}>
-                <strong>${r.title || r.id}</strong>
-                ${r.heading ? html`<span class="muted"> — ${r.heading}</span>` : null}
+                <strong>${Cat.plain(r.title) || r.id}</strong>
+                ${r.heading ? html`<span class="muted"> — ${Cat.plain(r.heading)}</span>` : null}
                 ${r.page ? html`<span class="muted"> — page ${r.page}</span>` : null}
                 <span class="muted">${r.track} · ${r.kind}</span>
               </button></li>`)}

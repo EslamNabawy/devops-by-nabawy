@@ -6,6 +6,10 @@ NTI.define("core/catalog", function () {
   function ready(w) {
     return (w.formats || []).some((f) => f.status === "ready");
   }
+  function plain(s) {
+    return String(s == null ? "" : s).replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ").trim();
+  }
   function isDone(id, progress) {
     return !!(progress[id] && progress[id].state === "done");
   }
@@ -68,5 +72,5 @@ NTI.define("core/catalog", function () {
     return null;
   }
   return { init, works, byTrack, counts, nextWork, recommendedTrack,
-    get, ready, isDone, get data() { return C; } };
+    get, ready, isDone, plain, get data() { return C; } };
 });

@@ -171,6 +171,10 @@ NTI.define("core/catalog", function () {
   function ready(w) {
     return (w.formats || []).some((f) => f.status === "ready");
   }
+  function plain(s) {
+    return String(s == null ? "" : s).replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ").trim();
+  }
   function isDone(id, progress) {
     return !!(progress[id] && progress[id].state === "done");
   }
@@ -233,7 +237,7 @@ NTI.define("core/catalog", function () {
     return null;
   }
   return { init, works, byTrack, counts, nextWork, recommendedTrack,
-    get, ready, isDone, get data() { return C; } };
+    get, ready, isDone, plain, get data() { return C; } };
 });
 
 /* core/router.js */
@@ -638,7 +642,7 @@ NTI.define("core/copy", function () {
     resume: "Resume",
     open: "Open",
     heroEyebrow: "Engineered for NTI Egypt, offline first",
-    heroTitleLead: "Learn DevOps,",
+    heroTitleLead: "Learn DevOps, ",
     heroTitleAccent: "one page",
     heroTitleTail: "at a time.",
     heroBody: "Read offline, search every page, and track your progress through cloud infrastructure without high-friction signups.",
@@ -985,6 +989,7 @@ NTI.define("ui/palette", function () {
     }
     render(_, s) {
       const copy = NTI.require("core/copy");
+      const Cat = NTI.require("core/catalog");
       const A = NTI.require("core/a11y");
       const store = NTI.require("core/store");
       const R = NTI.require("core/router");
@@ -1004,8 +1009,8 @@ NTI.define("ui/palette", function () {
           <ul class="pal-list">
             ${(s.results || []).map((r, i) => html`<li class=${i === s.active ? "active" : ""}>
               <button onClick=${() => this.openWork(r)}>
-                <strong>${r.title || r.id}</strong>
-                ${r.heading ? html`<span class="muted"> — ${r.heading}</span>` : null}
+                <strong>${Cat.plain(r.title) || r.id}</strong>
+                ${r.heading ? html`<span class="muted"> — ${Cat.plain(r.heading)}</span>` : null}
                 ${r.page ? html`<span class="muted"> — page ${r.page}</span>` : null}
                 <span class="muted">${r.track} · ${r.kind}</span>
               </button></li>`)}
@@ -1117,7 +1122,7 @@ NTI.define("views/library", function () {
     return html`<li class="row" data-kind=${w.kind}>
       <a href="#/read/${w.id}" onClick=${open}>
         <${StatusGlyph} state=${done ? "done" : reading ? "reading" : "todo"} />
-        <span class="row-t"><strong>${w.title}</strong>
+        <span class="row-t"><strong>${Cat.plain(w.title)}</strong>
           <span class="muted">${metaLine(w)}${w.kind === "external" ? ` · ${w.external.host} · Online` : ""}${!navigator.onLine && w.kind === "external" ? " · Needs internet" : ""}</span></span>
         <${KindLabel} kind=${w.kind} />
         <${FormatChips} formats=${w.formats} />
@@ -1213,7 +1218,7 @@ NTI.define("views/library", function () {
         return html`<section class="continue hero" aria-label="Continue">
           <p class="eyebrow">${copy.continueEyebrow}</p>
           <p><span class="pill">${copy.offlineReady}</span></p>
-          <h2 dir="auto">${cont.title}</h2>
+          <h2 dir="auto">${Cat.plain(cont.title)}</h2>
           <p class="muted">${ct.title || cont.track} · ${cont.kind} · ${pct}% of track read</p>
           <p class="hero-cta">
             <a class="btn btn-primary" href="#/read/${cont.id}">${copy.resume}</a>
@@ -1580,7 +1585,7 @@ NTI.define("views/roadmap", function () {
           <a href="${e.url}" target="_blank" rel="noopener noreferrer" aria-label="Open ${e.title} in new tab">↗</a>
         </li>`)}
         ${items.map((w) => html`<li>
-          <a href="#/read/${w.id}" onClick=${() => onClose()}>${w.title}</a>
+          <a href="#/read/${w.id}" onClick=${() => onClose()}>${Cat.plain(w.title)}</a>
           <span class="muted">${Cat.isDone(w.id, store.state.progress) ? "✓" : ""}</span>
         </li>`)}</ol>
         <button class="btn" onClick=${onClose}>Close</button>
@@ -1713,7 +1718,7 @@ NTI.define("views/track", function () {
             : reading ? copy.continueReading : copy.startReading;
           return html`<li class="row rownum"><a href="#/read/${w.id}">
             <span class="num">${w.order}</span>
-            <span class="row-t"><strong dir="auto">${w.title}</strong>
+            <span class="row-t"><strong dir="auto">${Cat.plain(w.title)}</strong>
             <span class="muted">${bits.join(" · ")} · ${w.kind}</span></span>
             <span class="pill">${st}</span>
             <span class="kind">${act}</span></a></li>`;
@@ -1875,7 +1880,7 @@ NTI.define("views/reader", function () {
           <span> / </span><span>${w.title}</span>
         </nav>
         <p><a class="btn" href="#/archive">${copy.backToArchive}</a></p>` : null}
-        <h1 dir="auto">${w.title}</h1>
+        <h1 dir="auto">${Cat.plain(w.title)}</h1>
         ${fromArchive ? html`<p>
           <span class="pill">${copy.cachedLocal}</span>
           ${bundleBytes ? html`<span class="muted">${copy.bundleSizeShort(mb(bundleBytes))}</span>` : null}
@@ -2151,13 +2156,13 @@ NTI.define("views/me", function () {
         </section>
         ${last && last.kind !== "external" ? html`<section aria-label=${copy.recentActivity}>
           <h2>${copy.recentActivity}</h2>
-          <p><a class="btn btn-primary" href="#/read/${last.id}">${copy.resumeReading}: ${last.title}</a></p>
+          <p><a class="btn btn-primary" href="#/read/${last.id}">${copy.resumeReading}: ${Cat.plain(last.title)}</a></p>
         </section>` : null}
         <section><h2>Bookmarks</h2>
           ${store.state.bookmarks.length ? html`<ul class="rows">
             ${store.state.bookmarks.map((b) => {
               const w = Cat.get(b.workId);
-              return html`<li class="row"><a href="#/read/${b.workId}">${w ? w.title : b.workId}</a></li>`;
+              return html`<li class="row"><a href="#/read/${b.workId}">${Cat.plain(w ? w.title : b.workId)}</a></li>`;
             })}</ul>` : html`<p>${copy.noBookmarks}</p>`}
         </section>
         <section id="my-files"><h2>My files</h2>
@@ -2345,8 +2350,8 @@ NTI.define("views/archive", function () {
           ${items.map((w) => html`<li class="card" data-track=${w.track}>
             <a href="#/read/${w.id}?from=archive">
               <span class="eyebrow">${(tmap[w.track] || {}).title || w.track}</span>
-              <strong dir="auto">${w.title}</strong>
-              <span class="muted">${w.summary || ""}</span>
+              <strong dir="auto">${Cat.plain(w.title)}</strong>
+              <span class="muted">${Cat.plain(w.summary)}</span>
               <span class="cardfoot"><span class="pill">${w.kind}</span>
                 <span class="muted">${meta(w)}</span></span>
             </a>
@@ -2484,7 +2489,7 @@ NTI.define("views/course", function () {
         <ul class="cards">${snaps.map((w) => html`<li class="card" data-track=${w.track}>
           <a href="#/read/${w.id}">
             <span class="eyebrow">${t.title || w.track}</span>
-            <strong dir="auto">${w.title}</strong>
+            <strong dir="auto">${Cat.plain(w.title)}</strong>
             <span class="cardfoot"><span class="pill">${w.kind}</span>
               ${w.minutes ? html`<span class="muted">${w.minutes} min</span>` : null}</span>
           </a>

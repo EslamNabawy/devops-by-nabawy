@@ -63,13 +63,13 @@ NTI.define("views/me", function () {
         </section>
         ${last && last.kind !== "external" ? html`<section aria-label=${copy.recentActivity}>
           <h2>${copy.recentActivity}</h2>
-          <p><a class="btn btn-primary" href="#/read/${last.id}">${copy.resumeReading}: ${last.title}</a></p>
+          <p><a class="btn btn-primary" href="#/read/${last.id}">${copy.resumeReading}: ${Cat.plain(last.title)}</a></p>
         </section>` : null}
         <section><h2>Bookmarks</h2>
           ${store.state.bookmarks.length ? html`<ul class="rows">
             ${store.state.bookmarks.map((b) => {
               const w = Cat.get(b.workId);
-              return html`<li class="row"><a href="#/read/${b.workId}">${w ? w.title : b.workId}</a></li>`;
+              return html`<li class="row"><a href="#/read/${b.workId}">${Cat.plain(w ? w.title : b.workId)}</a></li>`;
             })}</ul>` : html`<p>${copy.noBookmarks}</p>`}
         </section>
         <section id="my-files"><h2>My files</h2>

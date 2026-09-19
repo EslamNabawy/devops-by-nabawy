@@ -145,3 +145,7 @@ Course view (#/course/ext-terraform) passes axe serious/critical; live root URL 
 ## Home parity + mobile overflow (2026-09-19)
 
 Home now matches P01/P02: rich continue card, Online-labs stat, NTI Pathway recommended card, Learn-online course cards, Egypt cohort banner, footer Learn/Courses/Community columns. Roadmap drawer links externals to course view; Me shows real storage estimate. Fixed mobile h-scroll from long unbroken card strings (min-width:0 + overflow-wrap). qa/qa-new-routes.mjs 15/15, axe clean, verify green.
+
+## Visual parity fixes (2026-09-19)
+
+Screenshot audit found: mobile nav rules leaked to desktop (topnav hidden, bottomnav always shown) — fixed by scoping into media query + CSS brace check in build. Raw HTML in work titles rendered literally — added Cat.plain() and applied across cards, rows, reader, palette, drawer. Row buttons stretched full-width — scoped .row>a flex to non-button anchors.
