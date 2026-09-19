@@ -11,6 +11,8 @@ NTI.define("core/router", function () {
     const query = Object.fromEntries(new URLSearchParams(q || ""));
     let r = { view: "library", params: {}, query };
     if (seg[0] === "roadmap") r = { view: "roadmap", params: {}, query };
+    else if (seg[0] === "archive") r = { view: "archive", params: {}, query };
+    else if (seg[0] === "about") r = { view: "about", params: {}, query };
     else if (seg[0] === "track" && seg[1]) {
       r = { view: "track", params: { id: seg[1] }, query };
     } else if (seg[0] === "read" && seg[1]) {
@@ -23,7 +25,8 @@ NTI.define("core/router", function () {
     return r;
   }
   function titles(r) {
-    return { library: "Library", roadmap: "Roadmap",
+    return { library: "Library", roadmap: "Roadmap", archive: "Archive",
+      about: "About",
       track: "Track", read: "Reader", me: "Me", add: "Add PDF",
       notfound: "Not found" }[r.view] || "Library";
   }

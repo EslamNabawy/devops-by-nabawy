@@ -26,6 +26,8 @@
     "views/reader.js",
     "views/pdf.js",
     "views/me.js",
+    "views/archive.js",
+    "views/about.js",
     "views/add.js",
     "views/notfound.js",
     "app.js"

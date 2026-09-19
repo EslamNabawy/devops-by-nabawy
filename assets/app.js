@@ -250,6 +250,8 @@ NTI.define("core/router", function () {
     const query = Object.fromEntries(new URLSearchParams(q || ""));
     let r = { view: "library", params: {}, query };
     if (seg[0] === "roadmap") r = { view: "roadmap", params: {}, query };
+    else if (seg[0] === "archive") r = { view: "archive", params: {}, query };
+    else if (seg[0] === "about") r = { view: "about", params: {}, query };
     else if (seg[0] === "track" && seg[1]) {
       r = { view: "track", params: { id: seg[1] }, query };
     } else if (seg[0] === "read" && seg[1]) {
@@ -262,7 +264,8 @@ NTI.define("core/router", function () {
     return r;
   }
   function titles(r) {
-    return { library: "Library", roadmap: "Roadmap",
+    return { library: "Library", roadmap: "Roadmap", archive: "Archive",
+      about: "About",
       track: "Track", read: "Reader", me: "Me", add: "Add PDF",
       notfound: "Not found" }[r.view] || "Library";
   }
@@ -710,6 +713,32 @@ NTI.define("core/copy", function () {
     aboutOpen: "Open source",
     aboutVerified: "Verified curriculum",
     aboutStatic: "Static site: no tracking, works from a file or GitHub Pages.",
+    archiveEyebrow: "Auxiliary repository",
+    archiveTitle: "Archive: labs, scripts and documents",
+    archiveBody: "Supplementary material, reference architectures, and standalone scripts. Kept available offline, separate from the primary tracks.",
+    filterPlaceholder: "Filter by title or keyword...",
+    allTracksFilter: "All tracks",
+    alphaSort: "Alphabetical (A-Z)",
+    tabAll: "All",
+    tabLabs: "Labs",
+    tabScripts: "Scripts",
+    tabDocs: "Documents",
+    itemsAvailable: (n) => `${n} items available`,
+    showMore: (n, s, t) => `Show ${n} more items (${s} of ${t} displayed)`,
+    backToTracks: "Back to core tracks",
+    preIndexed: "All archive scripts and documents are pre-indexed for offline reading.",
+    aboutEyebrow: "NTI mentorship, self-paced cloud engineering",
+    aboutTitle: "About DevOps By Nabawy",
+    aboutBody: "A free, offline-first curriculum designed for NTI students and aspiring DevOps engineers.",
+    motivationTitle: "Built for real students living in the real world.",
+    motivationBody: "Zero registration forms, instant local caching in your browser, and zero behavioral telemetry.",
+    pillarOffline: "100% offline-first",
+    pillarOfflineBody: "PDFs and guides cache into the browser on first load. Study uninterrupted.",
+    pillarUntethered: "Zero cloud tether",
+    pillarUntetheredBody: "No accounts, no passwords, no analytics, no ads. Progress lives on your device only.",
+    pillarNti: "Tailored for NTI",
+    pillarNtiBody: "Mapped to the NTI syllabus, hiring standards, and hands-on troubleshooting scenarios.",
+    versionLabel: (v) => `Version ${v}, offline ready`,
   };
 });
 
@@ -815,6 +844,8 @@ NTI.define("ui/topbar", function () {
       <nav class="topnav" aria-label="Primary">
         <a href="#/" aria-current=${route.view === "library" ? "page" : null}>Library</a>
         <a href="#/roadmap" aria-current=${route.view === "roadmap" ? "page" : null}>Roadmap</a>
+        <a href="#/archive" aria-current=${route.view === "archive" ? "page" : null}>Archive</a>
+        <a href="#/about" aria-current=${route.view === "about" ? "page" : null}>About</a>
         ${maint ? html`<a href="#/add" aria-current=${route.view === "add" ? "page" : null}>Add PDF</a>` : null}
       </nav>
       <button class="search-trigger" onClick=${onSearch} aria-label="Search">
@@ -1284,7 +1315,7 @@ NTI.define("views/library", function () {
             Cat.works().forEach((w) => {
               if (["lab", "script", "evidence"].includes(w.kind)) n += 1;
             });
-            return html`<a href="#/?group=type">${copy.archiveTeaserLink} (${n})</a>`;
+            return html`<a href="#/archive">${copy.archiveTeaserLink} (${n})</a>`;
           })()}</p>
         <h2>${copy.howTitle}</h2>
         <p class="muted">${copy.howBody}</p>
@@ -1295,6 +1326,9 @@ NTI.define("views/library", function () {
       <footer class="sitefoot">
         <strong>DevOps By Nabawy</strong>
         <span class="muted">${copy.footerTag} ${copy.libraryInfo}</span>
+        <p><a href="#/archive">${copy.archiveTitle}</a> ·
+          <a href="#/about">${copy.aboutTitle}</a> ·
+          <a href="#/roadmap">${copy.openRoadmap}</a></p>
       </footer>
     </div>`;
   }
@@ -2011,6 +2045,175 @@ NTI.define("views/me", function () {
   return { Me };
 });
 
+/* views/archive.js */
+// archive.js — P11 auxiliary repository: labs, scripts, documents.
+NTI.define("views/archive", function () {
+  const { html, Component } = window.htmPreact;
+  const PAGE = 50;
+  class Archive extends Component {
+    constructor(p) {
+      super(p);
+      this.state = { q: "", track: "", kind: "all", shown: PAGE };
+    }
+    kinds() {
+      const Cat = NTI.require("core/catalog");
+      let labs = 0, scripts = 0, docs = 0;
+      Cat.works().forEach((w) => {
+        if (w.kind === "lab") labs += 1;
+        else if (w.kind === "script") scripts += 1;
+        else if (w.kind === "reference" || w.kind === "lesson") docs += 1;
+      });
+      return { all: labs + scripts + docs, labs, scripts, docs };
+    }
+    list() {
+      const Cat = NTI.require("core/catalog");
+      const s = this.state;
+      const ql = s.q.trim().toLowerCase();
+      let items = Cat.works().filter((w) =>
+        ["lab", "script", "reference", "lesson"].includes(w.kind));
+      if (s.kind === "labs") items = items.filter((w) => w.kind === "lab");
+      else if (s.kind === "scripts") {
+        items = items.filter((w) => w.kind === "script");
+      } else if (s.kind === "docs") {
+        items = items.filter((w) =>
+          ["reference", "lesson"].includes(w.kind));
+      }
+      if (s.track) items = items.filter((w) => w.track === s.track);
+      if (ql) {
+        items = items.filter((w) =>
+          (`${w.title} ${w.summary} ${(w.tags || []).join(" ")}`)
+            .toLowerCase().includes(ql));
+      }
+      return items.slice().sort((a, b) => a.title.localeCompare(b.title));
+    }
+    render(_, s) {
+      const Cat = NTI.require("core/catalog");
+      const copy = NTI.require("core/copy");
+      const tracks = (Cat.data.tracks || []).slice()
+        .sort((a, b) => a.order - b.order);
+      const tmap = {};
+      tracks.forEach((t) => { tmap[t.id] = t; });
+      const k = this.kinds();
+      const all = this.list();
+      const items = all.slice(0, s.shown);
+      const tabs = [
+        ["all", copy.tabAll, k.all],
+        ["labs", copy.tabLabs, k.labs],
+        ["scripts", copy.tabScripts, k.scripts],
+        ["docs", copy.tabDocs, k.docs],
+      ];
+      const meta = (w) => {
+        const bits = [];
+        const pdf = (w.formats || []).find((f) => f.type === "pdf" &&
+          f.status === "ready");
+        if (w.minutes) bits.push(`${w.minutes} min`);
+        if (pdf && pdf.pages) bits.push(`${pdf.pages} pages`);
+        return bits.join(" · ");
+      };
+      return html`<div class="view">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="#/">${copy.backToTracks}</a>
+        </nav>
+        <p class="eyebrow">${copy.archiveEyebrow}</p>
+        <h1 class="hero-display">${copy.archiveTitle}</h1>
+        <p class="lede">${copy.archiveBody}</p>
+        <p><input class="filter-input" placeholder=${copy.filterPlaceholder}
+          value=${s.q} aria-label="Filter archive"
+          onInput=${(e) => this.setState({ q: e.target.value, shown: PAGE })} /></p>
+        <p class="sortbar-row">
+          <label>${copy.allTracksFilter} <select value=${s.track}
+            onChange=${(e) => this.setState({ track: e.target.value,
+              shown: PAGE })}>
+            <option value="">${copy.allTracksFilter}</option>
+            ${tracks.map((t) => html`<option value=${t.id}>${t.title}</option>`)}
+          </select></label>
+        </p>
+        <div class="chips" role="group" aria-label="Kind">
+          ${tabs.map(([id, label, n]) => html`<button
+            class="chip ${s.kind === id ? "on" : ""}"
+            aria-pressed=${s.kind === id}
+            onClick=${() => this.setState({ kind: id, shown: PAGE })}>
+            ${label} ${n}</button>`)}
+        </div>
+        <p class="muted">${copy.itemsAvailable(all.length)}</p>
+        <ul class="cards">
+          ${items.map((w) => html`<li class="card" data-track=${w.track}>
+            <a href="#/read/${w.id}">
+              <span class="eyebrow">${(tmap[w.track] || {}).title || w.track}</span>
+              <strong dir="auto">${w.title}</strong>
+              <span class="muted">${w.summary || ""}</span>
+              <span class="cardfoot"><span class="pill">${w.kind}</span>
+                <span class="muted">${meta(w)}</span></span>
+            </a>
+          </li>`)}
+        </ul>
+        ${all.length > s.shown ? html`<p><button class="btn btn-primary"
+          onClick=${() => this.setState({ shown: s.shown + PAGE })}>
+          ${copy.showMore(Math.min(PAGE, all.length - s.shown),
+            s.shown, all.length)}</button></p>` : null}
+        <p class="hint">${copy.preIndexed}</p>
+      </div>`;
+    }
+  }
+  return { Archive };
+});
+
+/* views/about.js */
+// about.js — P13 about and help.
+NTI.define("views/about", function () {
+  const { html } = window.htmPreact;
+  function About() {
+    const Cat = NTI.require("core/catalog");
+    const copy = NTI.require("core/copy");
+    const v = (Cat.data && Cat.data.contentVersion) || "";
+    return html`<div class="view">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#/">Home</a><span> / </span><span>${copy.aboutTitle}</span>
+      </nav>
+      <p class="eyebrow">${copy.aboutEyebrow}</p>
+      <h1 class="hero-display">${copy.aboutTitle}</h1>
+      <p class="lede">${copy.aboutBody}</p>
+      <p><span class="pill">${copy.versionLabel(v || "local")}</span></p>
+      <section aria-label="Motivation">
+        <h2>${copy.motivationTitle}</h2>
+        <p>${copy.motivationBody}</p>
+        <p>
+          <span class="pill">${copy.worksOffline}</span>
+          <span class="pill">${copy.localPrivate}</span>
+        </p>
+      </section>
+      <section aria-label="Pillars">
+        <h2>Three core pillars</h2>
+        <ol class="cards">
+          <li class="card"><div class="pad">
+            <strong>${copy.pillarOffline}</strong>
+            <p class="muted">${copy.pillarOfflineBody}</p></div></li>
+          <li class="card"><div class="pad">
+            <strong>${copy.pillarUntethered}</strong>
+            <p class="muted">${copy.pillarUntetheredBody}</p></div></li>
+          <li class="card"><div class="pad">
+            <strong>${copy.pillarNti}</strong>
+            <p class="muted">${copy.pillarNtiBody}</p></div></li>
+        </ol>
+      </section>
+      <section aria-label=${copy.aboutTitle}>
+        <h2>${copy.aboutTitle}</h2>
+        <ul>
+          <li>${copy.aboutOpen}</li>
+          <li>${copy.aboutVerified}</li>
+          <li>${copy.aboutStatic}</li>
+        </ul>
+        <p class="hero-cta">
+          <a class="btn btn-primary" href="#/roadmap">${copy.openRoadmap}</a>
+          <a class="btn" href="#/archive">${copy.archiveTitle}</a>
+        </p>
+      </section>
+      <p class="hint">${copy.libraryInfo}</p>
+    </div>`;
+  }
+  return { About };
+});
+
 /* views/add.js */
 ﻿// add.js — maintainer Add PDFs page (hidden unless maintainerMode).
 NTI.define("views/add", function () {
@@ -2166,6 +2369,12 @@ NTI.define("app", function () {
     } else if (route.view === "track") {
       const V = NTI.require("views/track");
       view = html`<${V.Track} id=${route.params.id} store=${store} />`;
+    } else if (route.view === "archive") {
+      const V = NTI.require("views/archive");
+      view = html`<${V.Archive} />`;
+    } else if (route.view === "about") {
+      const V = NTI.require("views/about");
+      view = html`<${V.About} />`;
     } else if (route.view === "read") {
       const V = NTI.require("views/reader");
       view = html`<${V.Reader} id=${route.params.id} store=${store} query=${q} />`;

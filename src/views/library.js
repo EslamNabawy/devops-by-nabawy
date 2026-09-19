@@ -275,7 +275,7 @@ NTI.define("views/library", function () {
             Cat.works().forEach((w) => {
               if (["lab", "script", "evidence"].includes(w.kind)) n += 1;
             });
-            return html`<a href="#/?group=type">${copy.archiveTeaserLink} (${n})</a>`;
+            return html`<a href="#/archive">${copy.archiveTeaserLink} (${n})</a>`;
           })()}</p>
         <h2>${copy.howTitle}</h2>
         <p class="muted">${copy.howBody}</p>
@@ -286,6 +286,9 @@ NTI.define("views/library", function () {
       <footer class="sitefoot">
         <strong>DevOps By Nabawy</strong>
         <span class="muted">${copy.footerTag} ${copy.libraryInfo}</span>
+        <p><a href="#/archive">${copy.archiveTitle}</a> ·
+          <a href="#/about">${copy.aboutTitle}</a> ·
+          <a href="#/roadmap">${copy.openRoadmap}</a></p>
       </footer>
     </div>`;
   }

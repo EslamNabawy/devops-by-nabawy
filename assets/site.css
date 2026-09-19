@@ -218,8 +218,18 @@ section[data-track="aiops"] > h2 { color: var(--tr-aiops-mark); }
   align-items: center; justify-content: center;
   border: 1px solid var(--t-line); border-radius: 50%;
   font-size: 0.85rem; font-weight: 700; color: var(--t-accent); }
+.card .pad { padding: 12px 14px; display: flex; flex-direction: column;
+  gap: 6px; }
 .cardfoot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   margin-top: 4px; }
+.filter-input { width: 100%; max-width: 460px; padding: 12px 14px;
+  min-height: 52px; font-size: 1rem; border: 1px solid var(--t-line);
+  border-radius: var(--t-radius); background: var(--t-paper);
+  color: var(--t-ink); }
+.sortbar-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.sortbar-row select { padding: 8px; min-height: 44px;
+  border: 1px solid var(--t-line); border-radius: var(--t-radius);
+  background: var(--t-paper); color: var(--t-ink); }
 .mapkey { margin: 0 0 16px; }
 .mapkey h2 { font-size: 0.9rem; color: var(--t-muted); }
 .hero { border: 1px solid var(--t-line); border-radius: var(--t-radius-lg);

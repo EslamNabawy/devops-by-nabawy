@@ -12,6 +12,8 @@ NTI.define("ui/topbar", function () {
       <nav class="topnav" aria-label="Primary">
         <a href="#/" aria-current=${route.view === "library" ? "page" : null}>Library</a>
         <a href="#/roadmap" aria-current=${route.view === "roadmap" ? "page" : null}>Roadmap</a>
+        <a href="#/archive" aria-current=${route.view === "archive" ? "page" : null}>Archive</a>
+        <a href="#/about" aria-current=${route.view === "about" ? "page" : null}>About</a>
         ${maint ? html`<a href="#/add" aria-current=${route.view === "add" ? "page" : null}>Add PDF</a>` : null}
       </nav>
       <button class="search-trigger" onClick=${onSearch} aria-label="Search">

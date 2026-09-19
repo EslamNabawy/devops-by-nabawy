@@ -81,6 +81,12 @@ NTI.define("app", function () {
     } else if (route.view === "track") {
       const V = NTI.require("views/track");
       view = html`<${V.Track} id=${route.params.id} store=${store} />`;
+    } else if (route.view === "archive") {
+      const V = NTI.require("views/archive");
+      view = html`<${V.Archive} />`;
+    } else if (route.view === "about") {
+      const V = NTI.require("views/about");
+      view = html`<${V.About} />`;
     } else if (route.view === "read") {
       const V = NTI.require("views/reader");
       view = html`<${V.Reader} id=${route.params.id} store=${store} query=${q} />`;
