@@ -124,5 +124,16 @@ NTI.define("core/copy", function () {
     upNext: "Up next",
     offlineReady: "Offline ready",
     worksOffline: "Works offline",
+    readAgain: "Read again",
+    startReading: "Start reading",
+    continueReading: "Continue reading",
+    bundleSize: (mb) => `Bundle size: ${mb} MB`,
+    suggestedOrder: "Suggested reading order",
+    lostEyebrow: "Route unresolved",
+    lostTitle: "Oops, this page wandered off.",
+    lostBody: "Even the best setups return a 404 sometimes. Get back on track without losing your place.",
+    resumeReading: "Resume reading",
+    backHome: "Back to home",
+    popularJumps: "Popular jump points:",
   };
 });

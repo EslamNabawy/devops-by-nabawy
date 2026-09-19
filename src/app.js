@@ -92,7 +92,7 @@ NTI.define("app", function () {
       view = html`<${V.Add} />`;
     } else {
       const V = NTI.require("views/notfound");
-      view = html`<${V.NotFound} />`;
+      view = html`<${V.NotFound} store=${store} />`;
     }
     return html`<${Boundary}>
       <${Topbar} route=${route} count=${total}
