@@ -126,3 +126,9 @@ Deviations (logged, spec behavior preserved): docker fixture 4p not 1p (pdfjs v1
 3. Evidence images lack w/h (no image-size probe at build). Impact: minor CLS risk. Workaround: lazy + max-width; add probe later.
 4. linux track has 3 works only (no Linux sources on disk — matches prior audit). Impact: track looks thin. Workaround: designed empty states + pinned Linux course site.
 5. pdf2htmlEX-based PDFs index noisily (Vol5 Interview Arsenal). Impact: low (readable + viewable; search recall lower). Workaround: per-page junk filter; source re-export later.
+
+## Figma round (2026-09-19, qa/qa-new-routes.mjs, Chromium headless file://)
+
+15/15 passed, zero console errors. Archive (50 cards, filter narrows, paging), About, 404 recovery, track pills (23) + numbered rows (23), roadmap key + next-up, palette counts + indexed-local note, dark archive, mobile 360 archive/about with no h-scroll.
+
+Screenshots: qa/archive-lg-light.png, qa/archive-lg-dark.png, qa/about-lg-light.png, qa/lost-lg-light.png, qa/track-lg-light.png, qa/palette-new.png, qa/m-archive-xs.png, qa/m-about-xs.png.
